@@ -60,12 +60,14 @@ jobs:
                 const source = fs.readFileSync(file, "utf8");
                 for (const needle of ["/api/vehicle-catalog", "vehicle-catalog"]) {
                   const index = source.indexOf(needle);
-                  if (index >= 0) hits.push({ file, needle, excerpt: source.slice(Math.max(0, index - 180), index + 260) });
+                  if (index >= 0) hits.push({ file, needle, excerpt: source.slice(Math.max(0, index - 1200), index + 2400) });
                 }
               }
             }
           };
           walk(root);
+          const entry = fs.readFileSync("dist/server/entry.mjs", "utf8");
+          console.log("Worker entry references:", entry.split("\\n").filter(line => line.includes("entrypoints") || line.includes("manifest")).slice(0, 30));
           console.log(JSON.stringify(hits.slice(0, 12), null, 2));
           if (!hits.some(hit => hit.needle === "vehicle-catalog")) throw new Error("Vehicle catalog route module was not emitted.");
           NODE
