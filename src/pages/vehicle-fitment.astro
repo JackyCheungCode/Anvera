@@ -1,7 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import VehicleFitmentFinder from "../components/VehicleFitmentFinder.astro";
-import { getEmDashCollection } from "emdash";
+import { getEmDashCollection, getEmDashEntry } from "emdash";
 const { entries: wheelEntries = [], cacheHint } = await getEmDashCollection("wheel_products", { status: "published", limit: 100, orderBy: { display_order: "asc" } }).catch(() => ({ entries: [], cacheHint: null }));
 if (cacheHint && Astro.cache?.enabled) Astro.cache.set(cacheHint);
 const { entries: fitmentIndex = [] } = await getEmDashCollection("wheel_fitments", { status: "published", limit: 100 }).catch(() => ({ entries: [] }));
