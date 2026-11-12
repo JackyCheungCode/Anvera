@@ -72,7 +72,7 @@ The Worker Rate Limiting API binding is configured in Wrangler and enforced by t
 
 The inquiry endpoint accepts either JSON (without files) or multipart form data. Multipart uploads use the repeated `attachments` field and are limited to five files, 8 MiB per file, and 20 MiB total. Accepted formats are PDF, JPEG, PNG and WebP; the handler checks the file signature rather than trusting the browser-provided MIME type.
 
-Objects are written to the private `MEDIA` R2 binding under `private/inquiries/{inquiryId}/...`. The D1 attachment metadata and `attachment_added` timeline events are committed in the same D1 batch as the inquiry. If the D1 batch fails, uploaded R2 objects are deleted as compensation. Objects are never served from a public URL; a separately authenticated admin download route is still required before staff can retrieve them from the workbench.
+Objects are written to the private `MEDIA` R2 binding under `private/inquiries/{inquiryId}/...`. The D1 attachment metadata and `attachment_added` timeline events are committed in the same D1 batch as the inquiry. If the D1 batch fails, uploaded R2 objects are deleted as compensation. Objects are never served from a public URL. Staff download is provided through the authenticated private plugin route; the browser receives the bytes only after EmDash plugin permission and server-side Admin role checks.
 
 ## Administrator-only operations
 
@@ -159,4 +159,4 @@ Before enabling the endpoints:
 
 The public inquiry and dealer application forms POST to the new server endpoints and show a reference code only after a successful database write. Turnstile Siteverify is implemented server-side. The endpoints remain unavailable while the feature flag is unset. Private R2 attachment upload and Worker-level per-IP/email rate limiting are implemented for inquiry submissions; authenticated staff download and email notifications are not yet implemented.
 
-The private administrator workbench is wired to the plugin route contracts in source, but D1-backed operations are feature-flagged off by default. A successful CI build does not mean these routes have been exercised against a migrated database.
+The private administrator workbench is wired to the plugin route contracts in source, including a private attachment download action, but D1-backed operations are feature-flagged off by default. A successful CI build does not mean these routes have been exercised against a migrated database.
