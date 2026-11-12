@@ -2,6 +2,12 @@
 import Base from "../layouts/Base.astro";
 import TextInput from "../components/ui/TextInput.astro";
 import Dropdown from "../components/ui/Dropdown.astro";
+import { getEmDashCollection } from "emdash";
+const selectedModel = Astro.url.searchParams.get("model") ?? "";
+const { entries: finishEntries, cacheHint: finishCacheHint } = await getEmDashCollection("wheel_finishes", { status: "published", limit: 60, orderBy: { display_order: "asc" } }).catch(() => ({ entries: [], cacheHint: null }));
+if (finishCacheHint && Astro.cache?.enabled) Astro.cache.set(finishCacheHint);
+const finishOptions = finishEntries.filter((entry: any) => entry.data?.active !== false).map((entry: any) => ({ value: String(entry.data?.finish_code || entry.id), label: String(entry.data?.title || "Finish") }));
+const fallbackFinishOptions = [{value:"gloss-black",label:"Gloss black"},{value:"satin-black",label:"Satin black"},{value:"brushed",label:"Brushed metal"},{value:"polished",label:"Polished"},{value:"custom",label:"Custom colour / finish"},{value:"undecided",label:"Open to suggestions"}];
 ---
 <Base title="Start a Custom Wheel Inquiry" description="Prepare your ANVERA forged wheel project brief with vehicle, fitment and design information.">
   <section class="inquiry-page-hero">
@@ -27,6 +33,7 @@ import Dropdown from "../components/ui/Dropdown.astro";
         <TextInput id="vehicle-trim" name="vehicleTrim" label="Trim / variant" placeholder="e.g. GTS, Turbo S" />
       </div>
       <div class="brief-form-heading"><span>02 — WHEEL SPECIFICATION</span><span>OPTIONAL AT THIS STAGE</span></div>
+      <div class="brief-grid"><TextInput id="selected-model" name="selectedModel" label="ANVERA design / model" value={selectedModel} placeholder="Select from Wheels or leave open" /></div>
       <div class="brief-grid">
         <Dropdown id="construction" name="construction" label="Construction type" placeholder="Select construction" options={[{value:"monoblock",label:"Monoblock"},{value:"two-piece",label:"Two-piece"},{value:"three-piece",label:"Three-piece"},{value:"not-sure",label:"Not sure yet"}]} />
         <TextInput id="diameter" name="diameter" label="Diameter" placeholder="e.g. 20 inch" />
@@ -37,7 +44,7 @@ import Dropdown from "../components/ui/Dropdown.astro";
       </div>
       <div class="brief-form-heading"><span>03 — DESIGN DIRECTION</span><span>YOUR PREFERENCES</span></div>
       <div class="brief-grid">
-        <Dropdown id="finish" name="finish" label="Preferred finish" placeholder="Select a direction" options={[{value:"gloss-black",label:"Gloss black"},{value:"satin-black",label:"Satin black"},{value:"brushed",label:"Brushed metal"},{value:"polished",label:"Polished"},{value:"custom",label:"Custom colour / finish"},{value:"undecided",label:"Open to suggestions"}]} />
+        <Dropdown id="finish" name="finish" label="Preferred finish" placeholder="Select a direction" options={finishOptions.length ? finishOptions : fallbackFinishOptions} />
         <Dropdown id="quantity" name="quantity" label="Quantity" placeholder="Select quantity" options={[{value:"4",label:"4 wheels"},{value:"5",label:"5 wheels"},{value:"other",label:"Other / discuss"}]} />
       </div>
       <div class="cds-field brief-notes">
