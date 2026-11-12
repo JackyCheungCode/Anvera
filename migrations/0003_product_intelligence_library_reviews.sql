@@ -5,7 +5,7 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS anvera_pi_library_review_decisions (
   id TEXT PRIMARY KEY NOT NULL,
-  entity_type TEXT NOT NULL CHECK (entity_type IN ('material', 'forging_process')),
+  entity_type TEXT NOT NULL CHECK (entity_type IN ('material', 'forging_process', 'finish_profile')),
   entity_id TEXT NOT NULL,
   decision TEXT NOT NULL CHECK (decision IN ('approved', 'needs_revision', 'restricted')),
   reviewer_user_id TEXT NOT NULL,
