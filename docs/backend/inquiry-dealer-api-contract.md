@@ -72,6 +72,37 @@ Allowed application transitions:
 
 Dealer activation is a separate explicit admin action after approval. It links an already-existing EmDash user ID to the dealer record; it does not create an identity or grant access by itself. Every Dealer API must independently verify both the authenticated EmDash user and an active `anvera_dealers` row for that same user ID.
 
+
+## EmDash Native Plugin routes
+
+The business workbench uses authenticated private plugin routes under
+`/_emdash/api/plugins/anvera-business/`. All routes require the EmDash
+`plugins:manage` permission; handlers also require the authenticated caller's
+role level to equal Admin (50).
+
+Implemented read routes:
+- `GET inquiries/list`: bounded pagination, optional status and text search.
+- `GET inquiries/detail?id=...`: inquiry fields, append-only event timeline and attachment metadata.
+- `GET dealer-applications/list`: bounded pagination, optional status and text search.
+- `GET dealers/list`: bounded pagination, optional status and text search.
+
+The read routes are guarded by the Worker binding
+`ANVERA_BUSINESS_API_ENABLED=true`. The default is disabled. They return an
+explicit unavailable state until the approved D1 migration is applied and the
+feature flag is deliberately enabled. They do not create, update, or delete
+records.
+
+Planned administrator write routes:
+- `POST inquiries/update`: validate the inquiry state transition and append a status event atomically.
+- `POST inquiries/note`: append an internal note event.
+- `POST dealer-applications/review`: validate the application transition, record reviewer identity and append an audit event atomically.
+- `POST dealers/activate`: link an approved application to an existing EmDash Subscriber identity; never create or promote a user.
+- `POST dealers/suspend`: suspend an active dealer and append an audit event atomically.
+
+The schema draft includes `anvera_dealer_application_events` so dealer
+application review decisions have an append-only audit trail. This is an
+additional table in the draft only; it has not been applied to production.
+
 ## Security and abuse controls
 
 - Server-side schema validation and strict request-body size limits.
