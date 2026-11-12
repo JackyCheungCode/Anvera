@@ -30,11 +30,12 @@ Optional:
 - `selectedModel`, `constructionType`
 - `wheelDiameter`, `wheelWidth`, `pcd`, `offset`, `centreBore`
 - `finishCode`, `quantity`, `projectNotes`
-- `website` (honeypot; any non-empty value is rejected)
+- `website` (honeypot; any non-empty value is silently discarded with a generic accepted response)
+- `turnstileToken` (required for successful server verification)
 
 Success: `201 { ok: true, referenceCode }`.
 
-Validation: reject malformed JSON, invalid email, oversized strings, invalid year/quantity, unsupported enum values and non-empty honeypot. Normalize whitespace; never trust client-provided status, timestamps, assignment, actor IDs or R2 keys.
+Validation: reject malformed JSON, invalid email, oversized request bodies, invalid year/quantity, unsupported enum values and non-empty honeypot; string fields are normalized and capped before persistence. Normalize whitespace; never trust client-provided status, timestamps, assignment, actor IDs or R2 keys.
 
 ### `POST /api/dealer-applications`
 
@@ -48,7 +49,8 @@ Required:
 - `email`
 
 Optional:
-- `tradingName`, `website`, `city`, `yearsInBusiness`
+- `tradingName`, `companyWebsite`, `city`, `yearsInBusiness`
+- `turnstileToken` (required for successful server verification)
 - `representedBrands`, `contactRole`, `phone`, `notes`
 - The visible company website is submitted as `companyWebsite`; the separate hidden `website` field is the honeypot.
 
