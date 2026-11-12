@@ -88,6 +88,49 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
+      - name: Apply EmDash migrations to isolated Preview D1
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { spawnSync } from "node:child_process";
+          const config = "wrangler.preview.jsonc";
+          const expectedDatabaseId = "9bebf5e9-b020-420f-b398-f2f177c52ede";
+          const run = (args, capture = false) => {
+            const result = spawnSync("pnpm", ["exec", "emdash", "migrate", ...args], {
+              encoding: "utf8",
+              env: process.env,
+              stdio: capture ? ["ignore", "pipe", "inherit"] : "inherit"
+            });
+            return result;
+          };
+          const check = () => {
+            const result = run(["--check", "--json", "--wrangler-config", config], true);
+            const jsonLine = result.stdout.split(/\\r?\\n/).filter(line => line.trim().startsWith("{")).at(-1);
+            if (!jsonLine) throw new Error("EmDash migration check did not return a JSON report.");
+            const report = JSON.parse(jsonLine);
+            if (report.target?.kind !== "d1" || report.target?.resourceId !== expectedDatabaseId) {
+              throw new Error("Migration target mismatch: refusing to modify any database other than isolated Preview D1.");
+            }
+            if ((report.unknownApplied ?? []).length) {
+              throw new Error("Preview D1 contains unknown applied migrations; refusing automatic migration.");
+            }
+            return report;
+          };
+          let report = check();
+          console.log(JSON.stringify({ target: report.target.label, pending: report.pending ?? [] }));
+          if ((report.pending ?? []).length) {
+            const applied = run([`--expected-target-fingerprint=${report.target.fingerprint}`, "--wrangler-config", config]);
+            if (applied.status !== 0) process.exit(applied.status ?? 1);
+            report = check();
+          }
+          if ((report.pending ?? []).length || (report.unknownApplied ?? []).length) {
+            throw new Error("Preview D1 migrations are not in a clean state after migration.");
+          }
+          console.log("Isolated Preview D1 migration state verified.");
+          NODE
+
       - name: Smoke test Wheel-Size catalog proxy
         run: |
           node --input-type=module <<'NODE'
