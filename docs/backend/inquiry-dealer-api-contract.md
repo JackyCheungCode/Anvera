@@ -54,6 +54,18 @@ Optional:
 
 Success: `201 { ok: true, referenceCode }`. New applications always enter `pending`; public callers cannot approve, reject or activate an application.
 
+## Public route implementation
+
+Implemented Astro server endpoints:
+- POST /api/inquiries: validates customer and vehicle fields, maps form values to the D1 schema, verifies Turnstile, and creates the inquiry plus its initial created event in one D1 batch.
+- POST /api/dealer-applications: validates company/contact fields, verifies Turnstile and creates a pending application. It does not create a dealer identity.
+
+Both endpoints enforce same-origin browser requests, JSON content type, a 12 KiB request-body limit, field length limits, basic email validation and a honeypot. The server requires ANVERA_BUSINESS_API_ENABLED=true and TURNSTILE_SECRET_KEY; absent bindings fail closed. The public forms now POST to these endpoints and display a reference code only after a successful response.
+
+The public Turnstile widget also requires PUBLIC_TURNSTILE_SITE_KEY at build time. Configure the public site key and Worker secret in the preview environment before testing.
+
+Important remaining gate: per-IP/email rate limiting is not implemented in application code. Configure and test a Cloudflare edge rate-limiting rule for both public POST routes before enabling the feature flag. Do not enable public submission until that control and the reviewed D1 migration are in place.
+
 ## Administrator-only operations
 
 All review and activation endpoints must:
