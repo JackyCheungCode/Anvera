@@ -397,7 +397,7 @@ const safeProducts = products.map((product) => ({
     finally { submit.disabled = false; }
   });
 </script>
-<style>
+<style is:global>
 .vehicle-finder-section{padding:clamp(64px,8vw,112px) var(--page-gutter);background:#f1f2f3}
 .vehicle-finder-inner{width:min(100%,var(--content-max));margin:auto}
 .vehicle-finder-heading{display:flex;justify-content:space-between;align-items:end;gap:48px;margin-bottom:44px}
