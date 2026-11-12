@@ -12,6 +12,7 @@ on:
       - feat/wheels-catalog-and-product-data
       - feat/product-intelligence-global-setup
       - feat/product-intelligence-material-process-library
+      - feat/customer-configuration-studio
     paths-ignore:
       - "docs/**"
       - "*.md"
