@@ -607,7 +607,8 @@ export function createPlugin() {
       pages: [
         { path: "/inquiries", label: "Inquiry Inbox", icon: "inbox", group: "ANVERA Business" },
         { path: "/dealer-applications", label: "Dealer Applications", icon: "building-2", group: "ANVERA Business" },
-        { path: "/dealers", label: "Dealer Accounts", icon: "users", group: "ANVERA Business" }
+        { path: "/dealers", label: "Dealer Accounts", icon: "users", group: "ANVERA Business" },
+        { path: "/product-intelligence", label: "Product Intelligence", icon: "database", group: "ANVERA Business" }
       ]
     }
   });
