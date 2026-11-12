@@ -65,3 +65,31 @@
 .anvera-confirm-actions{display:inline-flex;gap:8px;align-items:center}
 @media(max-width:900px){.anvera-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.anvera-detail-content{padding:16px}.anvera-detail-grid{grid-template-columns:1fr}.anvera-detail-heading{display:block}.anvera-detail-heading>.anvera-record-status{display:inline-block;margin-top:12px}}
+
+
+.anvera-attachment-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.anvera-attachment-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  background: var(--anvera-layer, #202020);
+}
+.anvera-attachment-list li > div {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.anvera-attachment-list strong {
+  overflow-wrap: anywhere;
+}
+.anvera-attachment-list small {
+  color: var(--anvera-text-secondary, #a8a8a8);
+}
