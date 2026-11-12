@@ -295,7 +295,7 @@ export function ProductIntelligence() {
   const [notice, setNotice] = useState("");
   const [approvedMaterials, setApprovedMaterials] = useState<Array<{ id: string; code: string; name: string; grade: string; family: string }> | null>(null);
   const [approvedProcesses, setApprovedProcesses] = useState<Array<{ id: string; code: string; name: string; process_type: string }> | null>(null);
-  const [approvedFinishes, setApprovedFinishes] = useState<Array<{ id: string; code: string; name: string; finish_type: string; supported_constructions: string[] }> | null>(null);
+  const [approvedFinishes, setApprovedFinishes] = useState<Array<{ id: string; code: string; name: string; finish_type: string; supported_constructions: string[] }> | null | undefined>(undefined);
 
   const load = useCallback(async () => {
     setLoading(true);
