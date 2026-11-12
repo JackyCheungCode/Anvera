@@ -50,6 +50,8 @@ const safeProducts = products.map((product) => ({
   const results = document.querySelector("#vf-results");
   const values = { region: "sam", make: "", model: "", year: "", generation: "", modification: "" };
   const dropdowns = {};
+  let selectedMakeLabel = "";
+  const vehicleImageCache = new Map();
   const makeLogoSlugs = {
     bmw:"bmw", mercedes:"mercedesbenz", "mercedes-benz":"mercedesbenz", audi:"audi", porsche:"porsche",
     abarth:"abarth", "alfa romeo":"alfaromeo", alpine:"alpine", aston:"astonmartin", citroen:"citroen", dacia:"dacia", dodge:"dodge", fiat:"fiat", isuzu:"isuzu", lotus:"lotus", mg:"mg", opel:"opel", peugeot:"peugeot", polestar:"polestar", renault:"renault", rivian:"rivian", skoda:"skoda", smart:"smart", suzuki:"suzuki", tesla:"tesla",
@@ -83,18 +85,52 @@ const safeProducts = products.map((product) => ({
     img.onerror = () => { if (source && slug) { img.src = iconBase + slug + ".svg"; } else img.remove(); };
     return img;
   };
-  const modelImage = (raw) => {
-    const imageValue = raw?.vehicle?.image ?? raw?.image ?? raw?.image_url ?? raw?.photo ?? raw?.picture ?? null;
-    const source = typeof imageValue === "string" ? imageValue : imageValue?.url ?? imageValue?.src ?? null;
-    if (!source || !/^https?:\/\//i.test(source)) return null;
+  const normalizedWords = (value) => clean(value).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().split(/\\s+/).filter(Boolean);
+  const commonsVehicleImage = async (make, model) => {
+    const cacheKey = (make + "|" + model).toLowerCase();
+    if (vehicleImageCache.has(cacheKey)) return vehicleImageCache.get(cacheKey);
+    const lookup = (async () => {
+      if (!make || !model) return null;
+      const params = new URLSearchParams({
+        action: "query", generator: "search", gsrsearch: 'filetype:bitmap "' + make + " " + model + '"',
+        gsrnamespace: "6", gsrlimit: "12", prop: "imageinfo", iiprop: "url|extmetadata",
+        iiurlwidth: "180", format: "json", origin: "*"
+      });
+      const response = await fetch("https://commons.wikimedia.org/w/api.php?" + params.toString(), { headers: { Accept: "application/json" } });
+      if (!response.ok) return null;
+      const payload = await response.json();
+      const requiredTokens = [...normalizedWords(make), ...normalizedWords(model)];
+      const pages = Object.values(payload?.query?.pages ?? {});
+      for (const page of pages) {
+        const titleWords = new Set(normalizedWords(page?.title));
+        if (!requiredTokens.every((token) => titleWords.has(token))) continue;
+        const info = page?.imageinfo?.[0];
+        const source = info?.thumburl ?? info?.url;
+        if (!source || !/^https?:\\/\\//i.test(source)) continue;
+        const metadata = info?.extmetadata ?? {};
+        const artist = clean(metadata?.Artist?.value).replace(/<[^>]*>/g, " ").replace(/\\s+/g, " ").trim();
+        const license = clean(metadata?.LicenseShortName?.value);
+        return { source, title: [page.title, artist, license].filter(Boolean).join(" — ") };
+      }
+      return null;
+    })().catch(() => null);
+    vehicleImageCache.set(cacheKey, lookup);
+    return lookup;
+  };
+  const modelImage = (raw, modelLabel) => {
     const frame = document.createElement("span"); frame.className = "vf-model-image-frame";
-    const img = document.createElement("img"); img.className = "vf-model-image"; img.alt = ""; img.loading = "lazy"; img.decoding = "async";
-    img.src = source; img.onerror = () => frame.remove(); frame.append(img); return frame;
+    commonsVehicleImage(selectedMakeLabel, modelLabel).then((image) => {
+      if (!image || !frame.isConnected) { if (frame.isConnected) frame.remove(); return; }
+      const img = document.createElement("img"); img.className = "vf-model-image"; img.alt = "";
+      img.loading = "lazy"; img.decoding = "async"; img.src = image.source; img.title = image.title;
+      img.onerror = () => frame.remove(); frame.append(img);
+    });
+    return frame;
   };
   const renderSelectedValue = (valueLabel, key, item, label) => {
     valueLabel.replaceChildren();
     if (key === "make") { const logo = makeLogo(label, item?.raw); if (logo) valueLabel.append(logo); }
-    if (key === "model") { const image = modelImage(item?.raw); if (image) valueLabel.append(image); }
+    if (key === "model") { const image = modelImage(item?.raw, label); if (image) valueLabel.append(image); }
     const text = document.createElement("span"); text.className = "vf-select-value-text"; text.textContent = label; valueLabel.append(text);
   };
   document.querySelectorAll("[data-dropdown]").forEach((host) => {
@@ -117,7 +153,7 @@ const safeProducts = products.map((product) => ({
         const option = document.createElement("button"); option.type = "button"; option.className = "vf-select-option";
         option.setAttribute("role", "option"); option.setAttribute("aria-selected", String(item.value === values[key]));
         if (key === "make") { const logo = makeLogo(item.label, item.raw); if (logo) option.append(logo); }
-        if (key === "model") { const image = modelImage(item.raw); if (image) option.append(image); }
+        if (key === "model") { const image = modelImage(item.raw, item.label); if (image) option.append(image); }
         const label = document.createElement("span"); label.textContent = item.label; option.append(label);
         option.addEventListener("click", () => { values[key] = item.value; renderSelectedValue(valueLabel, key, item, item.label); close(); render(); host.dispatchEvent(new CustomEvent("vf-change", { bubbles: true, detail: { key, value: item.value, item } })); });
         menu.append(option);
@@ -163,7 +199,7 @@ const safeProducts = products.map((product) => ({
   };
   document.querySelector('[data-dropdown="region"]').addEventListener("vf-change", (event) => { values.region = event.detail.value; resetAfter("make"); loadMakes(); });
   document.querySelector('[data-dropdown="make"]').addEventListener("vf-change", async (event) => {
-    values.make = event.detail.value; resetAfter("model"); dropdowns.model.reset("Loading models", true);
+    values.make = event.detail.value; selectedMakeLabel = event.detail.item?.label ?? event.detail.value; resetAfter("model"); dropdowns.model.reset("Loading models", true);
     try { const rows = await catalog("models", { region: values.region, make: values.make }); dropdowns.model.setOptions(rows, "Select model"); status.textContent = "Choose a model, then select its year or generation."; }
     catch { dropdowns.model.reset("Models unavailable", true); status.textContent = "Could not load models for this manufacturer."; }
   });
@@ -402,8 +438,8 @@ const safeProducts = products.map((product) => ({
 .vf-make-logo{width:27px;height:27px;object-fit:contain;flex:0 0 27px}
 .vf-select-value{display:flex;align-items:center;gap:12px;min-width:0}
 .vf-select-value-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.vf-model-image-frame{display:inline-flex;align-items:center;justify-content:center;flex:0 0 56px;width:56px;height:36px;overflow:hidden;background:#fff}
-.vf-model-image{display:block;width:56px;height:36px;object-fit:contain;background:#fff}
+.vf-model-image-frame{display:inline-flex;align-items:center;justify-content:center;flex:0 0 44px;width:44px;height:28px;overflow:hidden;background:#fff}
+.vf-model-image{display:block;width:44px;height:28px;object-fit:contain;background:#fff}
 .vf-select-empty{padding:14px;color:#777;font-size:13px}
 .vehicle-finder-actions{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-top:28px}
 .vehicle-finder-actions p{margin:0;color:var(--cds-text-secondary);font-size:12px}
@@ -478,9 +514,9 @@ const safeProducts = products.map((product) => ({
 .vf-choose-fitment{min-height:32px;padding:0 12px;font-size:12px}
 .vf-select-option .vf-make-logo{width:32px;height:24px;object-fit:contain}
 .vf-select-trigger .vf-make-logo{width:28px;height:28px;object-fit:contain}
-.vf-select-option .vf-model-image-frame{width:56px;height:36px;flex-basis:56px}
-.vf-select-trigger .vf-model-image-frame{width:48px;height:32px;flex-basis:48px}
-.vf-select-trigger .vf-model-image{width:48px;height:32px}
+.vf-select-option .vf-model-image-frame{width:44px;height:24px;flex-basis:44px}
+.vf-select-trigger .vf-model-image-frame{width:44px;height:28px;flex-basis:44px}
+.vf-select-trigger .vf-model-image{width:44px;height:28px}
 .vf-product-filter{gap:8px;color:#525252;font-size:12px;font-weight:400;letter-spacing:0;text-transform:none}
 .vf-product-filter>span{font-weight:600}
 .vf-product-grid{gap:1px;background:#e0e0e0}
