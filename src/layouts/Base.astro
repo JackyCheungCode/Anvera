@@ -1,28 +1,108 @@
 ---
-import { getMenuWithCacheHint, getSiteSettingsWithCacheHint } from "emdash";
+import { getSiteSettingsWithCacheHint } from "emdash";
 import { EmDashHead, EmDashBodyStart, EmDashBodyEnd } from "emdash/ui";
 import { createPublicPageContext } from "emdash/page";
-import LiveSearch from "emdash/ui/search";
 import { resolveStarterSiteIdentity } from "../utils/site-identity";
-interface Props { title: string; pageTitle?: string | null; description?: string | null; image?: string | null; canonical?: string | null; content?: { collection: string; id: string; slug?: string | null }; }
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  pageTitle?: string | null;
+  description?: string | null;
+  image?: string | null;
+  canonical?: string | null;
+  content?: { collection: string; id: string; slug?: string | null };
+}
 const { title, pageTitle, description, image, canonical, content } = Astro.props;
-const [settingsResult, menuResult] = await Promise.all([getSiteSettingsWithCacheHint(), getMenuWithCacheHint("primary")]);
-if (Astro.cache?.enabled) { Astro.cache.set(settingsResult.cacheHint); Astro.cache.set(menuResult.cacheHint); }
-const { siteTitle, siteTagline, siteLogo } = resolveStarterSiteIdentity(settingsResult.data);
-const titleIncludesSiteName = title === siteTitle || title.endsWith(` | ${siteTitle}`) || title.endsWith(` — ${siteTitle}`);
-const fullTitle = titleIncludesSiteName ? title : `${title} — ${siteTitle}`;
-const pageDescription = description ?? siteTagline;
-const menu = menuResult.data;
-const pageCtx = createPublicPageContext({ Astro, kind: content ? "content" : "custom", pageType: "website", title: fullTitle, pageTitle: pageTitle ?? title, description: pageDescription, canonical, image, content, siteName: siteTitle });
+const settingsResult = await getSiteSettingsWithCacheHint();
+if (Astro.cache?.enabled) Astro.cache.set(settingsResult.cacheHint);
+const { siteTitle, siteTagline } = resolveStarterSiteIdentity(settingsResult.data);
+const fullTitle = title === siteTitle || title.endsWith(` | ${siteTitle}`) || title.endsWith(` — ${siteTitle}`)
+  ? title
+  : `${title} — ANVERA`;
+const pageDescription = description ?? siteTagline ?? "Premium forged wheels, engineered with precision and made to express individuality.";
+const pageCtx = createPublicPageContext({
+  Astro,
+  kind: content ? "content" : "custom",
+  pageType: "website",
+  title: fullTitle,
+  pageTitle: pageTitle ?? title,
+  description: pageDescription,
+  canonical,
+  image,
+  content,
+  siteName: siteTitle || "ANVERA"
+});
+const navigation = [
+  { label: "Wheels", href: "/wheels" },
+  { label: "Customization", href: "/customization" },
+  { label: "Craftsmanship", href: "/craftsmanship" },
+  { label: "Gallery", href: "/gallery" },
+  { label: "About", href: "/about" }
+];
 ---
 <!doctype html>
 <html lang="en">
-<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>{fullTitle}</title><EmDashHead page={pageCtx} /></head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0c0e" />
+  <title>{fullTitle}</title>
+  <EmDashHead page={pageCtx} />
+</head>
 <body>
-<EmDashBodyStart page={pageCtx} />
-<header><nav><a href="/">{siteLogo ? <img src={siteLogo.url} alt={siteLogo.alt || siteTitle} style="height:48px;width:auto;margin:-8px 0;display:block;" /> : siteTitle}</a>
-{menu?.items.map((item) => <a href={item.url} target={item.target} rel={item.target === "_blank" ? "noopener noreferrer" : undefined}>{item.label}</a>)}
-<LiveSearch placeholder="Search..." collections={["posts","pages"]} /></nav></header>
-<main><slot /></main>
-<EmDashBodyEnd page={pageCtx} />
-</body></html>
+  <EmDashBodyStart page={pageCtx} />
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand-mark" href="/" aria-label="ANVERA home">
+        <span class="brand-symbol" aria-hidden="true">A</span>
+        <span class="brand-wordmark">ANVERA</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">
+        <span>Menu</span>
+        <span aria-hidden="true">＋</span>
+      </button>
+      <nav class="primary-nav" id="primary-nav" aria-label="Main navigation">
+        {navigation.map((item) => <a href={item.href}>{item.label}</a>)}
+      </nav>
+      <div class="header-actions">
+        <a class="header-utility" href="/dealers">Dealer Network</a>
+        <a class="header-utility" href="/custom-inquiry">Get a Quote ↗</a>
+      </div>
+    </div>
+  </header>
+  <main><slot /></main>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <a class="brand-mark" href="/" aria-label="ANVERA home">
+        <span class="brand-symbol" aria-hidden="true">A</span>
+        <span class="brand-wordmark">ANVERA</span>
+      </a>
+      <div class="footer-links">
+        <a href="/wheels">Wheels</a>
+        <a href="/customization">Customization</a>
+        <a href="/craftsmanship">Craftsmanship</a>
+        <a href="/dealers/apply">Become a Dealer</a>
+        <a href="/contact">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">© {new Date().getFullYear()} ANVERA. FORGED TO DEFINE EXCELLENCE.</div>
+  </footer>
+  <EmDashBodyEnd page={pageCtx} />
+  <script>
+    const toggle = document.querySelector(".nav-toggle");
+    const nav = document.querySelector("#primary-nav");
+    toggle?.addEventListener("click", () => {
+      const expanded = toggle.getAttribute("aria-expanded") === "true";
+      toggle.setAttribute("aria-expanded", String(!expanded));
+      nav?.classList.toggle("is-open", !expanded);
+    });
+    nav?.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        toggle?.setAttribute("aria-expanded", "false");
+        nav.classList.remove("is-open");
+      });
+    });
+  </script>
+</body>
+</html>
