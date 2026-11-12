@@ -121,6 +121,23 @@ jobs:
           let report = check();
           console.log(JSON.stringify({ target: report.target.label, pending: report.pending ?? [] }));
           if ((report.pending ?? []).length) {
+            const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+            const token = process.env.CLOUDFLARE_API_TOKEN;
+            const lockResponse = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${expectedDatabaseId}/query`, {
+              method: "POST",
+              headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+              body: JSON.stringify({ sql: "SELECT is_locked FROM _emdash_migrations_lock WHERE id = ?", params: ["migration_lock"] })
+            });
+            const lockPayload = await lockResponse.json();
+            if (!lockResponse.ok || !lockPayload.success) throw new Error("Unable to inspect isolated Preview D1 migration lock.");
+            const lockedAt = Number(lockPayload.result?.[0]?.results?.[0]?.is_locked ?? 0);
+            if (lockedAt > 0) {
+              const lockAgeMs = Date.now() - lockedAt;
+              if (lockAgeMs < 15 * 60 * 1000) throw new Error("Preview D1 migration lock is recent; refusing to interrupt a possibly active migration.");
+              console.log(`Releasing stale Preview-only migration lock aged ${Math.round(lockAgeMs / 60000)} minutes.`);
+              const released = run([`--release-lock=${lockedAt}`, `--expected-target-fingerprint=${report.target.fingerprint}`, "--wrangler-config", config]);
+              if (released.status !== 0) process.exit(released.status ?? 1);
+            }
             const applied = run([`--expected-target-fingerprint=${report.target.fingerprint}`, "--wrangler-config", config]);
             if (applied.status !== 0) process.exit(applied.status ?? 1);
             report = check();
