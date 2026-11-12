@@ -358,7 +358,8 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
     });
   };
   root.addEventListener("click",async event=>{
-    const trigger=event.target.closest?.(".carbon-dropdown-trigger");
+    const target=event.target instanceof Element?event.target:null;
+    const trigger=target?.closest(".carbon-dropdown-trigger");
     if(trigger&&root.contains(trigger)){
       const dropdown=trigger.closest("[data-carbon-dropdown]");
       if(trigger.disabled)return;
@@ -370,7 +371,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
       trigger.setAttribute("aria-expanded",String(opening));
       event.preventDefault();return;
     }
-    const option=event.target.closest?.("[data-dropdown-option]");
+    const option=target?.closest("[data-dropdown-option]");
     if(option&&root.contains(option)){
       const dropdown=option.closest("[data-carbon-dropdown]"), control=dropdownControl(dropdown.querySelector("input[type=hidden]")?.id);
       if(!control)return;
@@ -393,7 +394,8 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
     }
   });
   document.addEventListener("click",event=>{
-    if(!root.contains(event.target))closeDropdowns();
+    const target=event.target instanceof Node?event.target:null;
+    if(target&&!root.contains(target))closeDropdowns();
   });
   const loadDeliveryRegions=async country=>{
     const regionRows=[];
