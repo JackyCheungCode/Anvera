@@ -36,7 +36,7 @@ jobs:
           node-version: 24
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile --config.node-linker=hoisted
+        run: pnpm install --no-frozen-lockfile
 
       - name: Verify
         run: |
