@@ -16,7 +16,8 @@ const safeProducts = products.map((product) => ({
   modelCode: String(product.modelCode ?? ""),
   construction: String(product.construction ?? ""),
   finish: String(product.finish ?? ""),
-  specs: product.specs && typeof product.specs === "object" ? product.specs : {}
+  specs: product.specs && typeof product.specs === "object" ? product.specs : {},
+  verifiedFitments: Array.isArray(product.verifiedFitments) ? product.verifiedFitments : []
 }));
 ---
 <section class="vehicle-finder-section">
@@ -217,6 +218,39 @@ const safeProducts = products.map((product) => ({
     return card;
   };
   const productField = (product, keys) => valueAt(product?.specs, keys) ?? valueAt(product, keys);
+  const numeric = (value) => { const match = String(value ?? "").match(/-?\\d+(?:\\.\\d+)?/); return match ? Number(match[0]) : null; };
+  const normalizePcd = (value) => clean(value).toLowerCase().replace(/\\s+/g,"").replace(/x/g,"×");
+  const fitmentMatchesProduct = (fitment, record, product) => {
+    const technical = record?.technical ?? {};
+    const vehiclePcd = valueAt(technical,["bolt_pattern","pcd"]) ?? fitment.front.pcd ?? fitment.rear.pcd;
+    const vehicleBore = valueAt(technical,["centre_bore","center_bore","centre_bore_diameter"]) ?? fitment.front.centreBore ?? fitment.rear.centreBore;
+    const productFitments = product.verifiedFitments || [];
+    if (!productFitments.length) return "review";
+    const axes = ["front","rear"];
+    const matched = productFitments.some((approved) => {
+      let compared = 0;
+      for (const axle of axes) {
+        const vehicle = fitment[axle] || {};
+        const wheel = approved[axle] || {};
+        const pcd = valueAt(wheel,["pcd","bolt_pattern"]);
+        if (vehiclePcd && pcd) { compared++; if (normalizePcd(vehiclePcd) !== normalizePcd(pcd)) return false; }
+        const vehicleDiameter = numeric(vehicle.diameter);
+        const productDiameter = numeric(valueAt(wheel,["diameter","rim_diameter"]));
+        if (vehicleDiameter !== null && productDiameter !== null) { compared++; if (Math.abs(vehicleDiameter-productDiameter) > .1) return false; }
+        const vehicleWidth = numeric(vehicle.width);
+        const productWidth = numeric(valueAt(wheel,["width","rim_width"]));
+        if (vehicleWidth !== null && productWidth !== null) { compared++; if (Math.abs(vehicleWidth-productWidth) > .5) return false; }
+        const vehicleOffset = numeric(vehicle.offset);
+        const productOffset = numeric(valueAt(wheel,["offset","rim_offset","et"]));
+        if (vehicleOffset !== null && productOffset !== null) { compared++; if (Math.abs(vehicleOffset-productOffset) > 8) return false; }
+        const hubBore = numeric(vehicleBore);
+        const wheelBore = numeric(valueAt(wheel,["centre_bore","center_bore","centre_bore_diameter"]));
+        if (hubBore !== null && wheelBore !== null) { compared++; if (wheelBore + .1 < hubBore) return false; }
+      }
+      return compared > 0;
+    });
+    return matched ? "verified" : "not-fit";
+  };
   const renderProducts = (fitment, record) => {
     let section = results.querySelector("#vf-products");
     if (!section) { section = document.createElement("section"); section.id = "vf-products"; section.className = "vf-products"; results.append(section); }
@@ -226,7 +260,7 @@ const safeProducts = products.map((product) => ({
     const intro = document.createElement("p"); intro.textContent = "Filter the collection by construction, diameter and finish. Product specifications are matched only where structured catalogue data is available.";
     heading.append(title,intro); section.append(heading);
     const controls = document.createElement("div"); controls.className = "vf-product-filters";
-    const filtered = { construction: "", diameter: "", finish: "" };
+    const filtered = { construction: "", diameter: "", width: "", pcd: "", offset: "", finish: "" };
     const productRows = anveraProducts.map((product) => ({...product, specs: product.specs || {}}));
     const createFilter = (key, label, options) => {
       const wrap = document.createElement("label"); wrap.className = "vf-product-filter"; const caption = document.createElement("span"); caption.textContent = label; const host = document.createElement("div"); host.className = "vf-mini-select";
@@ -239,6 +273,9 @@ const safeProducts = products.map((product) => ({
     const unique = (key) => [...new Set(productRows.map((p) => clean(productField(p,key))).filter(Boolean))].sort();
     createFilter("construction","Construction",unique(["construction","construction_type"]));
     createFilter("diameter","Diameter",unique(["diameter","rim_diameter"]));
+    createFilter("width","Width",unique(["width","rim_width"]));
+    createFilter("pcd","PCD",unique(["pcd","bolt_pattern"]));
+    createFilter("offset","Offset",unique(["offset","et","rim_offset"]));
     createFilter("finish","Finish",unique(["finish","finish_name"]));
     section.append(controls);
     const list = document.createElement("div"); list.className = "vf-product-grid"; section.append(list);
@@ -247,18 +284,29 @@ const safeProducts = products.map((product) => ({
       const compatible = productRows.filter((product) => {
         const construction = clean(productField(product,["construction","construction_type"]));
         const diameter = clean(productField(product,["diameter","rim_diameter"]));
+        const width = clean(productField(product,["width","rim_width"]));
+        const pcd = clean(productField(product,["pcd","bolt_pattern"]));
+        const offset = clean(productField(product,["offset","et","rim_offset"]));
         const finish = clean(productField(product,["finish","finish_name"]));
-        return (!filtered.construction || construction === filtered.construction) && (!filtered.diameter || diameter === filtered.diameter) && (!filtered.finish || finish === filtered.finish);
+        return fitmentMatchesProduct(fitment,record,product) !== "not-fit" &&
+          (!filtered.construction || construction === filtered.construction) &&
+          (!filtered.diameter || diameter === filtered.diameter) &&
+          (!filtered.width || width === filtered.width) &&
+          (!filtered.pcd || pcd === filtered.pcd) &&
+          (!filtered.offset || offset === filtered.offset) &&
+          (!filtered.finish || finish === filtered.finish);
       });
       if (!compatible.length) { const empty = document.createElement("p"); empty.className = "vf-product-empty"; empty.textContent = "No published ANVERA products match these filters."; list.append(empty); return; }
       compatible.forEach((product) => {
         const article = document.createElement("article"); article.className = "vf-product-card";
+        const matchState = fitmentMatchesProduct(fitment,record,product);
         const meta = document.createElement("div"); meta.className = "vf-product-meta"; meta.textContent = [product.modelCode,product.construction].filter(Boolean).join(" / ").toUpperCase() || "ANVERA / FORGED";
+        const matchBadge = document.createElement("span"); matchBadge.className = "vf-product-match vf-product-match--" + matchState; matchBadge.textContent = matchState === "verified" ? "ANVERA VERIFIED FITMENT" : "ENGINEERING REVIEW REQUIRED";
         const name = document.createElement("h4"); name.textContent = product.title;
         const specs = document.createElement("p"); specs.className = "vf-product-specs"; specs.textContent = [productField(product,["diameter","rim_diameter"]) ? "Ø"+productField(product,["diameter","rim_diameter"]) : "",productField(product,["width","rim_width"]) ? productField(product,["width","rim_width"])+"J" : "",productField(product,["pcd"]) ? "PCD "+productField(product,["pcd"]) : "",productField(product,["offset","et"]) ? "ET "+productField(product,["offset","et"]) : ""].filter(Boolean).join(" · ") || "Specifications available on request";
         const finish = document.createElement("p"); finish.className = "vf-product-finish"; finish.textContent = product.finish ? "Finish · " + product.finish : "Custom finish options";
         const link = document.createElement("a"); link.href = "/wheels/models/" + encodeURIComponent(product.id); link.textContent = "Explore design ↗";
-        article.append(meta,name,specs,finish,link); list.append(article);
+        article.append(meta,matchBadge,name,specs,finish,link); list.append(article);
       });
     };
     paint();
@@ -353,6 +401,9 @@ const safeProducts = products.map((product) => ({
 .vf-product-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:#dedede}
 .vf-product-card{min-width:0;padding:22px;background:#f7f8f9}
 .vf-product-meta{color:#8a8a8a;font-size:9px;font-weight:800;letter-spacing:.12em}
+.vf-product-match{display:inline-block;margin-top:12px;padding:5px 7px;font-size:9px;font-weight:800;letter-spacing:.08em}
+.vf-product-match--verified{background:#e8f0e9;color:#245b32}
+.vf-product-match--review{background:#f3eee3;color:#745b22}
 .vf-product-card h4{margin:14px 0 8px;font-family:var(--font-display);font-size:24px;text-transform:uppercase}
 .vf-product-specs,.vf-product-finish{margin:0 0 8px;color:#6f6f6f;font-size:12px}
 .vf-product-card a{display:inline-block;margin-top:14px;color:#161616;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid #999;padding-bottom:4px}
