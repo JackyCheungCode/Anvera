@@ -129,8 +129,8 @@ const steps: StepDefinition[] = [
       { key: "designStyle", label: "Design style", placeholder: "e.g. Performance / Luxury / Motorsport" },
       { key: "spokeCount", label: "Spoke count", type: "number", placeholder: "e.g. 10" },
       { key: "faceProfile", label: "Face / concavity profile", placeholder: "Documented design profile" },
-      { key: "materialProfile", label: "Material profile reference", type: "select", options: [] },
-      { key: "forgingProfile", label: "Manufacturing profile reference", type: "select", options: [] },
+      { key: "materialProfile", label: "Material profile reference", required: true, type: "select", options: [] },
+      { key: "forgingProfile", label: "Manufacturing profile reference", required: true, type: "select", options: [] },
       { key: "intendedUse", label: "Intended use", type: "select", options: ["Street", "Performance", "Luxury", "Track — evidence required", "Off-road — evidence required", "Show / Custom"] },
       { key: "productDescription", label: "Product description", type: "textarea", placeholder: "Product identity and design language." },
       { key: "designRevision", label: "Design revision", placeholder: "e.g. Rev A" }
@@ -217,7 +217,7 @@ function removeSpecification(document: SetupDocument, productIndex: number, rowI
 }
 
 function specificationIsComplete(row: SpecificationRow) {
-  return ["role", "diameter", "width", "boltCount", "pcd", "offset", "centerBore"].every((key) =>
+  return ["role", "diameter", "width", "boltCount", "pcd", "offset", "centerBore", "status"].every((key) =>
     String(row[key as keyof SpecificationRow] ?? "").trim().length > 0
   );
 }
