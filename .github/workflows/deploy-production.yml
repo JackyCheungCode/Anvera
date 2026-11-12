@@ -58,7 +58,7 @@ jobs:
               if (entry.isDirectory()) walk(file);
               else if (entry.name.endsWith(".mjs")) {
                 const source = fs.readFileSync(file, "utf8");
-                for (const needle of ["/api/vehicle-catalog", "vehicle-catalog"]) {
+                for (const needle of ["/vehicle-fitment/catalog", "vehicle-catalog"]) {
                   const index = source.indexOf(needle);
                   if (index >= 0) hits.push({ file, needle, excerpt: source.slice(Math.max(0, index - 1200), index + 2400) });
                 }
@@ -95,9 +95,9 @@ jobs:
             throw new Error(`Vehicle fitment page check failed (${page.status}).`);
           }
           const candidates = [
-            "/api/vehicle-catalog?resource=makes&region=sam",
-            "/api/vehicle-catalog/?resource=makes&region=sam",
-            "/api/vehicle-catalog.json?resource=makes&region=sam"
+            "/vehicle-fitment/catalog?resource=makes&region=sam",
+            "/vehicle-fitment/catalog/?resource=makes&region=sam",
+            "/vehicle-fitment/catalog.json?resource=makes&region=sam"
           ];
           let response;
           let text = "";
