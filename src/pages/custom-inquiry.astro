@@ -80,6 +80,10 @@ const fallbackFinishOptions = [{value:"gloss-black",label:"Gloss black"},{value:
     const data = new FormData(form);
     const payload = Object.fromEntries(data.entries());
     payload.customerName = String(data.get("customerName") || "");
+    payload.constructionType = String(data.get("construction") || "");
+    payload.wheelDiameter = String(data.get("diameter") || "");
+    payload.wheelWidth = String(data.get("width") || "");
+    payload.finishCode = String(data.get("finish") || "");
     payload.turnstileToken = String(data.get("cf-turnstile-response") || "");
     const response = await fetch("/api/inquiries", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     const result = await response.json().catch(() => ({}));
