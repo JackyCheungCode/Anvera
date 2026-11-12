@@ -4,6 +4,8 @@ import { getEmDashCollection } from "emdash";
 import { Image } from "emdash/ui";
 import { wheelDevelopmentProducts } from "../data/wheel-products";
 
+const turnstileSiteKey = "0x4AAAAAAF-OqItFi-JleERp";
+
 const { entries: wheelEntries = [] } = await getEmDashCollection("wheel_products", { status: "published", limit: 100, orderBy: { display_order: "asc" } }).catch(() => ({ entries: [] }));
 const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
   slug: entry.id,
