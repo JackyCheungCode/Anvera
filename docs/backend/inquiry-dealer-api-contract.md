@@ -1,6 +1,6 @@
 # ANVERA Inquiry & Dealer Backend — API Contract
 
-Status: **implementation contract draft; no endpoints are enabled and no production database changes have been made.**
+Status: **private EmDash admin route handlers and workbench interactions are implemented on the development branch; public intake endpoints are not implemented. No production database changes have been made.**
 
 ## Scope
 
@@ -102,8 +102,7 @@ Implemented administrator write routes:
 All write routes are private, require `plugins:manage`, re-check the Admin
 role server-side, and accept bounded JSON request bodies. The runtime also
 requires `ANVERA_BUSINESS_API_ENABLED=true`; the binding is unset by default.
-The read pages currently have live data-loading states, but review, status,
-note, activation and suspension controls are not yet connected in the UI.
+The admin workbench pages now call these read and write routes for inquiry details/status/notes, application review/activation, and dealer suspension. These controls remain unavailable until the approved schema is applied and the Worker feature flag is explicitly enabled.
 
 The schema draft includes `anvera_dealer_application_events` so dealer
 application review decisions have an append-only audit trail. This is an
@@ -137,4 +136,6 @@ Before enabling the endpoints:
 
 ## Current UI behavior
 
-The inquiry and dealer forms remain local-copy previews until the secure endpoints and required database tables are approved and enabled. Do not display a success state implying a submission was stored or received.
+The public inquiry and dealer application forms remain local-copy previews. Their public POST endpoints, Turnstile verification, abuse controls and acknowledgement notifications are not implemented. Do not display a success state implying a submission was stored or received.
+
+The private administrator workbench is wired to the plugin route contracts in source, but D1-backed operations are feature-flagged off by default. A successful CI build does not mean these routes have been exercised against a migrated database.
