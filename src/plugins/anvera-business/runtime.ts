@@ -109,7 +109,7 @@ async function getAdminDatabase(ctx: AdminContext) {
     return { error: { available: false, reason: "migration_pending" } as const };
   }
 
-  return { db: env.DB };
+  return { db: env.DB, media: env.MEDIA };
 }
 
 async function listInquiries(ctx: AdminContext) {
@@ -161,6 +161,39 @@ async function inquiryDetail(ctx: AdminContext) {
       .bind(id).all()
   ]);
   return { available: true, found: true, inquiry, events: events.results, attachments: attachments.results };
+}
+
+async function downloadInquiryAttachment(ctx: AdminContext) {
+  if (ctx.request.method !== "GET") return { available: false, reason: "method_not_allowed" };
+  const access = await getAdminDatabase(ctx);
+  if ("error" in access) return access.error;
+
+  const url = new URL(ctx.request.url);
+  const attachmentId = (url.searchParams.get("id") ?? "").trim().slice(0, 128);
+  if (!attachmentId) return { available: true, found: false, reason: "missing_id" };
+
+  const attachment = await access.db.prepare(
+    "SELECT id, r2_object_key, original_filename, content_type, byte_size FROM anvera_inquiry_attachments WHERE id = ? LIMIT 1"
+  ).bind(attachmentId).first<{
+    id: string; r2_object_key: string; original_filename: string; content_type: string; byte_size: number;
+  }>();
+  if (!attachment) return { available: true, found: false, reason: "not_found" };
+
+  const object = await access.media?.get(attachment.r2_object_key);
+  if (!object) return { available: true, found: false, reason: "object_not_found" };
+  const bytes = new Uint8Array(await object.arrayBuffer());
+  let binary = "";
+  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+  }
+  return {
+    available: true,
+    found: true,
+    filename: attachment.original_filename,
+    contentType: attachment.content_type,
+    byteSize: attachment.byte_size,
+    base64: btoa(binary)
+  };
 }
 
 async function listDealerApplications(ctx: AdminContext) {
@@ -349,6 +382,11 @@ export function createPlugin() {
         methods: ["GET"],
         permission: "plugins:manage",
         handler: inquiryDetail
+      },
+      "inquiries/attachment": {
+        methods: ["GET"],
+        permission: "plugins:manage",
+        handler: downloadInquiryAttachment
       },
       "inquiries/update": {
         ...jsonPost,
