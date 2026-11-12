@@ -51,19 +51,18 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
       <div class="progress-track"><span id="progress-fill"></span></div>
       <ol id="progress-steps">
         <li class="is-current" data-step-label="1"><span>01</span><b>Design</b></li>
-        <li data-step-label="2"><span>02</span><b>Vehicle</b></li>
-        <li data-step-label="3"><span>03</span><b>Specifications</b></li>
-        <li data-step-label="4"><span>04</span><b>Manufacturing</b></li>
-        <li data-step-label="5"><span>05</span><b>Delivery</b></li>
-        <li data-step-label="6"><span>06</span><b>Confirmation</b></li>
-        <li data-step-label="7"><span>07</span><b>Complete</b></li>
+        <li data-step-label="2"><span>02</span><b>Vehicle & fitment</b></li>
+        <li data-step-label="3"><span>03</span><b>Manufacturing</b></li>
+        <li data-step-label="4"><span>04</span><b>Delivery</b></li>
+        <li data-step-label="5"><span>05</span><b>Confirmation</b></li>
+        <li data-step-label="6"><span>06</span><b>Complete</b></li>
       </ol>
-      <div class="progress-caption"><span id="progress-current">STEP 01 / 07</span><span id="progress-title">Select a wheel design</span></div>
+      <div class="progress-caption"><span id="progress-current">STEP 01 / 06</span><span id="progress-title">Select a wheel design</span></div>
     </nav>
 
     <main class="studio-content">
       <section class="studio-step is-active" data-step="1">
-        <div class="step-heading"><div><p class="step-kicker">01 / DESIGN SELECTION</p><h2>Choose your wheel design.</h2><p>Start with a design direction. Every selection can be refined later.</p></div><span class="step-index">01—07</span></div>
+        <div class="step-heading"><div><p class="step-kicker">01 / DESIGN SELECTION</p><h2>Choose your wheel design.</h2><p>Start with a design direction. Every selection can be refined later.</p></div><span class="step-index">01—06</span></div>
         <div class="design-filter-bar" aria-label="Filter wheel designs">
 <label>Construction <div class="carbon-dropdown" data-carbon-dropdown><input type="hidden" id="filter-construction" value="" /><button type="button" class="carbon-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false"><span data-dropdown-label>All constructions</span><span>⌄</span></button><div class="carbon-dropdown-menu" role="listbox" hidden></div></div></label>
 <label>Design style <div class="carbon-dropdown" data-carbon-dropdown><input type="hidden" id="filter-style" value="" /><button type="button" class="carbon-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false"><span data-dropdown-label>All styles</span><span>⌄</span></button><div class="carbon-dropdown-menu" role="listbox" hidden></div></div></label>
@@ -82,15 +81,11 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
       </section>
 
       <section class="studio-step" data-step="2" hidden>
-        <div class="step-heading"><div><p class="step-kicker">02 / VEHICLE SELECTION</p><h2>Find your vehicle fitment.</h2><p>Select your market and exact vehicle configuration. Fitment records will be retrieved for the next step.</p></div><span class="step-index">02—07</span></div>
-        <div class="vehicle-selection-shell"><VehicleFitmentFinder compact={true} resultsTarget="fitment-results-slot" /></div>
+        <div class="step-heading"><div><p class="step-kicker">02 / VEHICLE SELECTION</p><h2>Find your vehicle fitment.</h2><p>Select your market and exact vehicle configuration, retrieve fitment references, then confirm or customize your wheel dimensions here.</p></div><span class="step-index">02—07</span></div>
+        <div class="vehicle-selection-shell"><VehicleFitmentFinder compact={true} /></div>
 
-        <p class="studio-note" id="vehicle-status" role="status">Choose your market, manufacturer, model and vehicle details to continue to fitment results.</p>
-      </section>
+        <p class="studio-note" id="vehicle-status" role="status">Choose your market and vehicle, then select Find fitment to load OEM and alternative references below.</p>
 
-      <section class="studio-step" data-step="3" hidden>
-        <div class="step-heading"><div><p class="step-kicker">03 / FITMENT & SPECIFICATION</p><h2>Choose your fitment reference.</h2><p>Review the available vehicle configurations, select the correct reference, then confirm or customize your wheel dimensions.</p></div><span class="step-index">03—07</span></div>
-        <div class="fitment-results-slot" id="fitment-results-slot"></div>
         <div class="spec-detail" id="spec-detail">
           <div class="spec-detail-heading"><div><p class="step-kicker" id="spec-detail-kicker">SELECTED VEHICLE FITMENT</p><h3 id="spec-detail-title">Selected fitment specification</h3></div><span class="review-status">ENGINEERING REVIEW REQUIRED</span></div>
           <p class="fitment-status" id="fitment-status" role="status">Select a fitment result above. Its front and rear dimensions will appear here.</p>
@@ -108,8 +103,8 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
         </div>
       </section>
 
-      <section class="studio-step" data-step="4" hidden>
-        <div class="step-heading"><div><p class="step-kicker">04 / MANUFACTURING</p><h2>From forged billet to finished wheel.</h2><p>An initial manufacturing estimate based on a typical bespoke forged wheel project.</p></div><span class="step-index">04—07</span></div>
+      <section class="studio-step" data-step="3" hidden>
+        <div class="step-heading"><div><p class="step-kicker">03 / MANUFACTURING</p><h2>From forged billet to finished wheel.</h2><p>An initial manufacturing estimate based on a typical bespoke forged wheel project.</p></div><span class="step-index">03—06</span></div>
         <div class="manufacturing-summary"><div><span>ESTIMATED MANUFACTURING TIME</span><strong>15–27 <small>working days</small></strong><p>Planning estimate only. Final lead time is confirmed after engineering review and order acceptance.</p></div><div class="manufacturing-wheel"><span class="wheel-render"></span></div></div>
         <div class="manufacturing-track" id="manufacturing-track">
           <article class="manufacturing-node"><span class="manufacturing-icon" aria-hidden="true">▣</span><div><b>Engineering confirmation</b><p>Review vehicle, dimensions and brake clearance</p></div><strong>1–3 days</strong></article>
@@ -123,8 +118,8 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
         <p class="studio-note">The animated sequence illustrates the planned production stages; it does not represent live factory progress. Some operations may overlap depending on the final construction and factory schedule.</p>
       </section>
 
-      <section class="studio-step" data-step="5" hidden>
-        <div class="step-heading"><div><p class="step-kicker">05 / DELIVERY & LOGISTICS</p><h2>Where should we deliver?</h2><p>Choose the Incoterm and destination. The route and arrival window will be estimated from the destination address.</p></div><span class="step-index">05—07</span></div>
+      <section class="studio-step" data-step="4" hidden>
+        <div class="step-heading"><div><p class="step-kicker">04 / DELIVERY & LOGISTICS</p><h2>Where should we deliver?</h2><p>Choose the Incoterm and destination. The route and arrival window will be estimated from the destination address.</p></div><span class="step-index">04—06</span></div>
         <div class="delivery-form-grid">
           <label>Delivery term <div class="carbon-dropdown" data-carbon-dropdown><input type="hidden" id="delivery-term" value="FOB" /><button type="button" class="carbon-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false"><span data-dropdown-label>FOB — Free On Board</span><span aria-hidden="true">⌄</span></button><div class="carbon-dropdown-menu" role="listbox" hidden><button type="button" role="option" data-value="FOB" aria-selected="false">FOB — Free On Board</button><button type="button" role="option" data-value="EXW" aria-selected="false">EXW — Ex Works</button><button type="button" role="option" data-value="FAS" aria-selected="false">FAS — Free Alongside Ship</button>
                 <button type="button" role="option" data-value="FCA" aria-selected="false">FCA — Free Carrier</button><button type="button" role="option" data-value="CFR" aria-selected="false">CFR — Cost and Freight</button><button type="button" role="option" data-value="CIF" aria-selected="false">CIF — Cost, Insurance and Freight</button><button type="button" role="option" data-value="CPT" aria-selected="false">CPT — Carriage Paid To</button><button type="button" role="option" data-value="CIP" aria-selected="false">CIP — Carriage and Insurance Paid To</button><button type="button" role="option" data-value="DAP" aria-selected="false">DAP — Delivered at Place</button><button type="button" role="option" data-value="DPU" aria-selected="false">DPU — Delivered at Place Unloaded</button><button type="button" role="option" data-value="DDP" aria-selected="false">DDP — Delivered Duty Paid</button></div></div></label>
@@ -152,17 +147,17 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
         <p class="studio-note">Incoterms allocate delivery obligations, costs and risk. FOB is intended for sea or inland-waterway transport; the selected term will be explained in the confirmation document.</p>
       </section>
 
-      <section class="studio-step" data-step="6" hidden>
-        <div class="step-heading"><div><p class="step-kicker">06 / CONFIGURATION CONFIRMATION</p><h2>Review your configuration.</h2><p>Your confirmation document records the brief and planning estimates. It contains no price and is not a sales contract.</p></div><span class="step-index">06—07</span></div>
+      <section class="studio-step" data-step="5" hidden>
+        <div class="step-heading"><div><p class="step-kicker">05 / CONFIGURATION CONFIRMATION</p><h2>Review your configuration.</h2><p>Your confirmation document records the brief and planning estimates. It contains no price and is not a sales contract.</p></div><span class="step-index">05—06</span></div>
         <article class="confirmation-document" id="confirmation-document">
           <header class="document-header"><div><span>ANVERA / FORGED WHEEL ENGINEERING</span><h2>Configuration<br />Confirmation</h2></div><div class="document-reference"><small>REFERENCE</small><b id="document-reference">—</b><small>CREATED</small><b id="document-date">—</b></div></header>
           <div class="document-rule"></div>
           <section class="document-section"><span>01 / SELECTED DESIGN</span><div class="document-value"><b id="document-design">—</b><small id="document-construction">—</small></div></section>
           <section class="document-section"><span>02 / VEHICLE</span><div class="document-value"><b id="document-vehicle">—</b><small id="document-vehicle-detail">—</small></div></section>
           <section class="document-section"><span>03 / WHEEL SPECIFICATION</span><div class="document-value"><b id="document-spec-type">—</b><small id="document-spec-details">—</small><small class="document-warning">Fitment subject to ANVERA engineering verification.</small></div></section>
-          <section class="document-section"><span>04 / MANUFACTURING PLAN</span><div class="document-value"><b>Estimated 15–27 working days</b><small>Seven planned production stages. Not live production tracking.</small></div></section>
-          <section class="document-section"><span>05 / DELIVERY</span><div class="document-value"><b id="document-delivery">—</b><small id="document-address">—</small><small id="document-arrival">—</small></div></section>
-          <section class="document-section"><span>06 / CUSTOMER CONTACT</span><div class="document-value"><b id="document-contact">—</b><small id="document-email">—</small><small id="document-phone">—</small></div></section>
+          <section class="document-section"><span>03 / MANUFACTURING PLAN</span><div class="document-value"><b>Estimated 15–27 working days</b><small>Seven planned production stages. Not live production tracking.</small></div></section>
+          <section class="document-section"><span>04 / DELIVERY</span><div class="document-value"><b id="document-delivery">—</b><small id="document-address">—</small><small id="document-arrival">—</small></div></section>
+          <section class="document-section"><span>05 / CUSTOMER CONTACT</span><div class="document-value"><b id="document-contact">—</b><small id="document-email">—</small><small id="document-phone">—</small></div></section>
           <footer class="document-footer"><b>ANVERA</b><span>CONFIGURATION RECORD · NO PRICING · SUBJECT TO REVIEW</span></footer>
         </article>
         {<div class="cf-turnstile" data-sitekey={turnstileSiteKey}></div>}
@@ -170,9 +165,9 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
         <p class="studio-note" id="submit-status" role="status">Submitting creates a review request. ANVERA will confirm fitment, quotation and final delivery schedule separately.</p>
       </section>
 
-      <section class="studio-step" data-step="7" hidden>
+      <section class="studio-step" data-step="6" hidden>
         <div class="completion-mark">✓</div>
-        <p class="step-kicker">07 / CONFIGURATION PREPARED</p>
+        <p class="step-kicker">06 / CONFIGURATION PREPARED</p>
         <h2>Thank you for<br /><span>choosing ANVERA.</span></h2>
         <p class="completion-copy" id="completion-status">Your configuration has been prepared.</p>
         <div class="completion-reference"><small>YOUR REFERENCE</small><strong id="completion-reference">—</strong><span>Keep this reference for future correspondence.</span></div>
@@ -218,7 +213,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
   const previous = root.querySelector("#previous-step");
   const next = root.querySelector("#next-step");
   const hint = root.querySelector("#control-hint");
-  const stepTitles = ["Select a wheel design","Select your vehicle","Choose specifications","Review manufacturing estimate","Set delivery destination","Review configuration document","Configuration received"];
+  const stepTitles = ["Select a wheel design","Select vehicle & fitment","Review manufacturing estimate","Set delivery destination","Review configuration document","Configuration received"];
   const draftKey = "anvera.configuration.draft.v1";
   const state = { step:1, reference:"", accessToken:"", serverReady:false, product:null, vehicle:{region:"sam",make:"",model:"",year:"",generation:"",trim:""}, specPath:"", customSubmitted:false, delivery:{term:"FOB",method:"sea"} };
   const makeReference = () => "LOCAL-" + new Date().getFullYear() + "-" + Math.random().toString(36).slice(2,8).toUpperCase();
@@ -292,30 +287,33 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
   const updateProgress = () => {
     steps.forEach((step) => { const active = Number(step.dataset.step) === state.step; step.hidden = !active; step.classList.toggle("is-active",active); });
     labels.forEach((label) => { const n = Number(label.dataset.stepLabel); label.classList.toggle("is-current",n===state.step); label.classList.toggle("is-complete",n<state.step); });
-    progressFill.style.width = (state.step/7*100)+"%";
-    progressCurrent.textContent = "STEP "+String(state.step).padStart(2,"0")+" / 07";
+    progressFill.style.width = (state.step/6*100)+"%";
+    progressCurrent.textContent = "STEP "+String(state.step).padStart(2,"0")+" / 06";
     progressTitle.textContent = stepTitles[state.step-1];
-    previous.disabled = state.step===1 || state.step===7;
-    next.hidden = state.step===6 || state.step===7;
-    previous.hidden = state.step===7;
-    root.querySelector("#studio-controls").hidden = state.step===7;
-    hint.textContent = state.step===1 ? "Choose a wheel design to continue." : state.step===2 ? "Select your market and vehicle configuration." : state.step===3 ? "Select a fitment reference and review your specification." : state.step===5 ? "Complete the required delivery and contact details." : "Review the information before continuing.";
+    previous.disabled = state.step===1 || state.step===6;
+    next.hidden = state.step===5 || state.step===6;
+    previous.hidden = state.step===6;
+    root.querySelector("#studio-controls").hidden = state.step===6;
+    hint.textContent = state.step===1 ? "Choose a wheel design to continue." : state.step===2 ? "Select a vehicle, load fitment references and confirm your wheel specification." : state.step===4 ? "Complete the required delivery and contact details." : "Review the information before continuing.";
     next.disabled = !canContinue();
-    next.textContent = state.step===5 ? "Review confirmation →" : "Next step →";
+    next.textContent = state.step===4 ? "Review confirmation →" : "Next step →";
     saveDraft();
   };
   const canContinue = () => {
     if(state.step===1) return Boolean(state.product);
-    if(state.step===2) return Boolean(state.vehicle.make && state.vehicle.model && (state.vehicle.year || state.vehicle.generation));
-    if(state.step===3) return state.specPath==="custom" ? ["custom-front-diameter","custom-front-width","custom-rear-diameter","custom-rear-width"].every(id=>root.querySelector("#"+id).value.trim()) : Boolean(state.selectedFitment);
-    if(state.step===5) return ["delivery-country","delivery-city","delivery-address","contact-name","contact-email"].every(id=>root.querySelector("#"+id).value.trim()) && (root.querySelector("#delivery-city").value!=="__other__" || root.querySelector("#delivery-city-other").value.trim());
-    return [4,6].includes(state.step);
+    if(state.step===2) {
+      const vehicleReady=Boolean(state.vehicle.make && state.vehicle.model && (state.vehicle.year || state.vehicle.generation));
+      const customReady=["custom-front-diameter","custom-front-width","custom-rear-diameter","custom-rear-width"].every(id=>root.querySelector("#"+id).value.trim());
+      return vehicleReady && (Boolean(state.selectedFitment) || (state.specPath==="custom" && customReady));
+    }
+    if(state.step===4) return ["delivery-country","delivery-city","delivery-address","contact-name","contact-email"].every(id=>root.querySelector("#"+id).value.trim()) && (root.querySelector("#delivery-city").value!=="__other__" || root.querySelector("#delivery-city-other").value.trim());
+    return [3,5].includes(state.step);
   };
-  window.addEventListener("anvera:vehicle-change",(event)=>{const v=event.detail||{};state.selectedFitment=null;state.finderFitment=null;state.specPath="";state.customSubmitted=false;state.vehicle={...state.vehicle,region:v.region||state.vehicle.region,make:v.make||"",model:v.model||"",year:v.year||"",generation:v.generation||"",trim:v.modification||"",makeLabel:v.makeLabel||"",modelLabel:v.modelLabel||""};const customFields=root.querySelector("#custom-spec-fields");if(customFields)customFields.hidden=true;["custom-front","custom-rear","custom-front-diameter","custom-front-width","custom-front-pcd","custom-front-offset","custom-front-bore","custom-rear-diameter","custom-rear-width","custom-rear-pcd","custom-rear-offset","custom-rear-bore"].forEach(id=>{const field=root.querySelector("#"+id);if(field)field.value="";});const customToggle=root.querySelector("#custom-spec-toggle");if(customToggle){customToggle.setAttribute("aria-expanded","false");customToggle.innerHTML='Customize dimensions <span aria-hidden="true">＋</span>';}const results=root.querySelector("#vf-results");if(results){results.hidden=true;results.replaceChildren();}const status=root.querySelector("#vehicle-status");if(status){const title=[v.makeLabel,v.modelLabel,v.year,v.generation,v.modification].filter(Boolean).join(" ");status.textContent=title?"Vehicle selected: "+title+". Click Next to retrieve fitment results in the next step.":"Choose your vehicle configuration above.";}updateProgress();persistServerDraft();});
+  window.addEventListener("anvera:vehicle-change",(event)=>{const v=event.detail||{};state.selectedFitment=null;state.finderFitment=null;state.specPath="";state.customSubmitted=false;state.vehicle={...state.vehicle,region:v.region||state.vehicle.region,make:v.make||"",model:v.model||"",year:v.year||"",generation:v.generation||"",trim:v.modification||"",makeLabel:v.makeLabel||"",modelLabel:v.modelLabel||""};const customFields=root.querySelector("#custom-spec-fields");if(customFields)customFields.hidden=true;["custom-front","custom-rear","custom-front-diameter","custom-front-width","custom-front-pcd","custom-front-offset","custom-front-bore","custom-rear-diameter","custom-rear-width","custom-rear-pcd","custom-rear-offset","custom-rear-bore"].forEach(id=>{const field=root.querySelector("#"+id);if(field)field.value="";});const customToggle=root.querySelector("#custom-spec-toggle");if(customToggle){customToggle.setAttribute("aria-expanded","false");customToggle.innerHTML='Customize dimensions <span aria-hidden="true">＋</span>';}const results=root.querySelector("#vf-results");if(results){results.hidden=true;results.replaceChildren();}const status=root.querySelector("#vehicle-status");if(status){const title=[v.makeLabel,v.modelLabel,v.year,v.generation,v.modification].filter(Boolean).join(" ");status.textContent=title?"Vehicle selected: "+title+". Select Find fitment below to load matching references.":"Choose your vehicle configuration above.";}updateProgress();persistServerDraft();});
   window.addEventListener("anvera:fitment-selected",(event)=>{const d=event.detail||{};if(!d.fitment)return;state.finderFitment=d.fitment;const item=d.fitment,record=d.record||{};state.selectedFitment={record,front:item.front||{},rear:item.rear||{},classification:item.classification||"other"};state.specPath="reference";state.customSubmitted=false;root.querySelector("#custom-spec-fields").hidden=true;root.querySelector("#custom-spec-toggle").setAttribute("aria-expanded","false");root.querySelector("#custom-spec-toggle").innerHTML="Customize dimensions <span aria-hidden=\"true\">＋</span>";root.querySelector("#spec-reference").hidden=false;root.querySelector("#spec-detail-title").textContent="Selected fitment specification";root.querySelector("#spec-detail-kicker").textContent="SELECTED VEHICLE FITMENT";const pcd=valueAt(record?.technical??{},["bolt_pattern","pcd"])??item.front?.pcd??item.rear?.pcd;const bore=valueAt(record?.technical??{},["centre_bore","center_bore","centre_bore_diameter"])??item.front?.centreBore??item.rear?.centreBore;const put=(id,value)=>{const node=root.querySelector("#"+id);if(node)node.textContent=value??"Not supplied";};put("front-diameter",item.front?.diameter);put("front-width",item.front?.width);put("front-pcd",item.front?.pcd??pcd);put("front-offset",item.front?.offset);put("front-bore",item.front?.centreBore??bore);put("rear-diameter",item.rear?.diameter);put("rear-width",item.rear?.width);put("rear-pcd",item.rear?.pcd??pcd);put("rear-offset",item.rear?.offset);put("rear-bore",item.rear?.centreBore??bore);["front","rear"].forEach(side=>{const spec=item[side]||{};const vals={diameter:spec.diameter,width:spec.width,pcd:spec.pcd??pcd,offset:spec.offset,bore:spec.centreBore??bore};Object.entries(vals).forEach(([key,value])=>{const field=root.querySelector("#custom-"+side+"-"+key);if(field&&value!==null&&value!==undefined&&value!=="")field.value=value;});});const status=root.querySelector("#fitment-status");if(status)status.textContent="Fitment selected from the vehicle reference. Final load rating, brake clearance and hub compatibility require ANVERA engineering verification.";updateProgress();persistServerDraft();});
-  const setStep = (n) => { state.step=Math.max(1,Math.min(7,n)); updateProgress(); persistServerDraft(); if(state.step===3){const finderForm=root.querySelector("#vehicle-finder-form");if(finderForm)finderForm.requestSubmit();} if(state.step===6) buildConfirmation(); window.scrollTo({top:root.offsetTop-20,behavior:"smooth"}); };
+  const setStep = (n) => { state.step=Math.max(1,Math.min(6,n)); updateProgress(); persistServerDraft(); if(state.step===5) buildConfirmation(); window.scrollTo({top:root.offsetTop-20,behavior:"smooth"}); };
   previous.addEventListener("click",()=>setStep(state.step-1));
-  next.addEventListener("click",()=>{ if(!canContinue()) return; if(state.step===3 && state.specPath==="custom" && !state.customSubmitted){ submitCustomBrief(); return; } setStep(state.step+1); });
+  next.addEventListener("click",()=>{ if(!canContinue()) return; if(state.step===2 && state.specPath==="custom" && !state.customSubmitted){ submitCustomBrief(); return; } setStep(state.step+1); });
   root.querySelectorAll("[data-product]").forEach(button=>button.addEventListener("click",()=>{root.querySelectorAll("[data-product]").forEach(b=>b.setAttribute("aria-pressed","false"));button.setAttribute("aria-pressed","true");state.product=productRows.find(p=>p.slug===button.dataset.product);updateProgress();persistServerDraft();}));
   root.querySelector("#custom-spec-toggle").addEventListener("click",()=>{const fields=root.querySelector("#custom-spec-fields");const opening=fields.hidden;fields.hidden=!opening;state.specPath=opening?"custom":"reference";state.customSubmitted=false;root.querySelector("#custom-spec-toggle").setAttribute("aria-expanded",String(opening));root.querySelector("#custom-spec-toggle").innerHTML=opening?"Close custom dimensions <span aria-hidden=\"true\">−</span>":"Customize dimensions <span aria-hidden=\"true\">＋</span>";if(opening){loadLockedHubDimensions();root.querySelector("#custom-spec-heading").scrollIntoView({behavior:"smooth",block:"start"});}updateProgress();});
   const valueAt=(object,keys)=>{for(const key of keys){const value=key.split(".").reduce((v,k)=>v?.[k],object);if(value!==undefined&&value!==null&&value!=="")return value;}return null;};
@@ -349,7 +347,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
       root.querySelector("#track-configuration-link").href="/configuration/track?reference="+encodeURIComponent(state.reference);
       root.querySelector("#completion-status").textContent=payload.status==="custom_review"?"Your custom specification has been submitted for engineering review. ANVERA will respond within 1 business day.":"Your configuration has been submitted. ANVERA will review fitment and confirm the quotation and delivery schedule.";
       status.textContent="Configuration submitted successfully.";
-      saveDraft();setStep(7);
+      saveDraft();setStep(6);
     }catch(error){const reason=error instanceof Error?error.message:"";status.textContent=reason==="verification_not_configured"?"Secure verification is not configured on the server yet. Please contact ANVERA.":"Submission could not be completed. Your draft is still saved; please try again.";// @ts-ignore Cloudflare Turnstile is injected by its external script.
       const turnstile=window.turnstile;if(turnstile?.reset)turnstile.reset();}
     finally{button.disabled=false;}
@@ -363,7 +361,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
 </script>
 
 <style is:global>
-@media print{body{background:#fff!important}.site-header,.site-footer,.studio-heading,.studio-progress,.studio-controls,.step-heading,.confirmation-actions,.studio-note{display:none!important}.studio-shell{padding:0!important;background:#fff!important}.studio-step{display:none!important}.studio-step[data-step="6"]{display:block!important}.confirmation-document{box-shadow:none!important;max-width:none!important}}
+@media print{body{background:#fff!important}.site-header,.site-footer,.studio-heading,.studio-progress,.studio-controls,.step-heading,.confirmation-actions,.studio-note{display:none!important}.studio-shell{padding:0!important;background:#fff!important}.studio-step{display:none!important}.studio-step[data-step="5"]{display:block!important}.confirmation-document{box-shadow:none!important;max-width:none!important}}
 
 /* Specification step hierarchy and bespoke dimension controls */
 .custom-spec-entry{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-top:28px;padding:22px 24px;background:#202328}
@@ -386,21 +384,36 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
 </style>
 
 <style is:global>
-/* Configure flow: one aligned content rail; vehicle selection is a quiet dark surface. */
+/* Vehicle, fitment results and wheel specification share one measured content rail. */
 #configuration-studio .vehicle-selection-shell,
-#configuration-studio .fitment-results-slot,
+#configuration-studio .vehicle-finder-section--compact,
+#configuration-studio .vehicle-finder-section--compact .vehicle-finder-inner,
+#configuration-studio .vehicle-finder-section--compact .vehicle-finder-form,
+#configuration-studio .vehicle-finder-section--compact .vehicle-finder-grid,
+#configuration-studio .vehicle-finder-section--compact .vehicle-finder-results,
 #configuration-studio .spec-detail{width:100%;max-width:100%;min-width:0;margin-left:auto;margin-right:auto}
 #configuration-studio .vehicle-selection-shell{padding:0;background:transparent;border:0;box-shadow:none;border-radius:0}
+#configuration-studio .vehicle-finder-section--compact{margin:0;padding:0;background:transparent;border:0;box-shadow:none}
+#configuration-studio .vehicle-finder-section--compact .vehicle-finder-inner{margin:0}
+#configuration-studio .vehicle-finder-section--compact .vehicle-finder-form{display:block;padding:24px;background:#17191c;border:0;box-shadow:none;border-radius:0}
+#configuration-studio .vehicle-finder-section--compact .vehicle-finder-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px 24px}
+#configuration-studio .vehicle-finder-section--compact .vehicle-finder-field,
+#configuration-studio .vehicle-finder-section--compact .vf-select{width:100%;min-width:0}
+#configuration-studio .vehicle-finder-section--compact .vf-select-trigger{width:100%;min-width:0}
+#configuration-studio .vehicle-finder-section--compact .vehicle-finder-actions{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:22px}
+#configuration-studio .vehicle-finder-section--compact #vf-submit{display:inline-flex!important;min-width:150px;justify-content:center}
+#configuration-studio .vehicle-finder-section--compact .vehicle-finder-results{margin:22px 0 0;padding:22px;background:#17191c;border:0;box-shadow:none}
+#configuration-studio .vehicle-finder-section--compact .vf-table-scroll{width:100%;max-width:100%}
+#configuration-studio .vehicle-finder-section--compact .vf-fitment-table{width:100%}
+#configuration-studio .spec-detail{margin-top:24px;padding:24px;background:#17191c}
 #configuration-studio #vehicle-status{margin:18px 0 0}
-#configuration-studio .vehicle-finder-section--compact{width:100%;max-width:100%;margin:0;padding:0;background:transparent;border:0;box-shadow:none}
-#configuration-studio .vehicle-finder-section--compact .vehicle-finder-inner{width:100%;max-width:100%;margin:0}
-#configuration-studio .vehicle-finder-section--compact .vehicle-finder-form{width:100%;padding:24px 0;background:transparent;border:0;box-shadow:none;border-radius:0}
-#configuration-studio .vehicle-finder-section--compact .vehicle-finder-grid{width:100%;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 24px}
-#configuration-studio .fitment-results-slot{margin:0 0 28px;padding:0;background:transparent;border:0;box-shadow:none}
-#configuration-studio .fitment-results-slot .vehicle-finder-results{width:100%;max-width:100%;margin:0;padding:0;background:transparent;border:0;box-shadow:none}
-#configuration-studio .fitment-results-slot .vf-table-scroll{width:100%;max-width:100%}
-#configuration-studio .fitment-results-slot .vf-fitment-table{width:100%}
-#configuration-studio .spec-detail{margin-top:24px}
-@media(max-width:760px){#configuration-studio .vehicle-finder-section--compact .vehicle-finder-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:520px){#configuration-studio .vehicle-finder-section--compact .vehicle-finder-grid{grid-template-columns:1fr}}
+@media(max-width:900px){#configuration-studio .vehicle-finder-section--compact .vehicle-finder-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){
+  #configuration-studio .vehicle-finder-section--compact .vehicle-finder-form,
+  #configuration-studio .vehicle-finder-section--compact .vehicle-finder-results,
+  #configuration-studio .spec-detail{padding:16px}
+  #configuration-studio .vehicle-finder-section--compact .vehicle-finder-grid{grid-template-columns:1fr;gap:16px}
+  #configuration-studio .vehicle-finder-section--compact .vehicle-finder-actions{align-items:stretch;flex-direction:column}
+  #configuration-studio .vehicle-finder-section--compact #vf-submit{width:100%}
+}
 </style>
