@@ -201,25 +201,49 @@ const safeProducts = products.map((product) => ({
     }));
   };
   const renderSpecCell = (label, value) => { const cell = document.createElement("div"); cell.className = "vf-spec-cell"; const small = document.createElement("span"); small.textContent = label; const strong = document.createElement("strong"); strong.textContent = display(value); cell.append(small,strong); return cell; };
-  const makeFitmentCard = (record, item, id, selectedId) => {
-    const card = document.createElement("button"); card.type = "button"; card.className = "vf-fitment-card"; card.setAttribute("aria-pressed", String(id === selectedId));
-    const top = document.createElement("div"); top.className = "vf-fitment-card-top";
-    const title = document.createElement("strong"); title.textContent = "Configuration " + (item.index + 1);
-    const badge = document.createElement("span"); badge.className = "vf-fitment-badge vf-fitment-badge--" + item.classification; badge.textContent = item.classification === "oem" ? "OEM / ORIGINAL" : item.classification === "aftermarket" ? "AFTERMARKET" : "UNCLASSIFIED SOURCE";
-    top.append(title,badge); card.append(top);
-    const grid = document.createElement("div"); grid.className = "vf-fitment-spec-grid";
+  const makeFitmentRow = (record, item, id, table) => {
+    const row = document.createElement("tr");
+    row.className = "vf-fitment-row";
+    row.dataset.configuration = id;
+    row.setAttribute("aria-selected", "false");
+    const selectCell = document.createElement("td");
+    const select = document.createElement("button");
+    select.type = "button";
+    select.className = "vf-fitment-select";
+    select.textContent = "Select";
+    select.addEventListener("click", () => {
+      table.querySelectorAll(".vf-fitment-row").forEach((node) => {
+        node.setAttribute("aria-selected", "false");
+        const action = node.querySelector(".vf-fitment-select");
+        if (action) action.textContent = "Select";
+      });
+      row.setAttribute("aria-selected", "true");
+      select.textContent = "Selected";
+      renderProducts(item, record);
+    });
+    selectCell.append(select);
+    const badgeCell = document.createElement("td");
+    const badge = document.createElement("span");
+    badge.className = "vf-fitment-badge vf-fitment-badge--" + item.classification;
+    badge.textContent = item.classification === "oem" ? "OEM" : item.classification === "aftermarket" ? "AFTERMARKET" : "UNCLASSIFIED";
+    badgeCell.append(badge);
     const technical = record?.technical ?? {};
-    grid.append(renderSpecCell("Front wheel", item.front.rim ?? [item.front.width,item.front.diameter ? "R"+item.front.diameter : null,item.front.offset ? "ET"+item.front.offset : null].filter(Boolean).join(" × ")));
-    grid.append(renderSpecCell("Rear wheel", item.rear.rim ?? [item.rear.width,item.rear.diameter ? "R"+item.rear.diameter : null,item.rear.offset ? "ET"+item.rear.offset : null].filter(Boolean).join(" × ")));
-    grid.append(renderSpecCell("Front tyre", item.front.tire)); grid.append(renderSpecCell("Rear tyre", item.rear.tire));
-    grid.append(renderSpecCell("PCD / Bolt pattern", valueAt(technical,["bolt_pattern","pcd"]) ?? item.front.pcd ?? item.rear.pcd));
-    grid.append(renderSpecCell("Centre bore", valueAt(technical,["centre_bore","center_bore","centre_bore_diameter"]) ?? item.front.centreBore ?? item.rear.centreBore));
-    grid.append(renderSpecCell("Thread / fastener", valueAt(technical,["thread_size","fastener_type","wheel_fasteners"])));
-    grid.append(renderSpecCell("Wheel torque", valueAt(technical,["wheel_torque","torque"])));
-    card.append(grid);
-    const details = document.createElement("p"); details.className = "vf-fitment-card-note"; details.textContent = "Select this configuration to see matching ANVERA wheel designs."; card.append(details);
-    card.addEventListener("click", () => { document.querySelectorAll(".vf-fitment-card").forEach((node) => { node.setAttribute("aria-pressed","false"); }); card.setAttribute("aria-pressed","true"); renderProducts(item, record); });
-    return card;
+    const values = [
+      item.front.rim ?? [item.front.width,item.front.diameter ? "R"+item.front.diameter : null,item.front.offset ? "ET"+item.front.offset : null].filter(Boolean).join(" × "),
+      item.rear.rim ?? [item.rear.width,item.rear.diameter ? "R"+item.rear.diameter : null,item.rear.offset ? "ET"+item.rear.offset : null].filter(Boolean).join(" × "),
+      item.front.tire, item.rear.tire,
+      valueAt(technical,["bolt_pattern","pcd"]) ?? item.front.pcd ?? item.rear.pcd,
+      valueAt(technical,["centre_bore","center_bore","centre_bore_diameter"]) ?? item.front.centreBore ?? item.rear.centreBore,
+      valueAt(technical,["thread_size","fastener_type","wheel_fasteners"]),
+      valueAt(technical,["wheel_torque","torque"])
+    ];
+    for (const value of values) {
+      const cell = document.createElement("td");
+      cell.textContent = display(value);
+      row.append(cell);
+    }
+    row.prepend(selectCell, badgeCell);
+    return row;
   };
   const productValues = (product, keys) => {
     const found = [];
@@ -354,8 +378,15 @@ const safeProducts = products.map((product) => ({
         const group = document.createElement("section"); group.className = "vf-fitment-group";
         const head = document.createElement("div"); head.className = "vf-fitment-group-heading";
         const h = document.createElement("h4"); h.textContent = label; const p = document.createElement("p"); p.textContent = description; head.append(h,p); group.append(head);
-        entries.forEach(({record,fitment}) => { const card = makeFitmentCard(record,fitment, key+":"+fitment.index, selected); group.append(card); });
-        results.append(group);
+        const scroll = document.createElement("div"); scroll.className = "vf-fitment-table-scroll";
+        const table = document.createElement("table"); table.className = "vf-fitment-table";
+        const thead = document.createElement("thead"); const headerRow = document.createElement("tr");
+        ["Choose","Type","Front wheel","Rear wheel","Front tyre","Rear tyre","PCD / bolt pattern","Centre bore","Fastener","Torque"].forEach((label) => {
+          const th = document.createElement("th"); th.scope = "col"; th.textContent = label; headerRow.append(th);
+        });
+        thead.append(headerRow); const tbody = document.createElement("tbody");
+        entries.forEach(({record,fitment}) => tbody.append(makeFitmentRow(record,fitment,key+":"+fitment.index,table)));
+        table.append(thead,tbody); scroll.append(table); group.append(scroll); results.append(group);
       };
       renderGroup("oem","Original equipment (OEM)","Factory-fitted wheel and tyre configurations supplied for this vehicle.");
       renderGroup("aftermarket","Aftermarket & optional fitments","Alternative or manufacturer-optional configurations returned by the fitment source.");
@@ -397,7 +428,18 @@ const safeProducts = products.map((product) => ({
 .vf-fitment-group-heading{display:flex;align-items:baseline;gap:18px;margin-bottom:14px}
 .vf-fitment-group-heading h4{margin:0;font-size:16px;text-transform:uppercase;letter-spacing:.06em}
 .vf-fitment-group-heading p{margin:0;color:#6f6f6f;font-size:12px}
-.vf-fitment-card{width:100%;margin:0 0 10px;padding:20px;border:0;border-left:3px solid transparent;background:#fff;text-align:left;transition:background .16s,border-color .16s}
+
+.vf-fitment-table-scroll{width:100%;overflow-x:auto;background:#fff;border-top:1px solid #d8d8d8;border-bottom:1px solid #d8d8d8}
+.vf-fitment-table{width:100%;min-width:1120px;border-collapse:collapse;text-align:left;font-size:12px}
+.vf-fitment-table th{padding:14px 13px;background:#e8e9ea;color:#525252;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.vf-fitment-table td{padding:15px 13px;border-top:1px solid #e5e5e5;color:#262626;white-space:nowrap;vertical-align:middle}
+.vf-fitment-table tbody tr{background:#fff;transition:background .15s}
+.vf-fitment-table tbody tr:hover{background:#f7f8f9}
+.vf-fitment-table tbody tr[aria-selected=true]{background:#f5f7f8;box-shadow:inset 3px 0 var(--anvera-red)}
+.vf-fitment-select{min-width:78px;padding:8px 10px;border:1px solid #8d8d8d;background:transparent;color:#161616;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.vf-fitment-row[aria-selected=true] .vf-fitment-select{border-color:var(--anvera-red);background:var(--anvera-red);color:#fff}
+.vf-fitment-badge{display:inline-block;padding:5px 7px;font-size:9px;font-weight:800;letter-spacing:.07em;white-space:nowrap}
+\n.vf-fitment-card{width:100%;margin:0 0 10px;padding:20px;border:0;border-left:3px solid transparent;background:#fff;text-align:left;transition:background .16s,border-color .16s}
 .vf-fitment-card[aria-pressed=true]{border-left-color:var(--anvera-red);background:#fff}
 .vf-fitment-card:hover{background:#fafafa}
 .vf-fitment-card-top{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:18px}
