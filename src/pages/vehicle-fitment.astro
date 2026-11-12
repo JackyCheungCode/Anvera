@@ -1,16 +1,43 @@
 ---
 import Base from "../layouts/Base.astro";
 import VehicleFitmentFinder from "../components/VehicleFitmentFinder.astro";
+import { getEmDashCollection, getEmDashEntry } from "emdash";
+const { entries: wheelEntries = [], cacheHint } = await getEmDashCollection("wheel_products", { status: "published", limit: 100, orderBy: { display_order: "asc" } }).catch(() => ({ entries: [], cacheHint: null }));
+if (cacheHint && Astro.cache?.enabled) Astro.cache.set(cacheHint);
+const { entries: fitmentIndex = [] } = await getEmDashCollection("wheel_fitments", { status: "published", limit: 100 }).catch(() => ({ entries: [] }));
+const fitmentResults = await Promise.all(fitmentIndex.map((fitment: any) => getEmDashEntry("wheel_fitments", fitment.id, { references: { products: true } }).catch(() => ({ entry: null }))));
+const verifiedFitments = fitmentResults.map((result: any) => result.entry).filter((fitment: any) => fitment?.data?.verification_status === "verified");
+const products = wheelEntries.map((entry: any) => {
+  const data = entry.data ?? {};
+  const specs = data.fitment_specs ?? data.wheel_specs ?? data.specifications ?? {};
+  const linkedFitments = verifiedFitments.filter((fitment: any) => (fitment.references?.products?.entries ?? []).some((linked: any) => linked.id === entry.id)).map((fitment: any) => ({
+    front: fitment.data?.front_spec ?? {},
+    rear: fitment.data?.rear_spec ?? {},
+    vehicleMake: String(fitment.data?.vehicle_make ?? ""),
+    vehicleModel: String(fitment.data?.vehicle_model ?? ""),
+    modelYearFrom: fitment.data?.model_year_from ?? null,
+    modelYearTo: fitment.data?.model_year_to ?? null
+  }));
+  return {
+    id: entry.id,
+    title: String(data.title ?? "ANVERA forged wheel"),
+    modelCode: String(data.model_code ?? ""),
+    construction: String(data.construction_type ?? ""),
+    finish: String(data.finish_name ?? data.finish ?? ""),
+    specs,
+    verifiedFitments: linkedFitments
+  };
+});
 ---
-<Base title="Find Wheels for Your Vehicle" description="Find factory wheel fitment specifications by vehicle make, model, year and trim, then discuss a bespoke ANVERA forged wheel configuration.">
+<Base title="Find Wheels for Your Vehicle" description="Compare factory and aftermarket wheel fitments, then explore ANVERA forged wheel designs matched to your vehicle specification.">
   <section class="vehicle-finder-hero">
     <div class="vehicle-finder-hero-inner">
       <p class="eyebrow">ANVERA / ENGINEERED AROUND YOUR VEHICLE</p>
       <h1>Precision begins<br /><span>with fitment.</span></h1>
-      <p>Start with your vehicle. Explore factory specifications, then work with ANVERA to define a forged wheel configuration around your driving needs and design direction.</p>
+      <p>Start with your vehicle. Compare original equipment and alternative fitments, then discover ANVERA forged wheel designs around your selected specification.</p>
     </div>
   </section>
-  <VehicleFitmentFinder />
+  <VehicleFitmentFinder products={products} />
   <section class="vehicle-finder-next">
     <div><p class="section-kicker">Beyond factory fitment</p><h2>Made to fit.<br />Made to be yours.</h2><p>Factory specifications are the starting point. Our team will review the complete vehicle configuration before confirming a bespoke wheel specification.</p></div>
     <a class="cds-btn cds-btn--primary" href="/custom-inquiry">Discuss your configuration <span aria-hidden="true">↗</span></a>
