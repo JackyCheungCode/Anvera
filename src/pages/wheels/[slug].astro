@@ -63,7 +63,7 @@ const familyProducts = cmsFamilyProducts.length ? cmsFamilyProducts : wheelDevel
       <div class="family-products-grid">
         {familyProducts.map((product: any, index: number) => <a class="family-product-card" href={`/wheels/models/${product.slug}`}>
           <div class="family-product-media">{product.image ? <Image image={product.image} width={900} height={675} /> : <div class="demo-wheel-art"><div class="wheel-render"></div></div>}</div>
-          <span>{product.modelCode || product.modelCode === "" ? product.modelCode || "ANVERA DESIGN" : "ANVERA DESIGN"}</span>
+          <span>{product.modelCode || "ANVERA DESIGN"}</span>
           <h3>{product.title}</h3><p>{product.description ?? product.shortDescription}</p><b>Explore design ↗</b>
           {product.developmentOnly && <small>DEVELOPMENT SAMPLE</small>}
         </a>)}
