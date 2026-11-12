@@ -4,13 +4,14 @@ import { MaterialProcessLibrary } from "./MaterialProcessLibrary";
 import { LibraryReviewQueue } from "./LibraryReviewQueue";
 
 type FieldType = "text" | "number" | "textarea" | "select";
+type SelectOption = { value: string; label: string };
 type FieldDefinition = {
   key: string;
   label: string;
   type?: FieldType;
   required?: boolean;
   placeholder?: string;
-  options?: string[];
+  options?: Array<string | SelectOption>;
   help?: string;
 };
 type StepDefinition = {
@@ -243,15 +244,21 @@ function stepHasAnyValue(step: StepDefinition, document: SetupDocument, productI
   return fieldsHaveValues;
 }
 
-function CustomSelect({ value, options, onChange, label }: { value: string; options: string[]; onChange: (value: string) => void; label: string }) {
+function CustomSelect({ value, options, onChange, label }: { value: string; options: Array<string | SelectOption>; onChange: (value: string) => void; label: string }) {
   const [open, setOpen] = useState(false);
+  const selected = options.find((option) => (typeof option === "string" ? option : option.value) === value);
+  const selectedLabel = selected ? (typeof selected === "string" ? selected : selected.label) : value;
   return (
     <div className="api-select">
       <button className="api-select-trigger" type="button" aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen(!open)}>
-        <span>{value || `Select ${label.toLowerCase()}`}</span><span className="api-select-chevron">⌄</span>
+        <span>{selectedLabel || `Select ${label.toLowerCase()}`}</span><span className="api-select-chevron">⌄</span>
       </button>
       {open ? <div className="api-select-menu" role="listbox" aria-label={label}>
-        {options.map((option) => <button key={option} type="button" role="option" aria-selected={value === option} className={value === option ? "is-selected" : ""} onClick={() => { onChange(option); setOpen(false); }}>{option}</button>)}
+        {options.map((option) => {
+          const optionValue = typeof option === "string" ? option : option.value;
+          const optionLabel = typeof option === "string" ? option : option.label;
+          return <button key={optionValue} type="button" role="option" aria-selected={value === optionValue} className={value === optionValue ? "is-selected" : ""} onClick={() => { onChange(optionValue); setOpen(false); }}>{optionLabel}</button>;
+        })}
       </div> : null}
     </div>
   );
@@ -285,6 +292,8 @@ export function ProductIntelligence() {
   const [available, setAvailable] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [approvedMaterials, setApprovedMaterials] = useState<Array<{ id: string; code: string; name: string; grade: string; family: string }> | null>(null);
+  const [approvedProcesses, setApprovedProcesses] = useState<Array<{ id: string; code: string; name: string; process_type: string }> | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -319,15 +328,22 @@ export function ProductIntelligence() {
   const missing = useMemo(() => validateStep(active, document, productIndex), [active, document, productIndex]);
   const completeCount = steps.filter((step) => step.id !== "review" && (step.optional ? stepHasAnyValue(step, document, productIndex) && isStepComplete(step, document, productIndex) : isStepComplete(step, document, productIndex))).length;
 
-  const syncLibraryCatalog = useCallback((materials: Array<{ grade: string; family: string }>, processes: Array<{ process_type: string }>) => {
-    setDocument((current) => ({
-      ...current,
-      material: {
-        ...current.material,
-        ...(materials.length ? { materialGrade: [...new Set(materials.map((item) => item.grade.trim()).filter(Boolean))].join("\\n") } : {}),
-        ...(processes.length ? { forgingMethod: [...new Set(processes.map((item) => item.process_type.trim()).filter(Boolean))].join("\\n") } : {})
-      }
-    }));
+  const syncLibraryCatalog = useCallback((
+    materials: Array<{ id: string; code: string; name: string; grade: string; family: string }> | null,
+    processes: Array<{ id: string; code: string; name: string; process_type: string }> | null
+  ) => {
+    setApprovedMaterials(materials);
+    setApprovedProcesses(processes);
+    if (materials?.length || processes?.length) {
+      setDocument((current) => ({
+        ...current,
+        material: {
+          ...current.material,
+          ...(materials?.length ? { materialGrade: [...new Set(materials.map((item) => item.grade.trim()).filter(Boolean))].join("\\n") } : {}),
+          ...(processes?.length ? { forgingMethod: [...new Set(processes.map((item) => item.process_type.trim()).filter(Boolean))].join("\\n") } : {})
+        }
+      }));
+    }
   }, []);
 
   const updateField = (key: string, value: string) => {
@@ -441,10 +457,18 @@ export function ProductIntelligence() {
                     resolvedField = { ...field, options: supported };
                   }
                   if (active.id === "products" && field.key === "materialProfile") {
-                    resolvedField = { ...field, options: (document.material.materialGrade ?? "").split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean) };
+                    const legacy = (document.material.materialGrade ?? "").split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean);
+                    const options: Array<string | SelectOption> = approvedMaterials === null
+                      ? legacy
+                      : approvedMaterials.map((item) => ({ value: item.id, label: `${item.code} · ${item.grade}` }));
+                    resolvedField = { ...field, options };
                   }
                   if (active.id === "products" && field.key === "forgingProfile") {
-                    resolvedField = { ...field, options: (document.material.forgingMethod ?? "").split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean) };
+                    const legacy = (document.material.forgingMethod ?? "").split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean);
+                    const options: Array<string | SelectOption> = approvedProcesses === null
+                      ? legacy
+                      : approvedProcesses.map((item) => ({ value: item.id, label: `${item.code} · ${item.name}` }));
+                    resolvedField = { ...field, options };
                   }
                   return <Field key={field.key} field={resolvedField} value={getPath(document, active.id, field.key, productIndex)} onChange={(value) => updateField(field.key, value)} error={missing.some((item) => item.key === field.key)} />;
                 })}
