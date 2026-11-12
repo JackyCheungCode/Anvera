@@ -1,13 +1,6 @@
 name: ANVERA preview deployment
 
 on:
-  push:
-    branches:
-      - feat/bmw-carbon-design-system
-    paths-ignore:
-      - "docs/**"
-      - "*.md"
-      - "README*"
   workflow_dispatch:
 
 permissions:
