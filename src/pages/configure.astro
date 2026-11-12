@@ -1,14 +1,22 @@
 ---
 import Base from "../layouts/Base.astro";
+import { getEmDashCollection } from "emdash";
+import { Image } from "emdash/ui";
 import { wheelDevelopmentProducts } from "../data/wheel-products";
 
-const products = wheelDevelopmentProducts.map((product) => ({
-  slug: product.slug,
-  title: product.title,
-  code: product.modelCode,
+const { entries: wheelEntries = [] } = await getEmDashCollection("wheel_products", { status: "published", limit: 100, orderBy: { display_order: "asc" } }).catch(() => ({ entries: [] }));
+const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
+  slug: entry.id,
+  title: String(entry.data?.title ?? "ANVERA forged wheel"),
+  code: String(entry.data?.model_code ?? ""),
+  construction: String(entry.data?.construction_type ?? "").replaceAll("_", "-"),
+  description: String(entry.data?.short_description ?? ""),
+  diameter: Array.isArray(entry.data?.diameter_options) ? entry.data.diameter_options.join(" / ") : "Vehicle-specific sizing",
+  image: entry.data?.hero_image ?? null,
+})) : wheelDevelopmentProducts.map((product) => ({
+  slug: product.slug, title: product.title, code: product.modelCode,
   construction: product.constructionType.replaceAll("_", "-"),
-  description: product.shortDescription,
-  diameter: product.diameterOptions.join(" / "),
+  description: product.shortDescription, diameter: product.diameterOptions.join(" / "), image: null,
 }));
 ---
 <Base title="Configure Your ANVERA Wheels" description="Configure ANVERA forged wheels around your vehicle, engineering requirements and delivery destination.">
@@ -46,7 +54,7 @@ const products = wheelDevelopmentProducts.map((product) => ({
         <div class="design-grid" id="design-grid">
           {products.map((product, index) => (
             <button class="design-card" type="button" data-product={product.slug} aria-pressed="false">
-              <span class="design-art"><span class:list={["wheel-render", `design-wheel-${index % 5}`]}></span><i>{String(index + 1).padStart(2, "0")}</i></span>
+              <span class="design-art">{product.image ? <Image image={product.image} width={900} height={675} /> : <span class:list={["wheel-render", `design-wheel-${index % 5}`]}></span>}<i>{String(index + 1).padStart(2, "0")}</i></span>
               <span class="design-meta"><b>{product.title}</b><small>{product.code} / {product.construction.toUpperCase()}</small><small>{product.diameter || "Vehicle-specific sizing"}</small></span>
               <span class="design-check" aria-hidden="true">✓</span>
             </button>
@@ -177,7 +185,7 @@ const products = wheelDevelopmentProducts.map((product) => ({
 @media(prefers-reduced-motion:reduce){.studio-shell *{animation:none!important;transition:none!important}}
 </style>
 
-<script define:vars={{ productRows: products }}>
+<script define:vars={{ productRows: products.map(({image, ...product}) => product) }}>
   const root = document.querySelector("#configuration-studio");
   const steps = [...root.querySelectorAll("[data-step]")];
   const labels = [...root.querySelectorAll("[data-step-label]")];
