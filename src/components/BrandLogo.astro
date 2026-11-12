@@ -1,0 +1,33 @@
+---
+interface Props {
+  id: string;
+}
+const { id } = Astro.props;
+const shadeId = `${id}-shade`;
+---
+<svg class="brand-logo" xmlns="http://www.w3.org/2000/svg" viewBox="-19 -6 296 65" role="img" aria-label="ANVERA">
+  <defs>
+    <clipPath id={shadeId}>
+      <polygon points="-30,30 320,50 320,80 -30,80" />
+    </clipPath>
+  </defs>
+  <g transform="scale(0.98) skewX(-14)">
+    <polygon points="270,23.6 279,54 261,54" fill="#ff5a1f" />
+    <g fill="#d8dbe0">
+      <polygon points="16,0 24,0 40,54 29,54 20,23.6 11,54 0,54" />
+      <polygon points="50,8 57,0 60,0 80,38 80,0 90,0 90,54 80,54 60,16 60,54 50,54" />
+      <polygon points="100,0 110,0 120,38 130,0 140,0 125,54 115,54" />
+      <polygon points="150,8 158,0 190,0 185,9 160,9 160,22 184,22 180.5,30.5 160,30.5 160,45 190,45 185,54 150,54" />
+      <path fill-rule="evenodd" d="M200 8 L208 0 L232 0 L240 8 L240 24 L233 30 L240 54 L229 54 L223 32 L210 32 L210 54 L200 54 Z M210 9 L229 9 L231 11 L231 21 L229 23 L210 23 Z" />
+      <polygon points="266,0 274,0 290,54 279,54 270,23.6 261,54 250,54" />
+    </g>
+    <g clip-path={`url(#${shadeId})`} fill="#5b626d">
+      <polygon points="16,0 24,0 40,54 29,54 20,23.6 11,54 0,54" />
+      <polygon points="50,8 57,0 60,0 80,38 80,0 90,0 90,54 80,54 60,16 60,54 50,54" />
+      <polygon points="100,0 110,0 120,38 130,0 140,0 125,54 115,54" />
+      <polygon points="150,8 158,0 190,0 185,9 160,9 160,22 184,22 180.5,30.5 160,30.5 160,45 190,45 185,54 150,54" />
+      <path fill-rule="evenodd" d="M200 8 L208 0 L232 0 L240 8 L240 24 L233 30 L240 54 L229 54 L223 32 L210 32 L210 54 L200 54 Z M210 9 L229 9 L231 11 L231 21 L229 23 L210 23 Z" />
+      <polygon points="266,0 274,0 290,54 279,54 270,23.6 261,54 250,54" />
+    </g>
+  </g>
+</svg>
