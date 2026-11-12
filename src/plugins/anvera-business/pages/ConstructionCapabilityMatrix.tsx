@@ -101,7 +101,7 @@ export function ConstructionCapabilityMatrix({ onCatalogChange }: {
     {notice ? <p className="api-success-message" role="status">{notice}</p> : null}
     {editing ? <div className="api-library-editor">
       <div className="api-library-form-grid">
-        <label className="api-library-field"><span>Construction type</span><select value={form.constructionType} disabled={Boolean(form.id)} onChange={(event) => setForm((current) => ({ ...current, constructionType: event.target.value as ConstructionType }))}>{TYPES.map((type) => <option key={type} value={type}>{type}</option>)}</select></label>
+        <div className="api-library-construction-picker"><span>CONSTRUCTION TYPE</span><div>{TYPES.map((type) => <button type="button" key={type} disabled={Boolean(form.id) || (existingTypes.has(type) && form.constructionType !== type)} className={form.constructionType === type ? "is-active" : ""} onClick={() => setForm((current) => ({ ...current, constructionType: type }))}>{type}</button>)}</div></div>
         <Field label="Capability scope" value={form.capabilityScope} onChange={(value) => setForm((current) => ({ ...current, capabilityScope: value }))} placeholder="Supported product scope, size limits and ownership" />
         <Field label="Assembly method" value={form.assemblyMethod} onChange={(value) => setForm((current) => ({ ...current, assemblyMethod: value }))} placeholder="Required assembly steps, joining and inspection" />
         <Field label="Fastener requirements" value={form.fastenerRequirements} onChange={(value) => setForm((current) => ({ ...current, fastenerRequirements: value }))} placeholder="Fastener grade, size, torque source and traceability" />
