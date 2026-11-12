@@ -25,7 +25,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const id = crypto.randomUUID();
   const code = referenceCode("DLR");
   try {
-    await env.DB.prepare(`INSERT INTO anvera_dealer_applications
+    const applicationInsert = env.DB.prepare(`INSERT INTO anvera_dealer_applications
       (id, reference_code, status, legal_company_name, trading_name, website, business_type, country, city, years_in_business, represented_brands, contact_name, contact_role, email, phone, notes)
       VALUES (?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
       .bind(
@@ -35,7 +35,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
         clean(data.contactName, 160), clean(data.contactRole, 100) || null,
         clean(data.email, 254).toLowerCase(), clean(data.phone, 60) || null,
         clean(data.notes, 4000) || null
-      ).run();
+      );
+    const eventInsert = env.DB.prepare("INSERT INTO anvera_dealer_application_events (id, application_id, event_type, actor_user_id) VALUES (?, ?, 'created', 'public')")
+      .bind(crypto.randomUUID(), id);
+    await env.DB.batch([applicationInsert, eventInsert]);
     return publicJson({ ok: true, referenceCode: code }, 201);
   } catch {
     return publicJson({ ok: false, error: "submission_failed" }, 500);
