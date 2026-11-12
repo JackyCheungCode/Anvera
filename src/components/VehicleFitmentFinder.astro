@@ -59,8 +59,8 @@ const regions = [
     const source = payload?.data ?? payload?.results ?? payload;
     return Array.isArray(source) ? source : [];
   };
-  const slugOf = (item: any): string => String(item?.slug ?? item?.id ?? item?.code ?? item?.value ?? item?.year ?? "");
-  const labelOf = (item: any): string => String(item?.name ?? item?.title ?? item?.label ?? item?.year ?? item?.trim ?? item?.slug ?? "");
+  const slugOf = (item: any): string => typeof item === "string" || typeof item === "number" ? String(item) : String(item?.slug ?? item?.id ?? item?.code ?? item?.value ?? item?.year ?? "");
+  const labelOf = (item: any): string => typeof item === "string" || typeof item === "number" ? String(item) : String(item?.name ?? item?.title ?? item?.label ?? item?.year ?? item?.trim ?? item?.slug ?? "");
   const fill = (select: HTMLSelectElement, rows: any[], placeholder: string, firstValue = "") => {
     select.replaceChildren(new Option(placeholder, ""));
     for (const item of rows) {
