@@ -1,6 +1,6 @@
 -- ANVERA Product Intelligence: Global Setup draft persistence
--- Applies only to the isolated preview D1 database during preview deployment.
--- Production D1 migration is intentionally excluded from all automated workflows.
+-- Applied to isolated preview D1 and production D1 by their respective deployment workflows.
+-- All objects use IF NOT EXISTS so deployment retries remain safe.
 
 PRAGMA foreign_keys = ON;
 
