@@ -43,7 +43,7 @@ type SetupResponse = {
   versions?: Array<{ id: string; revision: number; version_type: string; note: string | null; created_at: string }>;
 };
 
-type SaveResponse = { saved: boolean; revision?: number; status?: string; reason?: string };
+type SaveResponse = { saved: boolean; sessionId?: string; revision?: number; status?: string; reason?: string };
 
 const emptyDocument = (): SetupDocument => ({
   factory: {}, material: {}, construction: {}, specification: {}, finish: {},
@@ -290,6 +290,7 @@ export function ProductIntelligence() {
         }
         throw new Error(result.reason ?? "The setup was not saved.");
       }
+      if (result.sessionId) setSessionId(result.sessionId);
       setRevision(result.revision ?? revision + 1);
       setStatus(result.status ?? (action === "submit" ? "in_review" : "draft"));
       setNotice(action === "submit" ? "Submitted for internal review. A version snapshot has been recorded." : "Draft saved. Your changes are stored.");
