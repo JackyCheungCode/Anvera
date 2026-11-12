@@ -279,7 +279,7 @@ const safeProducts = products.map((product) => ({
     ];
     cells.forEach(([label,value],index) => { const cell=document.createElement("td"); if(index===0){const title=document.createElement("strong");title.textContent=value;const badge=document.createElement("span");badge.className="vf-fitment-badge vf-fitment-badge--"+item.classification;badge.textContent=item.classification==="oem"?"OEM":item.classification==="aftermarket"?"AFTERMARKET":"UNCLASSIFIED";cell.append(title,badge);}else{const span=document.createElement("span");span.className="vf-table-cell-label";span.textContent=label;const text=document.createElement("strong");text.textContent=display(value);cell.append(span,text);} row.append(cell);});
     const actionCell=document.createElement("td");actionCell.className="vf-fitment-action-cell";const choose=document.createElement("button");choose.type="button";choose.className="cds-btn cds-btn--secondary vf-choose-fitment";choose.textContent=id===selectedId?"Selected":"Select";choose.setAttribute("aria-label","Select "+cells[0][1]);actionCell.append(choose);row.append(actionCell);
-    const select=()=>{document.querySelectorAll(".vf-fitment-row").forEach((node)=>{node.setAttribute("aria-selected","false");const button=node.querySelector(".vf-choose-fitment");if(button)button.textContent="Select";});row.setAttribute("aria-selected","true");choose.textContent="Selected";if(!compactMode)renderProducts(item,record);window.dispatchEvent(new CustomEvent("anvera:fitment-selected",{detail:{record,fitment:item,vehicle:{...values}}}));};
+    const select=()=>{document.querySelectorAll(".vf-fitment-row").forEach((node)=>{node.setAttribute("aria-selected","false");const button=node.querySelector(".vf-choose-fitment");if(button)button.textContent="Select";});row.setAttribute("aria-selected","true");choose.textContent="Selected";if(!compactMode)renderProducts(item,record);else status.textContent="Fitment selected. Continue to Step 3 to review your specification.";window.dispatchEvent(new CustomEvent("anvera:fitment-selected",{detail:{record,fitment:item,vehicle:{...values}}}));};
     row.addEventListener("click",select);choose.addEventListener("click",(event)=>{event.stopPropagation();select();});return row;
   };
   const productValues = (product, keys) => {
@@ -426,7 +426,7 @@ const safeProducts = products.map((product) => ({
       renderGroup("aftermarket","Aftermarket & optional fitments","Alternative or manufacturer-optional configurations returned by the fitment source.");
       renderGroup("other","Additional records","The source did not provide an explicit OEM / aftermarket classification for these records.");
       if (!Object.values(groups).some((list) => list.length)) { const empty = document.createElement("p"); empty.className = "vf-product-empty"; empty.textContent = "No wheel configurations were returned for this vehicle selection. Try another year, generation or market."; results.append(empty); }
-      results.hidden = false; status.textContent = records.length ? "Fitment data loaded. Select a configuration to view ANVERA products." : "No fitment records found.";
+      results.hidden = false; status.textContent = records.length ? (compactMode ? "Fitment data loaded. Select a configuration to continue to Step 3." : "Fitment data loaded. Select a configuration to view ANVERA products.") : "No fitment records found.";
     } catch (error) { status.textContent = "Fitment lookup failed. Please review your selection and try again."; }
     finally { submit.disabled = false; }
   });
@@ -580,4 +580,41 @@ const safeProducts = products.map((product) => ({
 .vehicle-finder-section--compact .vf-model-image-frame,.vehicle-finder-section--compact .vf-model-image{display:none!important}
 @media(max-width:760px){.vehicle-finder-section--compact .vehicle-finder-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){.vehicle-finder-section--compact .vehicle-finder-grid{grid-template-columns:1fr}.vehicle-finder-section--compact .vehicle-finder-form,.vehicle-finder-section--compact .vehicle-finder-results{padding:14px}}
+
+/* Compact Configure fitment: enforce dark surfaces across every nested result element. */
+.vehicle-finder-section--compact,.vehicle-finder-section--compact *{color-scheme:dark}
+.vehicle-finder-section--compact .vehicle-finder-form,
+.vehicle-finder-section--compact .vehicle-finder-results,
+.vehicle-finder-section--compact .vf-table-scroll,
+.vehicle-finder-section--compact .vf-fitment-table,
+.vehicle-finder-section--compact .vf-fitment-table tbody,
+.vehicle-finder-section--compact .vf-fitment-table tbody tr,
+.vehicle-finder-section--compact .vf-fitment-card,
+.vehicle-finder-section--compact .vf-spec-cell,
+.vehicle-finder-section--compact .vf-product-empty{background-color:#17191c!important}
+.vehicle-finder-section--compact .vf-fitment-table thead,
+.vehicle-finder-section--compact .vf-fitment-table thead tr,
+.vehicle-finder-section--compact .vf-fitment-table th{background-color:#262a30!important;color:#c6cbd1!important}
+.vehicle-finder-section--compact .vf-fitment-table td,
+.vehicle-finder-section--compact .vf-fitment-card,
+.vehicle-finder-section--compact .vf-spec-cell,
+.vehicle-finder-section--compact .vf-product-empty{color:#e8eaed!important;border-color:#343a40!important}
+.vehicle-finder-section--compact .vf-fitment-table tbody tr:hover,
+.vehicle-finder-section--compact .vf-fitment-table tbody tr[aria-selected=true],
+.vehicle-finder-section--compact .vf-fitment-table tbody tr:hover td,
+.vehicle-finder-section--compact .vf-fitment-table tbody tr[aria-selected=true] td{background-color:#202833!important}
+.vehicle-finder-section--compact .vf-fitment-group-heading h4,
+.vehicle-finder-section--compact .vf-results-heading h3{color:#f4f4f4!important}
+.vehicle-finder-section--compact .vf-fitment-group-heading p,
+.vehicle-finder-section--compact .vf-results-heading p,
+.vehicle-finder-section--compact .vf-fitment-card-note,
+.vehicle-finder-section--compact .vf-spec-cell span,
+.vehicle-finder-section--compact .vehicle-finder-actions p{color:#a7adb4!important}
+.vehicle-finder-section--compact .vf-fitment-badge--oem{background:#183b27!important;color:#a7f0ba!important}
+.vehicle-finder-section--compact .vf-fitment-badge--aftermarket{background:#2d2440!important;color:#d8b9ff!important}
+.vehicle-finder-section--compact .vf-fitment-badge--other{background:#343b45!important;color:#d0d5db!important}
+.vehicle-finder-section--compact .vf-choose-fitment{background:#343b45!important;color:#fff!important}
+.vehicle-finder-section--compact .vf-fitment-table td a,
+.vehicle-finder-section--compact .vf-fitment-table td button{background:#343b45!important;color:#fff!important}
+.vehicle-finder-section--compact .vf-products{display:none!important}
 </style>
