@@ -427,8 +427,8 @@ function setupDocumentIsSubmittable(document: Record<string, unknown>) {
       Boolean(inputString(product?.productName, 120)) &&
       Boolean(selectedConstruction) &&
       supportedConstructions.includes(selectedConstruction) &&
-      (!selectedMaterial || materialGrades.includes(selectedMaterial)) &&
-      (!selectedForging || forgingMethods.includes(selectedForging)) &&
+      Boolean(selectedMaterial) && materialGrades.includes(selectedMaterial) &&
+      Boolean(selectedForging) && forgingMethods.includes(selectedForging) &&
       validSpecifications;
   });
   return required.every((value) => typeof value === "string" && value.trim().length > 0) && validProducts;
