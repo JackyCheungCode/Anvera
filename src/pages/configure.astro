@@ -172,7 +172,8 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
         <h2>Thank you for<br /><span>choosing ANVERA.</span></h2>
         <p class="completion-copy" id="completion-status">Your configuration has been prepared.</p>
         <div class="completion-reference"><small>YOUR REFERENCE</small><strong id="completion-reference">—</strong><span>Keep this reference for future correspondence.</span></div>
-        <a class="carbon-button carbon-button--primary" href="/dealers">Explore ANVERA</a>
+        <a class="carbon-button carbon-button--primary" id="track-configuration-link" href="/configuration/track">Track this configuration ↗</a>
+        <a class="carbon-button carbon-button--secondary" href="/dealers">Explore ANVERA</a>
       </section>
     </main>
 
@@ -347,6 +348,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
       if(!response.ok)throw new Error(payload.error||"submission_failed");
       state.submissionStatus=payload.status;state.submittedAt=new Date().toISOString();
       root.querySelector("#completion-reference").textContent=state.reference;
+      root.querySelector("#track-configuration-link").href="/configuration/track?reference="+encodeURIComponent(state.reference);
       root.querySelector("#completion-status").textContent=payload.status==="custom_review"?"Your custom specification has been submitted for engineering review. ANVERA will respond within 1 business day.":"Your configuration has been submitted. ANVERA will review fitment and confirm the quotation and delivery schedule.";
       status.textContent="Configuration submitted successfully.";
       saveDraft();setStep(7);
@@ -354,6 +356,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
     finally{button.disabled=false;}
   });
   root.querySelector("#completion-reference").textContent=state.reference;
+  root.querySelector("#track-configuration-link").href="/configuration/track?reference="+encodeURIComponent(state.reference);
   if(state.product){const selected=root.querySelector(`[data-product="${CSS.escape(state.product.slug)}"]`);selected?.setAttribute("aria-pressed","true");}
   updateProgress();
   createServerDraft();
