@@ -499,7 +499,14 @@ async function syncWheelSpecifications(db: D1Database, sessionId: string, docume
       const centerBore = Number(row?.centerBore);
       const loadRating = row?.loadRating === undefined || row?.loadRating === "" ? null : Number(row.loadRating);
       const evidenceRef = inputString(row?.evidenceRef, 200);
-      if (!id || !["Front", "Rear", "Front & Rear"].includes(position) || ![diameter, width, boltCount, pcd, offset, centerBore].every(Number.isFinite)) continue;
+      if (!id || !["Front", "Rear", "Front & Rear"].includes(position) ||
+        !String(row?.diameter ?? "").trim() || !String(row?.width ?? "").trim() ||
+        !String(row?.boltCount ?? "").trim() || !String(row?.pcd ?? "").trim() ||
+        !String(row?.offset ?? "").trim() || !String(row?.centerBore ?? "").trim() ||
+        ![diameter, width, boltCount, pcd, offset, centerBore].every(Number.isFinite) ||
+        diameter <= 0 || width <= 0 || !Number.isInteger(boltCount) || boltCount <= 0 ||
+        pcd <= 0 || centerBore <= 0 ||
+        (loadRating !== null && (!Number.isFinite(loadRating) || loadRating <= 0))) continue;
       activeIds.add(id);
       activeSpecificationKeys.add(productCode + "::" + id);
       const previous = existingById.get(id);
