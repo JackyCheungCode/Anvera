@@ -51,6 +51,7 @@ const safeProducts = products.map((product) => ({
   const dropdowns = {};
   const makeLogoSlugs = {
     bmw:"bmw", mercedes:"mercedesbenz", "mercedes-benz":"mercedesbenz", audi:"audi", porsche:"porsche",
+    abarth:"abarth", "alfa romeo":"alfaromeo", alpine:"alpine", aston:"astonmartin", citroen:"citroen", dacia:"dacia", dodge:"dodge", fiat:"fiat", isuzu:"isuzu", lotus:"lotus", mg:"mg", opel:"opel", peugeot:"peugeot", polestar:"polestar", renault:"renault", rivian:"rivian", skoda:"skoda", smart:"smart", suzuki:"suzuki", tesla:"tesla",
     volkswagen:"volkswagen", toyota:"toyota", lexus:"lexus", honda:"honda", nissan:"nissan",
     mazda:"mazda", subaru:"subaru", mitsubishi:"mitsubishi", ford:"ford", chevrolet:"chevrolet",
     cadillac:"cadillac", jeep:"jeep", hyundai:"hyundai", kia:"kia", genesis:"genesis",
@@ -166,7 +167,7 @@ const safeProducts = products.map((product) => ({
     submit.disabled = !(values.year || values.generation);
   };
   for (const key of ["year","generation"]) document.querySelector('[data-dropdown="' + key + '"]').addEventListener("vf-change", (event) => {
-    values[key] = event.detail.value; if (key === "year" && values.year) values.generation = ""; if (key === "generation" && values.generation) values.year = "";
+    values[key] = event.detail.value;
     resetAfter(key); loadModifications();
   });
   document.querySelector('[data-dropdown="modification"]').addEventListener("vf-change", (event) => { values.modification = event.detail.value; });
@@ -226,28 +227,34 @@ const safeProducts = products.map((product) => ({
     const vehicleBore = valueAt(technical,["centre_bore","center_bore","centre_bore_diameter"]) ?? fitment.front.centreBore ?? fitment.rear.centreBore;
     const productFitments = product.verifiedFitments || [];
     if (!productFitments.length) return "review";
-    const axes = ["front","rear"];
+    const vehicleMake = clean(record?.make?.name).toLowerCase();
+    const vehicleModel = clean(record?.model?.name).toLowerCase();
+    const selectedYear = numeric(record?.year ?? values.year);
     const matched = productFitments.some((approved) => {
-      let compared = 0;
-      for (const axle of axes) {
+      if (approved.vehicleMake && vehicleMake && approved.vehicleMake.toLowerCase() !== vehicleMake) return false;
+      if (approved.vehicleModel && vehicleModel && approved.vehicleModel.toLowerCase() !== vehicleModel) return false;
+      const from = numeric(approved.modelYearFrom), to = numeric(approved.modelYearTo);
+      if (selectedYear !== null && ((from !== null && selectedYear < from) || (to !== null && selectedYear > to))) return false;
+      let pcdMatched = false, diameterMatched = false, hasConflict = false;
+      for (const axle of ["front","rear"]) {
         const vehicle = fitment[axle] || {};
         const wheel = approved[axle] || {};
         const pcd = valueAt(wheel,["pcd","bolt_pattern"]);
-        if (vehiclePcd && pcd) { compared++; if (normalizePcd(vehiclePcd) !== normalizePcd(pcd)) return false; }
+        if (vehiclePcd && pcd) { if (normalizePcd(vehiclePcd) !== normalizePcd(pcd)) hasConflict = true; else pcdMatched = true; }
         const vehicleDiameter = numeric(vehicle.diameter);
         const productDiameter = numeric(valueAt(wheel,["diameter","rim_diameter"]));
-        if (vehicleDiameter !== null && productDiameter !== null) { compared++; if (Math.abs(vehicleDiameter-productDiameter) > .1) return false; }
+        if (vehicleDiameter !== null && productDiameter !== null) { if (Math.abs(vehicleDiameter-productDiameter) > .1) hasConflict = true; else diameterMatched = true; }
         const vehicleWidth = numeric(vehicle.width);
         const productWidth = numeric(valueAt(wheel,["width","rim_width"]));
-        if (vehicleWidth !== null && productWidth !== null) { compared++; if (Math.abs(vehicleWidth-productWidth) > .5) return false; }
+        if (vehicleWidth !== null && productWidth !== null && Math.abs(vehicleWidth-productWidth) > .5) hasConflict = true;
         const vehicleOffset = numeric(vehicle.offset);
         const productOffset = numeric(valueAt(wheel,["offset","rim_offset","et"]));
-        if (vehicleOffset !== null && productOffset !== null) { compared++; if (Math.abs(vehicleOffset-productOffset) > 8) return false; }
+        if (vehicleOffset !== null && productOffset !== null && Math.abs(vehicleOffset-productOffset) > 8) hasConflict = true;
         const hubBore = numeric(vehicleBore);
         const wheelBore = numeric(valueAt(wheel,["centre_bore","center_bore","centre_bore_diameter"]));
-        if (hubBore !== null && wheelBore !== null) { compared++; if (wheelBore + .1 < hubBore) return false; }
+        if (hubBore !== null && wheelBore !== null && wheelBore + .1 < hubBore) hasConflict = true;
       }
-      return compared > 0;
+      return !hasConflict && pcdMatched && diameterMatched;
     });
     return matched ? "verified" : "not-fit";
   };
