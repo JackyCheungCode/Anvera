@@ -21,13 +21,16 @@ type StepDefinition = {
   optional?: boolean;
 };
 
+type SpecificationRow = { id: string; role: string; diameter: string; width: string; boltCount: string; pcd: string; offset: string; centerBore: string; loadRating: string; status: string };
+type ProductProfile = Record<string, string> & { specifications?: SpecificationRow[] };
+
 type SetupDocument = {
   factory: Record<string, string>;
   material: Record<string, string>;
   construction: Record<string, string>;
   specification: Record<string, string>;
   finish: Record<string, string>;
-  products: Array<Record<string, string>>;
+  products: ProductProfile[];
   fitment: Record<string, string>;
   media: Record<string, string>;
   review: Record<string, string>;
@@ -47,7 +50,7 @@ type SaveResponse = { saved: boolean; sessionId?: string; revision?: number; sta
 
 const emptyDocument = (): SetupDocument => ({
   factory: {}, material: {}, construction: {}, specification: {}, finish: {},
-  products: [{}], fitment: {}, media: {}, review: {}
+  products: [{ specifications: [] }], fitment: {}, media: {}, review: {}
 });
 
 const steps: StepDefinition[] = [
@@ -181,8 +184,48 @@ function setValue(document: SetupDocument, stepId: string, key: string, value: s
   return { ...document, [stepId]: { ...(document[stepId as keyof SetupDocument] as Record<string, string> ?? {}), [key]: value } };
 }
 
+function updateSpecification(document: SetupDocument, productIndex: number, rowId: string, key: keyof SpecificationRow, value: string) {
+  const products = [...document.products];
+  const product = { ...(products[productIndex] ?? { specifications: [] }) };
+  const specifications = [...(product.specifications ?? [])];
+  const rowIndex = specifications.findIndex((row) => row.id === rowId);
+  if (rowIndex < 0) return document;
+  specifications[rowIndex] = { ...specifications[rowIndex], [key]: value };
+  products[productIndex] = { ...product, specifications };
+  return { ...document, products };
+}
+
+function addSpecification(document: SetupDocument, productIndex: number) {
+  const products = [...document.products];
+  const product = { ...(products[productIndex] ?? { specifications: [] }) };
+  const specifications = [...(product.specifications ?? []), {
+    id: crypto.randomUUID(), role: "Front", diameter: "", width: "", boltCount: "", pcd: "",
+    offset: "", centerBore: "", loadRating: "", status: "Draft"
+  }];
+  products[productIndex] = { ...product, specifications };
+  return { ...document, products };
+}
+
+function removeSpecification(document: SetupDocument, productIndex: number, rowId: string) {
+  const products = [...document.products];
+  const product = { ...(products[productIndex] ?? { specifications: [] }) };
+  products[productIndex] = { ...product, specifications: (product.specifications ?? []).filter((row) => row.id !== rowId) };
+  return { ...document, products };
+}
+
+function specificationIsComplete(row: SpecificationRow) {
+  return ["role", "diameter", "width", "boltCount", "pcd", "offset", "centerBore"].every((key) =>
+    String(row[key as keyof SpecificationRow] ?? "").trim().length > 0
+  );
+}
+
 function validateStep(step: StepDefinition, document: SetupDocument, productIndex: number) {
-  return step.fields.filter((field) => field.required && !getPath(document, step.id, field.key, productIndex).trim());
+  const missing = step.fields.filter((field) => field.required && !getPath(document, step.id, field.key, productIndex).trim());
+  if (step.id === "products") {
+    const rows = document.products?.[productIndex]?.specifications ?? [];
+    if (!rows.length || !rows.every(specificationIsComplete)) missing.push({ key: "specifications", label: "Complete specification matrix rows", required: true });
+  }
+  return missing;
 }
 
 function isStepComplete(step: StepDefinition, document: SetupDocument, productIndex: number) {
@@ -190,7 +233,9 @@ function isStepComplete(step: StepDefinition, document: SetupDocument, productIn
 }
 
 function stepHasAnyValue(step: StepDefinition, document: SetupDocument, productIndex: number) {
-  return step.fields.some((field) => getPath(document, step.id, field.key, productIndex).trim().length > 0);
+  const fieldsHaveValues = step.fields.some((field) => getPath(document, step.id, field.key, productIndex).trim().length > 0);
+  if (step.id === "products") return fieldsHaveValues || Boolean(document.products?.[productIndex]?.specifications?.length);
+  return fieldsHaveValues;
 }
 
 function CustomSelect({ value, options, onChange, label }: { value: string; options: string[]; onChange: (value: string) => void; label: string }) {
@@ -317,7 +362,7 @@ export function ProductIntelligence() {
   };
 
   const addProduct = () => {
-    setDocument((current) => ({ ...current, products: [...(current.products ?? []), {}] }));
+    setDocument((current) => ({ ...current, products: [...(current.products ?? []), { specifications: [] }] }));
     setProductIndex(document.products?.length ?? 0);
   };
 
