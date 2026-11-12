@@ -1,6 +1,6 @@
 ---
-interface Props { products?: Array<Record<string, unknown>>; compact?: boolean }
-const { products = [], compact = false } = Astro.props;
+interface Props { products?: Array<Record<string, unknown>>; compact?: boolean; resultsTarget?: string }
+const { products = [], compact = false, resultsTarget = "" } = Astro.props;
 const regions = [
   { value: "usdm", label: "USA & North America" }, { value: "cdm", label: "Canada" },
   { value: "mxndm", label: "Mexico" }, { value: "ladm", label: "Central & South America" },
@@ -42,12 +42,16 @@ const safeProducts = products.map((product) => ({
     {!compact && <p class="vehicle-finder-disclaimer">Fitment information is supplied by Wheel-Size as a reference. ANVERA will verify load rating, brake clearance, hub fit, offsets and vehicle-specific requirements before confirming any production specification.</p>}
   </div>
 </section>
-<script define:vars={{ regionOptions: regions, anveraProducts: safeProducts, compactMode: compact }}>
+<script define:vars={{ regionOptions: regions, anveraProducts: safeProducts, compactMode: compact, resultsTargetId: resultsTarget }}>
   // @ts-nocheck
   const form = document.querySelector("#vehicle-finder-form");
   const status = document.querySelector("#vf-status");
   const submit = document.querySelector("#vf-submit");
   const results = document.querySelector("#vf-results");
+  if (resultsTargetId) {
+    const resultsTarget = document.getElementById(resultsTargetId);
+    if (resultsTarget && results) resultsTarget.append(results);
+  }
   const values = { region: "sam", make: "", model: "", year: "", generation: "", modification: "" };
   const dropdowns = {};
   let selectedMakeLabel = "";
