@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 import { MaterialProcessLibrary } from "./MaterialProcessLibrary";
 import { LibraryReviewQueue } from "./LibraryReviewQueue";
+import { FinishLibrary, ProductFinishMapping } from "./FinishLibrary";
 
 type FieldType = "text" | "number" | "textarea" | "select";
 type SelectOption = { value: string; label: string };
@@ -25,7 +26,7 @@ type StepDefinition = {
 };
 
 type SpecificationRow = { id: string; role: string; diameter: string; width: string; boltCount: string; pcd: string; offset: string; centerBore: string; loadRating: string; status: string };
-type ProductProfile = { [key: string]: string | SpecificationRow[] | undefined; specifications?: SpecificationRow[] };
+type ProductProfile = { [key: string]: string | string[] | SpecificationRow[] | undefined; specifications?: SpecificationRow[]; finishProfiles?: string[] };
 
 type SetupDocument = {
   factory: Record<string, string>;
@@ -294,6 +295,7 @@ export function ProductIntelligence() {
   const [notice, setNotice] = useState("");
   const [approvedMaterials, setApprovedMaterials] = useState<Array<{ id: string; code: string; name: string; grade: string; family: string }> | null>(null);
   const [approvedProcesses, setApprovedProcesses] = useState<Array<{ id: string; code: string; name: string; process_type: string }> | null>(null);
+  const [approvedFinishes, setApprovedFinishes] = useState<Array<{ id: string; code: string; name: string; finish_type: string; supported_constructions: string[] }> | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -345,6 +347,17 @@ export function ProductIntelligence() {
       }));
     }
   }, []);
+
+  const syncFinishCatalog = useCallback((finishes: Array<{ id: string; code: string; name: string; finish_type: string; supported_constructions: string[] }> | null) => {
+    setApprovedFinishes(finishes);
+  }, []);
+
+  const updateFinishMappings = (next: string[]) => {
+    setDocument((current) => ({
+      ...current,
+      products: (current.products ?? []).map((product, index) => index === productIndex ? { ...product, finishProfiles: next } : product)
+    }));
+  };
 
   const updateField = (key: string, value: string) => {
     setDocument((current) => setValue(current, active.id, key, value, productIndex));
@@ -475,6 +488,15 @@ export function ProductIntelligence() {
               </div>
 
               {active.id === "material" ? <MaterialProcessLibrary onCatalogChange={syncLibraryCatalog} /> : null}
+
+              {active.id === "finish" ? <FinishLibrary onCatalogChange={syncFinishCatalog} /> : null}
+
+              {active.id === "products" ? <ProductFinishMapping
+                finishes={approvedFinishes}
+                construction={typeof document.products?.[productIndex]?.construction === "string" ? document.products[productIndex].construction as string : ""}
+                selected={Array.isArray(document.products?.[productIndex]?.finishProfiles) ? document.products[productIndex].finishProfiles as string[] : []}
+                onChange={updateFinishMappings}
+              /> : null}
 
               {active.id === "products" ? <section className="api-spec-editor">
                 <div className="api-spec-heading"><div><p className="anvera-eyebrow">PRODUCT SPECIFICATIONS</p><h3>Specification Matrix</h3><p>Each row is a specific, reviewable wheel specification. Do not enter a range in place of a confirmed combination.</p></div><button className="api-add-product" type="button" onClick={() => setDocument((current) => addSpecification(current, productIndex))}>＋ Add specification</button></div>
