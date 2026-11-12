@@ -1,0 +1,30 @@
+---
+import { getEmDashCollection, getSiteSettings } from "emdash";
+const { entries: posts, cacheHint } = await getEmDashCollection("posts", {
+  orderBy: { published_at: "desc" },
+  limit: 10
+});
+const settings = await getSiteSettings();
+if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+const title = settings?.title ?? "Anvera";
+const tagline = settings?.tagline ?? "A modern content platform";
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={tagline} />
+  </head>
+  <body>
+    <main>
+      <h1>{title}</h1>
+      <p>{tagline}</p>
+      <p><a href="/_emdash/admin/">Open CMS administration</a></p>
+      <section>
+        {posts.map((post) => <article><h2><a href={`/posts/${post.id}`}>{post.data.title}</a></h2><p>{post.data.excerpt}</p></article>)}
+      </section>
+    </main>
+  </body>
+</html>
