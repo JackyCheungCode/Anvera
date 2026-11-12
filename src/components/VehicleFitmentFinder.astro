@@ -85,7 +85,7 @@ const safeProducts = products.map((product) => ({
     img.onerror = () => { if (source && slug) { img.src = iconBase + slug + ".svg"; } else img.remove(); };
     return img;
   };
-  const normalizedWords = (value) => clean(value).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().split(/\\s+/).filter(Boolean);
+  const normalizedWords = (value) => clean(value).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().split(/\s+/).filter(Boolean);
   const commonsVehicleImage = async (make, model) => {
     const cacheKey = (make + "|" + model).toLowerCase();
     if (vehicleImageCache.has(cacheKey)) return vehicleImageCache.get(cacheKey);
@@ -106,9 +106,9 @@ const safeProducts = products.map((product) => ({
         if (!requiredTokens.every((token) => titleWords.has(token))) continue;
         const info = page?.imageinfo?.[0];
         const source = info?.thumburl ?? info?.url;
-        if (!source || !/^https?:\\/\\//i.test(source)) continue;
+        if (!source || !/^https?:\/\//i.test(source)) continue;
         const metadata = info?.extmetadata ?? {};
-        const artist = clean(metadata?.Artist?.value).replace(/<[^>]*>/g, " ").replace(/\\s+/g, " ").trim();
+        const artist = clean(metadata?.Artist?.value).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
         const license = clean(metadata?.LicenseShortName?.value);
         return { source, title: [page.title, artist, license].filter(Boolean).join(" — ") };
       }
@@ -284,7 +284,7 @@ const safeProducts = products.map((product) => ({
   };
   const productField = (product, keys) => productValues(product, keys)[0] ?? null;
   const numeric = (value) => { const match = String(value ?? "").match(/-?\\d+(?:\\.\\d+)?/); return match ? Number(match[0]) : null; };
-  const normalizePcd = (value) => clean(value).toLowerCase().replace(/\\s+/g,"").replace(/x/g,"×");
+  const normalizePcd = (value) => clean(value).toLowerCase().replace(/\s+/g,"").replace(/x/g,"×");
   const fitmentMatchesProduct = (fitment, record, product) => {
     const technical = record?.technical ?? {};
     const vehiclePcd = valueAt(technical,["bolt_pattern","pcd"]) ?? fitment.front.pcd ?? fitment.rear.pcd;
