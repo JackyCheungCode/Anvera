@@ -859,17 +859,19 @@ async function listProductLibraryReviewQueue(ctx: AdminContext) {
   const access = await getProductLibraryDatabase(ctx);
   if ("error" in access) return access.error;
   try {
-    const [materials, forgingProcesses, finishes] = await Promise.all([
+    const [materials, forgingProcesses, finishes, finishMappings] = await Promise.all([
       access.db.prepare("SELECT id, code, name, grade AS detail, status, revision, updated_at FROM anvera_pi_material_profiles WHERE status = 'pending_review' ORDER BY updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>(),
       access.db.prepare("SELECT id, code, name, process_type AS detail, status, revision, updated_at FROM anvera_pi_forging_processes WHERE status = 'pending_review' ORDER BY updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>(),
-      access.db.prepare("SELECT id, code, name, finish_type AS detail, status, revision, updated_at FROM anvera_pi_finish_profiles WHERE status = 'pending_review' ORDER BY updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>()
+      access.db.prepare("SELECT id, code, name, finish_type AS detail, status, revision, updated_at FROM anvera_pi_finish_profiles WHERE status = 'pending_review' ORDER BY updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>(),
+      access.db.prepare("SELECT m.id, m.product_code AS code, f.name, f.finish_type AS detail, m.mapping_status AS status, m.revision, m.updated_at FROM anvera_pi_product_finish_mappings m JOIN anvera_pi_finish_profiles f ON f.id = m.finish_profile_id WHERE m.mapping_status = 'pending_review' ORDER BY m.updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>()
     ]);
     return {
       available: true,
       items: [
         ...materials.results.map((item) => ({ ...item, entity_type: "material" })),
         ...forgingProcesses.results.map((item) => ({ ...item, entity_type: "forging_process" })),
-        ...finishes.results.map((item) => ({ ...item, entity_type: "finish_profile" }))
+        ...finishes.results.map((item) => ({ ...item, entity_type: "finish_profile" })),
+        ...finishMappings.results.map((item) => ({ ...item, entity_type: "product_finish_mapping" }))
       ].sort((a, b) => String(a.updated_at).localeCompare(String(b.updated_at)))
     };
   } catch (cause) {
@@ -883,29 +885,38 @@ async function reviewProductLibraryRecord(ctx: AdminContext) {
   const access = await getProductLibraryDatabase(ctx);
   if ("error" in access) return access.error;
   const body = inputRecord(ctx.input);
-  const entityType = inputString(body?.entityType, 32);
+  const entityType = inputString(body?.entityType, 40);
   const id = inputString(body?.id, 128);
   const revision = Math.max(0, Math.floor(Number(body?.revision) || 0));
   const decision = inputString(body?.decision, 32);
   const note = inputString(body?.note, 2000);
-  if (!id || revision < 1 || !["material", "forging_process", "finish_profile"].includes(entityType) || !["approved", "needs_revision", "restricted"].includes(decision)) {
+  if (!id || revision < 1 || !["material", "forging_process", "finish_profile", "product_finish_mapping"].includes(entityType) || !["approved", "needs_revision", "restricted"].includes(decision)) {
     return { reviewed: false, reason: "invalid_input" };
   }
-  const table = entityType === "material" ? "anvera_pi_material_profiles" : entityType === "forging_process" ? "anvera_pi_forging_processes" : "anvera_pi_finish_profiles";
-  const current = await access.db.prepare(`SELECT code, status, revision FROM ${table} WHERE id = ? LIMIT 1`)
+  const isMapping = entityType === "product_finish_mapping";
+  const table = entityType === "material" ? "anvera_pi_material_profiles" :
+    entityType === "forging_process" ? "anvera_pi_forging_processes" :
+    entityType === "finish_profile" ? "anvera_pi_finish_profiles" : "anvera_pi_product_finish_mappings";
+  const statusColumn = isMapping ? "mapping_status" : "status";
+  const current = await access.db.prepare(`SELECT ${isMapping ? "product_code" : "code"} AS code, ${statusColumn} AS status, revision FROM ${table} WHERE id = ? LIMIT 1`)
     .bind(id).first<{ code: string; status: string; revision: number }>();
   if (!current) return { reviewed: false, reason: "not_found" };
   if (current.status !== "pending_review") return { reviewed: false, reason: "not_pending_review", status: current.status };
   if (current.revision !== revision) return { reviewed: false, reason: "revision_conflict", revision: current.revision };
-  const nextStatus = decision === "approved" ? "approved" : decision === "restricted" ? "restricted" : "draft";
+  const nextStatus = decision === "approved" ? "approved" : decision === "restricted" ? "restricted" : isMapping ? "needs_revision" : "draft";
   const nextRevision = current.revision + 1;
   const actorId = ctx.user!.id;
-  const result = await access.db.batch([
-    access.db.prepare(`UPDATE ${table} SET status = ?, revision = ?, updated_by_user_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND revision = ? AND status = 'pending_review'`)
+  const statements = [
+    access.db.prepare(`UPDATE ${table} SET ${statusColumn} = ?, revision = ?, updated_by_user_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND revision = ? AND ${statusColumn} = 'pending_review'`)
       .bind(nextStatus, nextRevision, actorId, id, revision),
     access.db.prepare("INSERT INTO anvera_pi_library_review_decisions (id, entity_type, entity_id, decision, reviewer_user_id, review_note, previous_revision, resulting_revision) SELECT ?, ?, ?, ?, ?, ?, ?, ? WHERE changes() > 0")
       .bind(crypto.randomUUID(), entityType, id, decision, actorId, note || null, revision, nextRevision)
-  ]);
+  ];
+  if (isMapping) {
+    statements.push(access.db.prepare("INSERT INTO anvera_pi_finish_events (id, entity_type, entity_id, event_type, actor_user_id, revision, summary) SELECT ?, 'product_finish_mapping', ?, 'mapping_updated', ?, ?, ? WHERE changes() > 0")
+      .bind(crypto.randomUUID(), id, actorId, nextRevision, `Product finish mapping ${decision.replaceAll("_", " ")}`));
+  }
+  const result = await access.db.batch(statements);
   if ((result[0]?.meta?.changes ?? 0) === 0) return { reviewed: false, reason: "revision_conflict" };
   return { reviewed: true, status: nextStatus, revision: nextRevision };
 }
