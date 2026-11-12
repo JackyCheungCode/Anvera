@@ -91,7 +91,7 @@ const safeProducts = products.map((product) => ({
     const img = document.createElement("img"); img.className = "vf-model-image"; img.alt = ""; img.loading = "lazy"; img.decoding = "async";
     img.src = source; img.onerror = () => frame.remove(); frame.append(img); return frame;
   };
-  const renderSelectedValue = (key, item, label) => {
+  const renderSelectedValue = (valueLabel, key, item, label) => {
     valueLabel.replaceChildren();
     if (key === "make") { const logo = makeLogo(label, item?.raw); if (logo) valueLabel.append(logo); }
     if (key === "model") { const image = modelImage(item?.raw); if (image) valueLabel.append(image); }
@@ -119,7 +119,7 @@ const safeProducts = products.map((product) => ({
         if (key === "make") { const logo = makeLogo(item.label, item.raw); if (logo) option.append(logo); }
         if (key === "model") { const image = modelImage(item.raw); if (image) option.append(image); }
         const label = document.createElement("span"); label.textContent = item.label; option.append(label);
-        option.addEventListener("click", () => { values[key] = item.value; renderSelectedValue(key, item, item.label); close(); render(); host.dispatchEvent(new CustomEvent("vf-change", { bubbles: true, detail: { key, value: item.value, item } })); });
+        option.addEventListener("click", () => { values[key] = item.value; renderSelectedValue(valueLabel, key, item, item.label); close(); render(); host.dispatchEvent(new CustomEvent("vf-change", { bubbles: true, detail: { key, value: item.value, item } })); });
         menu.append(option);
       }
       if (!options.length) { const empty = document.createElement("div"); empty.className = "vf-select-empty"; empty.textContent = "No options available"; menu.append(empty); }
@@ -134,7 +134,7 @@ const safeProducts = products.map((product) => ({
         trigger.classList.toggle("is-disabled", trigger.disabled);
         if (!options.some((item) => item.value === values[key])) values[key] = "";
         const selected = options.find((item) => item.value === values[key]);
-        if (selected) renderSelectedValue(key, selected, selected.label);
+        if (selected) renderSelectedValue(valueLabel, key, selected, selected.label);
         else valueLabel.textContent = text;
         render();
       },
