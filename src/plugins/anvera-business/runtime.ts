@@ -672,6 +672,61 @@ async function saveForgingProcess(ctx: AdminContext) {
   }
 }
 
+
+async function listProductLibraryReviewQueue(ctx: AdminContext) {
+  if (ctx.request.method !== "GET") return { available: false, reason: "method_not_allowed" };
+  const access = await getProductLibraryDatabase(ctx);
+  if ("error" in access) return access.error;
+  try {
+    const [materials, forgingProcesses] = await Promise.all([
+      access.db.prepare("SELECT id, code, name, grade AS detail, status, revision, updated_at FROM anvera_pi_material_profiles WHERE status = 'pending_review' ORDER BY updated_at ASC").all(),
+      access.db.prepare("SELECT id, code, name, process_type AS detail, status, revision, updated_at FROM anvera_pi_forging_processes WHERE status = 'pending_review' ORDER BY updated_at ASC").all()
+    ]);
+    return {
+      available: true,
+      items: [
+        ...materials.results.map((item) => ({ ...item, entity_type: "material" })),
+        ...forgingProcesses.results.map((item) => ({ ...item, entity_type: "forging_process" }))
+      ].sort((a, b) => String(a.updated_at).localeCompare(String(b.updated_at)))
+    };
+  } catch (cause) {
+    if (String(cause).toLowerCase().includes("no such table")) return { available: false, reason: "migration_pending" };
+    throw cause;
+  }
+}
+
+async function reviewProductLibraryRecord(ctx: AdminContext) {
+  if (ctx.request.method !== "POST") return { reviewed: false, reason: "method_not_allowed" };
+  const access = await getProductLibraryDatabase(ctx);
+  if ("error" in access) return access.error;
+  const body = inputRecord(ctx.input);
+  const entityType = inputString(body?.entityType, 32);
+  const id = inputString(body?.id, 128);
+  const revision = Math.max(0, Math.floor(Number(body?.revision) || 0));
+  const decision = inputString(body?.decision, 32);
+  const note = inputString(body?.note, 2000);
+  if (!id || revision < 1 || !["material", "forging_process"].includes(entityType) || !["approved", "needs_revision", "restricted"].includes(decision)) {
+    return { reviewed: false, reason: "invalid_input" };
+  }
+  const table = entityType === "material" ? "anvera_pi_material_profiles" : "anvera_pi_forging_processes";
+  const current = await access.db.prepare(`SELECT code, status, revision FROM ${table} WHERE id = ? LIMIT 1`)
+    .bind(id).first<{ code: string; status: string; revision: number }>();
+  if (!current) return { reviewed: false, reason: "not_found" };
+  if (current.status !== "pending_review") return { reviewed: false, reason: "not_pending_review", status: current.status };
+  if (current.revision !== revision) return { reviewed: false, reason: "revision_conflict", revision: current.revision };
+  const nextStatus = decision === "approved" ? "approved" : decision === "restricted" ? "restricted" : "draft";
+  const nextRevision = current.revision + 1;
+  const actorId = ctx.user!.id;
+  const result = await access.db.batch([
+    access.db.prepare(`UPDATE ${table} SET status = ?, revision = ?, updated_by_user_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND revision = ? AND status = 'pending_review'`)
+      .bind(nextStatus, nextRevision, actorId, id, revision),
+    access.db.prepare("INSERT INTO anvera_pi_library_review_decisions (id, entity_type, entity_id, decision, reviewer_user_id, review_note, previous_revision, resulting_revision) SELECT ?, ?, ?, ?, ?, ?, ?, ? WHERE changes() > 0")
+      .bind(crypto.randomUUID(), entityType, id, decision, actorId, note || null, revision, nextRevision)
+  ]);
+  if ((result[0]?.meta?.changes ?? 0) === 0) return { reviewed: false, reason: "revision_conflict" };
+  return { reviewed: true, status: nextStatus, revision: nextRevision };
+}
+
 const jsonPost: { methods: ("GET" | "POST" | "HEAD" | "PUT" | "PATCH" | "DELETE")[]; request: { body: "json"; maxBytes: number } } = { methods: ["POST"], request: { body: "json", maxBytes: 16 * 1024 } };
 
 export function createPlugin() {
@@ -682,6 +737,17 @@ export function createPlugin() {
     version: "0.1.0",
     capabilities: ["users:read"],
     routes: {
+      "product-library/review-queue": {
+        methods: ["GET"],
+        permission: "plugins:manage",
+        handler: listProductLibraryReviewQueue
+      },
+      "product-library/review": {
+        methods: ["POST"],
+        request: { body: "json", maxBytes: 8 * 1024 },
+        permission: "plugins:manage",
+        handler: reviewProductLibraryRecord
+      },
       "product-library/list": {
         methods: ["GET"],
         permission: "plugins:manage",
