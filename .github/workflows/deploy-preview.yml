@@ -8,6 +8,7 @@ on:
       - fix/vehicle-fitment-worker-dispatch
       - feat/vehicle-fitment-oem-aftermarket-products
       - fix/vehicle-fitment-carbon-ui
+      - feat/vehicle-picker-brand-and-model-imagery
     paths-ignore:
       - "docs/**"
       - "*.md"
