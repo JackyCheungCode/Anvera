@@ -33,7 +33,7 @@ The global Product Intelligence wizard now contains reusable Material Profiles a
 
 - New records begin as Draft.
 - Records can be submitted for Engineering Review.
-- This phase does not grant approval. Approved, restricted and archived records are read-only in the library editor.
+- Records can be submitted to the integrated Engineering Review Queue. Only the reviewer decision flow can mark records approved or restricted; those records are read-only in the library editor.
 - Every create or update appends a library event with actor, revision and event type.
 - Updates use optimistic revision checks to prevent overwriting another editor's changes.
 - Restricted and archived records are excluded from the product capability option lists.
@@ -50,7 +50,7 @@ Tables:
 
 The new migration is applied only to the isolated Preview D1 database in this implementation phase. Production continues using the first three Product Intelligence setup tables; production migration of the normalized libraries requires a separate explicit approval.
 
-The future engineering-review phase will own approval decisions and evidence verification. No record created here should be presented as a certified material, process or manufacturing claim.
+The integrated review queue records the review decision and reviewer note, but does not independently validate the underlying certificate or test evidence. No record created here should be presented as a certified material, process or manufacturing claim.
 
 ## Engineering review
 
