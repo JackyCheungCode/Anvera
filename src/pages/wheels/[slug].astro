@@ -1,0 +1,55 @@
+---
+import Base from "../../layouts/Base.astro";
+const slug = Astro.params.slug ?? "";
+const families = {
+  "monoblock": {
+    number: "01", name: "Monoblock", eyebrow: "ONE-PIECE FORGED CONSTRUCTION",
+    headline: "One form.<br />Precisely resolved.",
+    intro: "A single-piece forged wheel architecture, shaped around clean geometry, considered proportions and a direct expression of the vehicle.",
+    detail: "The monoblock approach brings the wheel's structure and design together in one continuous form. It is a focused starting point for projects where clarity, strength and visual restraint matter.",
+    points: ["Unified one-piece architecture", "Design-led spoke and face geometry", "Vehicle-specific fitment review"]
+  },
+  "two-piece": {
+    number: "02", name: "Two-piece", eyebrow: "TWO-PIECE FORGED CONSTRUCTION",
+    headline: "More dimensions.<br />More possibility.",
+    intro: "A multi-component forged wheel architecture that creates additional design flexibility across the centre, outer profile and finish.",
+    detail: "Two-piece construction allows the visual character of the wheel to be considered through distinct components. Final configuration is evaluated against the vehicle, fitment requirements and intended use.",
+    points: ["Distinct centre and outer components", "Expanded finish and detail possibilities", "Configuration reviewed per vehicle"]
+  },
+  "three-piece": {
+    number: "03", name: "Three-piece", eyebrow: "THREE-PIECE FORGED CONSTRUCTION",
+    headline: "A composition<br />of your own.",
+    intro: "A multi-piece architecture for projects where component definition, finish combinations and individual expression are central to the brief.",
+    detail: "Three-piece construction provides a highly configurable design platform. Component selection and final specification are confirmed only after engineering and fitment review.",
+    points: ["Multi-component design architecture", "Flexible visual and finish direction", "Subject to technical feasibility review"]
+  }
+};
+const family = families[slug as keyof typeof families];
+if (!family) return Astro.rewrite("/404");
+---
+<Base title={`${family.name} Forged Wheels`} description={family.intro}>
+  <section class="family-detail-hero">
+    <div class="family-detail-visual" aria-hidden="true"><div class:list={["wheel-render","wheel-render--detail",`wheel-render--${slug}`]}></div></div>
+    <div class="family-detail-copy">
+      <p class="eyebrow">ANVERA / WHEELS / {family.number}</p>
+      <p class="family-detail-type">{family.eyebrow}</p>
+      <h1 set:html={family.headline}></h1>
+      <p class="family-detail-intro">{family.intro}</p>
+      <a class="cds-btn cds-btn--primary" href="/custom-inquiry?construction={slug}">Discuss your configuration <span aria-hidden="true">↗</span></a>
+    </div>
+  </section>
+
+  <section class="section family-detail-story">
+    <div class="section-inner family-detail-story-grid">
+      <div><p class="section-kicker">Construction / {family.number}</p><h2 class="section-title">{family.name},<br />considered.</h2></div>
+      <div><p class="section-lead">{family.detail}</p><ul class="feature-points">{family.points.map((point) => <li>{point}</li>)}</ul></div>
+    </div>
+  </section>
+
+  <section class="family-detail-note">
+    <p class="section-kicker">Your vehicle defines the brief</p>
+    <h2>Designed around<br />the right fitment.</h2>
+    <p>Wheel diameter, width, offset, PCD, centre bore, brake clearance and intended use are reviewed together. No fitment is represented as confirmed until the technical review is complete.</p>
+    <a class="cds-btn cds-btn--primary" href={`/custom-inquiry?construction=${slug}`}>Start your fitment inquiry <span aria-hidden="true">↗</span></a>
+  </section>
+</Base>

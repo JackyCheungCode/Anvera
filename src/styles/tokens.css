@@ -1,0 +1,43 @@
+:root {
+  /* ANVERA brand layer — high-contrast performance editorial */
+  --anvera-black: #0b0c0e;
+  --anvera-graphite: #17191c;
+  --anvera-steel: #282c31;
+  --anvera-silver: #b8bec5;
+  --anvera-white: #f7f8f9;
+  --anvera-red: #d92832;
+  --anvera-red-hover: #b91f28;
+
+  /* Carbon interaction layer */
+  --cds-interactive: #0f62fe;
+  --cds-interactive-hover: #0353e9;
+  --cds-focus: #0f62fe;
+  --cds-text-primary: #161616;
+  --cds-text-secondary: #525252;
+  --cds-text-on-color: #ffffff;
+  --cds-layer-01: #f4f4f4;
+  --cds-layer-02: #e8e8e8;
+  --cds-field: #ffffff;
+  --cds-border-subtle: #c6c6c6;
+  --cds-border-strong: #8d8d8d;
+  --cds-support-success: #198038;
+  --cds-support-warning: #f1c21b;
+  --cds-support-error: #da1e28;
+  --cds-support-info: #0043ce;
+
+  --font-display: "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --content-max: 1440px;
+  --page-gutter: clamp(20px, 5vw, 80px);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --motion-fast: 160ms ease;
+  --motion-standard: 260ms cubic-bezier(.2,.7,.2,1);
+}

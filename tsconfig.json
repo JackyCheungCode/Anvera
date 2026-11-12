@@ -1,5 +1,7 @@
 {
   "extends": "astro/tsconfigs/base",
-  "compilerOptions": { "types": ["node"] },
-  "include": ["src", ".astro/types.d.ts", "worker-configuration.d.ts"]
+  "compilerOptions": {
+    "types": ["node", "react", "react-dom"]
+  },
+  "include": ["src", "emdash-env.d.ts", ".astro/types.d.ts", "worker-configuration.d.ts"]
 }

@@ -1,0 +1,129 @@
+---
+import Base from "../layouts/Base.astro";
+import TextInput from "../components/ui/TextInput.astro";
+import Dropdown from "../components/ui/Dropdown.astro";
+import { getEmDashCollection } from "emdash";
+const selectedModel = Astro.url.searchParams.get("model") ?? "";
+const { entries: finishEntries, cacheHint: finishCacheHint } = await getEmDashCollection("wheel_finishes", { status: "published", limit: 60, orderBy: { display_order: "asc" } }).catch(() => ({ entries: [], cacheHint: null }));
+if (finishCacheHint && Astro.cache?.enabled) Astro.cache.set(finishCacheHint);
+const finishOptions = finishEntries.filter((entry: any) => entry.data?.active !== false).map((entry: any) => ({ value: String(entry.data?.finish_code || entry.id), label: String(entry.data?.title || "Finish") }));
+const fallbackFinishOptions = [{value:"gloss-black",label:"Gloss black"},{value:"satin-black",label:"Satin black"},{value:"brushed",label:"Brushed metal"},{value:"polished",label:"Polished"},{value:"custom",label:"Custom colour / finish"},{value:"undecided",label:"Open to suggestions"}];
+---
+<Base title="Start a Custom Wheel Inquiry" description="Prepare your ANVERA forged wheel project brief with vehicle, fitment and design information.">
+  <section class="inquiry-page-hero">
+    <div class="inquiry-page-hero-inner">
+      <p class="eyebrow">ANVERA / PROJECT INQUIRY</p>
+      <h1>Start with<br /><span>the details.</span></h1>
+      <p>A considered wheel project begins with a clear brief. Share what you know about your vehicle, fitment and design direction. You can leave unknown technical values blank.</p>
+    </div>
+  </section>
+  <section class="inquiry-form-section">
+    <div class="inquiry-form-intro">
+      <p class="section-kicker">Project brief / 01</p>
+      <h2>Tell us about<br />your vehicle.</h2>
+      <p>Use this worksheet to prepare your project brief. Copy the completed summary to share with the ANVERA team.</p>
+      <div class="inquiry-note"><strong>Technical note</strong><span>Fitment values are preliminary until reviewed and confirmed by our team.</span></div>
+    </div>
+    <form class="project-brief-form" id="project-brief-form">
+      <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="form-honeypot" />
+      <div class="brief-form-heading"><span>01 — CONTACT INFORMATION</span><span>REQUIRED</span></div>
+      <div class="brief-grid">
+        <TextInput id="customer-name" name="customerName" label="Your name" required />
+        <TextInput id="customer-email" name="email" label="Email address" type="email" required />
+        <TextInput id="customer-phone" name="phone" label="Telephone / WhatsApp" type="tel" />
+        <TextInput id="customer-country" name="country" label="Country / region" />
+      </div>
+      <div class="brief-form-heading"><span>02 — VEHICLE INFORMATION</span><span>REQUIRED</span></div>
+      <div class="brief-grid">
+        <TextInput id="vehicle-make" name="vehicleMake" label="Vehicle make" placeholder="e.g. Porsche" required />
+        <TextInput id="vehicle-model" name="vehicleModel" label="Vehicle model" placeholder="e.g. 911 Carrera" required />
+        <TextInput id="vehicle-year" name="vehicleYear" label="Model year" placeholder="e.g. 2025" />
+        <TextInput id="vehicle-trim" name="vehicleTrim" label="Trim / variant" placeholder="e.g. GTS, Turbo S" />
+      </div>
+      <div class="brief-form-heading"><span>02 — WHEEL SPECIFICATION</span><span>OPTIONAL AT THIS STAGE</span></div>
+      <div class="brief-grid"><TextInput id="selected-model" name="selectedModel" label="ANVERA design / model" value={selectedModel} placeholder="Select from Wheels or leave open" /></div>
+      <div class="brief-grid">
+        <Dropdown id="construction" name="construction" label="Construction type" placeholder="Select construction" options={[{value:"monoblock",label:"Monoblock"},{value:"two-piece",label:"Two-piece"},{value:"three-piece",label:"Three-piece"},{value:"not-sure",label:"Not sure yet"}]} />
+        <TextInput id="diameter" name="diameter" label="Diameter" placeholder="e.g. 20 inch" />
+        <TextInput id="width" name="width" label="Width" placeholder="e.g. 9.5J front / 11J rear" />
+        <TextInput id="pcd" name="pcd" label="PCD / bolt pattern" placeholder="e.g. 5 × 130" />
+        <TextInput id="offset" name="offset" label="Offset" placeholder="e.g. ET45" />
+        <TextInput id="centre-bore" name="centreBore" label="Centre bore" placeholder="If known" />
+      </div>
+      <div class="brief-form-heading"><span>03 — DESIGN DIRECTION</span><span>YOUR PREFERENCES</span></div>
+      <div class="brief-grid">
+        <Dropdown id="finish" name="finish" label="Preferred finish" placeholder="Select a direction" options={finishOptions.length ? finishOptions : fallbackFinishOptions} />
+        <Dropdown id="quantity" name="quantity" label="Quantity" placeholder="Select quantity" options={[{value:"4",label:"4 wheels"},{value:"5",label:"5 wheels"},{value:"other",label:"Other / discuss"}]} />
+      </div>
+      <div class="cds-field brief-notes">
+        <label class="cds-label" for="project-notes">Project notes</label>
+        <textarea class="cds-textarea" id="project-notes" name="projectNotes" rows="5" placeholder="Tell us about the look, intended use, brake package, references or any details that matter."></textarea>
+      </div>
+      <div class="cds-field brief-notes">
+        <label class="cds-label" for="project-attachments">Reference files</label>
+        <input class="cds-input" id="project-attachments" name="attachments" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" multiple />
+        <p class="cds-help-text">Up to 5 files · 8 MB each · 20 MB total. JPG, PNG, WebP or PDF.</p>
+      </div>
+      <div class="brief-actions">
+        <button class="cds-btn cds-btn--carbon" type="submit" id="submit-project-brief">Send project inquiry <span aria-hidden="true">↗</span></button>
+        <button class="brief-reset" type="button" id="copy-project-brief">Copy project brief</button>
+        <button class="brief-reset" type="reset">Clear all fields</button>
+      </div>
+      <div class="cf-turnstile" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || ""}></div>
+      <p class="brief-feedback" id="brief-feedback" role="status" aria-live="polite">Complete the verification and submit your project brief securely. Required verification and database services must be configured before submissions can be accepted.</p>
+    </form>
+  </section>
+  <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</Base>
+<script>
+  const form = document.querySelector<HTMLFormElement>("#project-brief-form");
+  const copyButton = document.querySelector<HTMLButtonElement>("#copy-project-brief");
+  const feedback = document.querySelector<HTMLElement>("#brief-feedback");
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+    const payload = new FormData(form);
+    payload.set("constructionType", String(payload.get("construction") || ""));
+    payload.set("wheelDiameter", String(payload.get("diameter") || ""));
+    payload.set("wheelWidth", String(payload.get("width") || ""));
+    payload.set("finishCode", String(payload.get("finish") || ""));
+    payload.set("turnstileToken", String(payload.get("cf-turnstile-response") || ""));
+    const submitButton = document.querySelector<HTMLButtonElement>("#submit-project-brief");
+    if (submitButton) submitButton.disabled = true;
+    if (feedback) feedback.textContent = "Sending your project brief and reference files securely…";
+    let response: Response;
+    try {
+      response = await fetch("/api/inquiries", { method: "POST", body: payload });
+    } catch {
+      if (feedback) feedback.textContent = "Network error. Your inquiry was not submitted. Please try again.";
+      if (submitButton) submitButton.disabled = false;
+      return;
+    }
+    const result = await response.json().catch(() => ({})) as { referenceCode?: string; error?: string; attachmentCount?: number };
+    if (feedback) feedback.textContent = response.ok ? "Thank you. Your inquiry reference is " + (result.referenceCode || "pending") + ". " + (result.attachmentCount ? result.attachmentCount + " reference file(s) received. " : "") + "Our team will review your project." : "We could not submit your inquiry (" + (result.error || response.status) + "). Please try again later.";
+    if (submitButton) submitButton.disabled = false;
+  });
+  copyButton?.addEventListener("click", async () => {
+    if (!form) return;
+    const values = new FormData(form);
+    const fields = [
+      ["Vehicle make", "vehicleMake"], ["Vehicle model", "vehicleModel"], ["Model year", "vehicleYear"],
+      ["Trim / variant", "vehicleTrim"], ["Selected ANVERA design", "selectedModel"], ["Construction type", "construction"], ["Diameter", "diameter"],
+      ["Width", "width"], ["PCD / bolt pattern", "pcd"], ["Offset", "offset"], ["Centre bore", "centreBore"],
+      ["Preferred finish", "finish"], ["Quantity", "quantity"], ["Project notes", "projectNotes"]
+    ];
+    const lines = ["ANVERA — CUSTOM FORGED WHEEL PROJECT BRIEF", "", ...fields.map(([label,key]) => {
+      const value = String(values.get(key) || "").trim();
+      return value ? label + ": " + value : "";
+    }).filter(Boolean)];
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      if (feedback) feedback.textContent = "Project brief copied. You can paste it into an email or message.";
+    } catch {
+      if (feedback) feedback.textContent = "Clipboard access is unavailable in this browser. Please select and copy the form details manually.";
+    }
+  });
+  form?.addEventListener("reset", () => {
+    if (feedback) feedback.textContent = "Complete the verification and submit your project brief securely. Technical fitment values will be reviewed by our team.";
+  });
+</script>

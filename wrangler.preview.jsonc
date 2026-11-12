@@ -1,0 +1,36 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "anvera-preview",
+  "main": "./dist/_worker.js/index.js",
+  "compatibility_date": "2026-11-12",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "anvera-preview",
+    "database_id": "9bebf5e9-b020-420f-b398-f2f177c52ede"
+  }],
+  "r2_buckets": [{
+    "binding": "MEDIA",
+    "bucket_name": "anvera-preview-media"
+  }],
+  "kv_namespaces": [{
+    "binding": "SESSION",
+    "id": "472d64d0b1a34140b005dd92d2bcbb35"
+  }],
+  "images": {
+    "binding": "IMAGES"
+  },
+  "ratelimits": [{
+    "name": "PUBLIC_INTAKE_LIMITER",
+    "namespace_id": "7311202602",
+    "simple": { "limit": 5, "period": 60 }
+  }],
+  "vars": {
+    "ANVERA_BUSINESS_API_ENABLED": "false",
+    "EMDASH_MIGRATIONS_MODE": "auto"
+  },
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist"
+  }
+}

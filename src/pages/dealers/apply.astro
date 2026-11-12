@@ -1,0 +1,72 @@
+---
+import Base from "../../layouts/Base.astro";
+import TextInput from "../../components/ui/TextInput.astro";
+---
+<Base title="Become an ANVERA Dealer" description="Submit your company profile for consideration as an ANVERA authorised dealer. All applications are subject to administrator review.">
+  <section class="dealer-apply-hero"><div><p class="eyebrow">ANVERA / PARTNER APPLICATION</p><h1>Let's start<br /><span>a partnership.</span></h1><p>Tell us about your business and the market you serve. Applications are reviewed individually; submission does not automatically grant dealer access.</p></div></section>
+  <section class="dealer-apply-layout">
+    <div><p class="section-kicker">Partner profile / 01</p><h2>About your<br />business.</h2><p>Prepare your company profile for the ANVERA partner team. Required commercial and compliance checks will take place during the review process.</p><div class="dealer-review-note"><b>Review process</b><span>Administrator approval is required before any dealer account is activated.</span></div></div>
+    <form id="dealer-application" class="dealer-application-form">
+      <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="form-honeypot" />
+      <div class="brief-form-heading"><span>01 — COMPANY INFORMATION</span><span>YOUR BUSINESS</span></div>
+      <div class="brief-grid">
+        <TextInput id="company-name" name="companyName" label="Legal company name" required />
+        <TextInput id="trading-name" name="tradingName" label="Trading name" />
+        <TextInput id="company-website" name="companyWebsite" label="Company website" type="url" placeholder="https://" />
+        <TextInput id="business-type" name="businessType" label="Business type" placeholder="Retailer, distributor, workshop…" required />
+      </div>
+      <div class="brief-form-heading"><span>02 — MARKET & EXPERIENCE</span><span>REGIONAL COVERAGE</span></div>
+      <div class="brief-grid">
+        <TextInput id="country" name="country" label="Country / region" required />
+        <TextInput id="city" name="city" label="City" />
+        <TextInput id="years" name="years" label="Years in automotive business" type="number" />
+        <TextInput id="brands" name="brands" label="Brands currently represented" />
+      </div>
+      <div class="brief-form-heading"><span>03 — PRIMARY CONTACT</span><span>HOW TO REACH YOU</span></div>
+      <div class="brief-grid">
+        <TextInput id="contact-name" name="contactName" label="Contact name" required />
+        <TextInput id="contact-role" name="contactRole" label="Role / position" />
+        <TextInput id="contact-email" name="email" label="Business email" type="email" required />
+        <TextInput id="contact-phone" name="phone" label="Telephone / WhatsApp" type="tel" />
+      </div>
+      <div class="cds-field brief-notes"><label class="cds-label" for="dealer-notes">Tell us about your business</label><textarea class="cds-textarea" id="dealer-notes" name="notes" rows="5" placeholder="Customer profile, sales channels, workshop capability, regional coverage…"></textarea></div>
+      <div class="brief-actions"><button class="cds-btn cds-btn--carbon" type="submit" id="submit-dealer-application">Submit dealer application ↗</button><button class="brief-reset" type="button" id="copy-dealer-application">Copy application summary</button><button class="brief-reset" type="reset">Clear all fields</button></div>
+      <div class="cf-turnstile" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || ""}></div>
+      <p class="brief-feedback" id="dealer-feedback" role="status" aria-live="polite">Applications are subject to manual review. Submission does not activate a dealer account.</p>
+    </form>
+  </section>
+  <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</Base>
+<script>
+  const form = document.querySelector<HTMLFormElement>("#dealer-application");
+  const button = document.querySelector<HTMLButtonElement>("#copy-dealer-application");
+  const feedback = document.querySelector<HTMLElement>("#dealer-feedback");
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+    const data = new FormData(form);
+    const payload = Object.fromEntries(data.entries());
+    payload.legalCompanyName = String(data.get("companyName") || "");
+    payload.yearsInBusiness = String(data.get("years") || "");
+    payload.turnstileToken = String(data.get("cf-turnstile-response") || "");
+    const response = await fetch("/api/dealer-applications", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    const result = await response.json().catch(() => ({})) as { referenceCode?: string; error?: string };
+    if (feedback) feedback.textContent = response.ok ? "Application received. Your reference is " + (result.referenceCode || "pending") + ". Our team will review it manually." : "We could not submit your application (" + (result.error || response.status) + "). Please try again later.";
+  });
+  button?.addEventListener("click", async () => {
+    if (!form) return;
+    if (!form.reportValidity()) return;
+    const data = new FormData(form);
+    const rows = Array.from(data.entries()).map(([key,value]) => {
+      const label = key.replace(/([A-Z])/g," $1").replace(/^./,s=>s.toUpperCase());
+      return label + ": " + String(value).trim();
+    }).filter(row => !row.endsWith(": "));
+    try {
+      await navigator.clipboard.writeText(["ANVERA — DEALER APPLICATION PROFILE","",...rows].join("\n"));
+      if (feedback) feedback.textContent = "Application summary copied. You can paste it into an email or message.";
+    } catch {
+      if (feedback) feedback.textContent = "Clipboard access is unavailable. Please copy the completed details manually.";
+    }
+  });
+  form?.addEventListener("reset",()=>{if(feedback)feedback.textContent="Applications are subject to manual review. Submission does not activate a dealer account.";});
+</script>
