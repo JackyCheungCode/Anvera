@@ -395,7 +395,6 @@ function setupDocumentIsSubmittable(document: Record<string, unknown>) {
     material.materialGrade, material.forgingMethod,
     specification.diameterRange, specification.widthRange, specification.boltPatterns
   ];
-  const materialGrades = inputString(material.materialGrade, 2000).split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean);
   const validProducts = products.length > 0 && products.every((product) => {
     const selectedConstruction = inputString(product?.construction, 40);
     const selectedMaterial = inputString(product?.materialProfile, 200);
