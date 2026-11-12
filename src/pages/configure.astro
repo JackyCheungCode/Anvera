@@ -222,7 +222,7 @@ const products = wheelDevelopmentProducts.map((product) => ({
   };
   const setStep = (n) => { state.step=Math.max(1,Math.min(7,n)); updateProgress(); if(state.step===6) buildConfirmation(); window.scrollTo({top:root.offsetTop-20,behavior:"smooth"}); };
   previous.addEventListener("click",()=>setStep(state.step-1));
-  next.addEventListener("click",()=>{ if(!canContinue()) return; if(state.step===3 && state.specPath==="custom"){ submitCustomBrief(); return; } setStep(state.step+1); });
+  next.addEventListener("click",()=>{ if(!canContinue()) return; if(state.step===3 && state.specPath==="custom" && !state.customSubmitted){ submitCustomBrief(); return; } setStep(state.step+1); });
   root.querySelectorAll("[data-product]").forEach(button=>button.addEventListener("click",()=>{root.querySelectorAll("[data-product]").forEach(b=>b.setAttribute("aria-pressed","false"));button.setAttribute("aria-pressed","true");state.product=productRows.find(p=>p.slug===button.dataset.product);updateProgress();}));
   const catalog = async(resource,params={}) => {const q=new URLSearchParams({resource,...params});const r=await fetch("/vehicle-fitment/catalog?"+q);const data=await r.json();if(!r.ok)throw new Error(data.error||"catalog_unavailable");const rows=data?.data??data?.results??data;return Array.isArray(rows)?rows:[];};
   const selects = {region:root.querySelector("#vehicle-region"),make:root.querySelector("#vehicle-make"),model:root.querySelector("#vehicle-model"),year:root.querySelector("#vehicle-year"),generation:root.querySelector("#vehicle-generation"),trim:root.querySelector("#vehicle-trim")};
