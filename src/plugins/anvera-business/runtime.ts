@@ -65,12 +65,12 @@ function normalizedSearch(url: URL) {
 
 async function getAdminDatabase(ctx: AdminContext) {
   if (ctx.user?.role !== 50) {
-    return { error: { ok: false, code: "FORBIDDEN", message: "Administrator access is required." } as const };
+    return { error: { available: false, reason: "forbidden" } as const };
   }
 
   const { env } = await import("cloudflare:workers");
   if (env.ANVERA_BUSINESS_API_ENABLED !== "true") {
-    return { error: { ok: false, code: "BUSINESS_API_DISABLED", message: "Business data access is not enabled until the approved database migration is applied." } as const };
+    return { error: { available: false, reason: "migration_pending" } as const };
   }
 
   return { db: env.DB };
@@ -83,7 +83,7 @@ function listFilter(url: URL, allowedStatuses: readonly string[]) {
 
 async function listInquiries(ctx: AdminContext) {
   if (ctx.request.method !== "GET") {
-    return { ok: false, code: "METHOD_NOT_ALLOWED" };
+    return { available: false, reason: "method_not_allowed" };
   }
   const access = await getAdminDatabase(ctx);
   if ("error" in access) return access.error;
@@ -109,7 +109,7 @@ async function listInquiries(ctx: AdminContext) {
     access.db.prepare(`SELECT COUNT(*) AS total FROM anvera_inquiries${where}`)
       .bind(...values).first<{ total: number }>()
   ]);
-  return { ok: true, data: { items: rows.results, page, limit, total: count?.total ?? 0 } };
+  return { available: true, items: rows.results, page, limit, total: count?.total ?? 0 };
 }
 
 async function inquiryDetail(ctx: AdminContext) {
@@ -121,11 +121,11 @@ async function inquiryDetail(ctx: AdminContext) {
 
   const url = new URL(ctx.request.url);
   const id = (url.searchParams.get("id") ?? "").trim().slice(0, 128);
-  if (!id) return { ok: false, code: "VALIDATION_ERROR", message: "An inquiry ID is required." };
+  if (!id) return { available: true, found: false, reason: "missing_id" };
 
   const inquiry = await access.db.prepare("SELECT * FROM anvera_inquiries WHERE id = ? LIMIT 1")
     .bind(id).first<InquiryRow & Record<string, unknown>>();
-  if (!inquiry) return { ok: false, code: "NOT_FOUND", message: "Inquiry not found." };
+  if (!inquiry) return { available: true, found: false, reason: "not_found" };
 
   const [events, attachments] = await Promise.all([
     access.db.prepare("SELECT id, event_type, actor_user_id, previous_value, new_value, note, created_at FROM anvera_inquiry_events WHERE inquiry_id = ? ORDER BY created_at ASC")
@@ -133,7 +133,7 @@ async function inquiryDetail(ctx: AdminContext) {
     access.db.prepare("SELECT id, original_filename, content_type, byte_size, uploaded_at FROM anvera_inquiry_attachments WHERE inquiry_id = ? ORDER BY uploaded_at ASC")
       .bind(id).all()
   ]);
-  return { ok: true, data: { inquiry, events: events.results, attachments: attachments.results } };
+  return { available: true, found: true, inquiry, events: events.results, attachments: attachments.results };
 }
 
 async function listDealerApplications(ctx: AdminContext) {
