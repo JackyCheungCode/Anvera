@@ -1,204 +1,362 @@
 ---
+interface Props { products?: Array<Record<string, unknown>> }
+const { products = [] } = Astro.props;
 const regions = [
-  { value: "usdm", label: "USA & North America" },
-  { value: "cdm", label: "Canada" },
-  { value: "mxndm", label: "Mexico" },
-  { value: "ladm", label: "Central & South America" },
-  { value: "eudm", label: "Europe" },
-  { value: "rus", label: "Russia & CIS" },
-  { value: "jdm", label: "Japan" },
-  { value: "chdm", label: "China" },
-  { value: "skdm", label: "South Korea" },
-  { value: "sam", label: "Southeast Asia" },
-  { value: "medm", label: "Middle East" },
-  { value: "nadm", label: "North Africa" },
-  { value: "sadm", label: "South Africa" },
-  { value: "audm", label: "Oceania" }
+  { value: "usdm", label: "USA & North America" }, { value: "cdm", label: "Canada" },
+  { value: "mxndm", label: "Mexico" }, { value: "ladm", label: "Central & South America" },
+  { value: "eudm", label: "Europe" }, { value: "rus", label: "Russia & CIS" },
+  { value: "jdm", label: "Japan" }, { value: "chdm", label: "China" },
+  { value: "skdm", label: "South Korea" }, { value: "sam", label: "Southeast Asia" },
+  { value: "medm", label: "Middle East" }, { value: "nadm", label: "North Africa" },
+  { value: "sadm", label: "South Africa" }, { value: "audm", label: "Oceania" }
 ];
+const safeProducts = products.map((product) => ({
+  id: String(product.id ?? ""),
+  title: String(product.title ?? "ANVERA forged wheel"),
+  modelCode: String(product.modelCode ?? ""),
+  construction: String(product.construction ?? ""),
+  finish: String(product.finish ?? ""),
+  specs: product.specs && typeof product.specs === "object" ? product.specs : {}
+}));
 ---
 <section class="vehicle-finder-section">
   <div class="vehicle-finder-inner">
     <div class="vehicle-finder-heading">
-      <div>
-        <p class="section-kicker">ANVERA / VEHICLE FITMENT</p>
-        <h2>Find wheels<br /><span>for your vehicle.</span></h2>
-      </div>
-      <p>Choose your vehicle and market to explore factory wheel specifications. Our team will confirm final brake clearance and custom fitment before production.</p>
+      <div><p class="section-kicker">ANVERA / VEHICLE FITMENT</p><h2>Find wheels<br /><span>for your vehicle.</span></h2></div>
+      <p>Choose your vehicle and market to compare original equipment and alternative fitments, then explore ANVERA forged wheel designs for your selected specification.</p>
     </div>
     <form class="vehicle-finder-form" id="vehicle-finder-form">
-      <div class="vehicle-finder-grid">
-        <label class="vehicle-finder-field"><span>Market region</span><select name="region" id="vf-region" required>{regions.map((region) => <option value={region.value} selected={region.value === "sam"}>{region.label}</option>)}</select></label>
-        <label class="vehicle-finder-field"><span>Make</span><select name="make" id="vf-make" required><option value="">Select make</option></select></label>
-        <label class="vehicle-finder-field"><span>Model</span><select name="model" id="vf-model" required disabled><option value="">Select model</option></select></label>
-        <label class="vehicle-finder-field"><span>Year</span><select name="year" id="vf-year" disabled><option value="">Select year</option></select></label>
-        <label class="vehicle-finder-field"><span>Generation</span><select name="generation" id="vf-generation" disabled><option value="">Any generation</option></select></label>
-        <label class="vehicle-finder-field"><span>Modification / trim</span><select name="modification" id="vf-modification" disabled><option value="">All available trims</option></select></label>
+      <div class="vehicle-finder-grid" id="vf-vehicle-fields">
+        <div class="vehicle-finder-field"><span>Market region</span><div data-dropdown="region" data-placeholder="Southeast Asia"></div></div>
+        <div class="vehicle-finder-field"><span>Make</span><div data-dropdown="make" data-placeholder="Select manufacturer"></div></div>
+        <div class="vehicle-finder-field"><span>Model</span><div data-dropdown="model" data-placeholder="Select model"></div></div>
+        <div class="vehicle-finder-field"><span>Year</span><div data-dropdown="year" data-placeholder="Select year"></div></div>
+        <div class="vehicle-finder-field"><span>Generation</span><div data-dropdown="generation" data-placeholder="Any generation"></div></div>
+        <div class="vehicle-finder-field"><span>Modification / trim</span><div data-dropdown="modification" data-placeholder="All available trims"></div></div>
       </div>
-      <div class="vehicle-finder-actions">
-        <p id="vf-status" role="status" aria-live="polite">Loading vehicle catalogue…</p>
-        <button class="cds-btn cds-btn--primary" type="submit" id="vf-submit" disabled>Find factory fitment <span aria-hidden="true">↗</span></button>
-      </div>
+      <div class="vehicle-finder-actions"><p id="vf-status" role="status" aria-live="polite">Loading vehicle catalogue…</p><button class="cds-btn cds-btn--primary" type="submit" id="vf-submit" disabled>Find fitment <span aria-hidden="true">↗</span></button></div>
     </form>
     <div class="vehicle-finder-results" id="vf-results" hidden aria-live="polite"></div>
-    <p class="vehicle-finder-disclaimer">Fitment information is supplied by Wheel-Size and is a starting reference, not a production approval. ANVERA will verify wheel load rating, brake clearance, hub fit, offsets and front/rear stagger before confirming a specification.</p>
+    <p class="vehicle-finder-disclaimer">Fitment information is supplied by Wheel-Size as a reference. ANVERA will verify load rating, brake clearance, hub fit, offsets and vehicle-specific requirements before confirming any production specification.</p>
   </div>
 </section>
-<script>
-  // @ts-nocheck — this browser-only script uses DOM APIs that conflict with Cloudflare Workers ambient DOM types.
-  const form = document.querySelector<HTMLFormElement>("#vehicle-finder-form");
-  const region = document.querySelector<HTMLSelectElement>("#vf-region");
-  const make = document.querySelector<HTMLSelectElement>("#vf-make");
-  const model = document.querySelector<HTMLSelectElement>("#vf-model");
-  const year = document.querySelector<HTMLSelectElement>("#vf-year");
-  const generation = document.querySelector<HTMLSelectElement>("#vf-generation");
-  const modification = document.querySelector<HTMLSelectElement>("#vf-modification");
-  const status = document.querySelector<HTMLElement>("#vf-status");
-  const submit = document.querySelector<HTMLButtonElement>("#vf-submit");
-  const results = document.querySelector<HTMLElement>("#vf-results");
-
-  const items = (payload: any): any[] => {
+<script define:vars={{ regionOptions: regions, anveraProducts: safeProducts }}>
+  // @ts-nocheck
+  const form = document.querySelector("#vehicle-finder-form");
+  const status = document.querySelector("#vf-status");
+  const submit = document.querySelector("#vf-submit");
+  const results = document.querySelector("#vf-results");
+  const values = { region: "sam", make: "", model: "", year: "", generation: "", modification: "" };
+  const dropdowns = {};
+  const makeLogoSlugs = {
+    bmw:"bmw", mercedes:"mercedesbenz", "mercedes-benz":"mercedesbenz", audi:"audi", porsche:"porsche",
+    volkswagen:"volkswagen", toyota:"toyota", lexus:"lexus", honda:"honda", nissan:"nissan",
+    mazda:"mazda", subaru:"subaru", mitsubishi:"mitsubishi", ford:"ford", chevrolet:"chevrolet",
+    cadillac:"cadillac", jeep:"jeep", hyundai:"hyundai", kia:"kia", genesis:"genesis",
+    volvo:"volvo", jaguar:"jaguar", landrover:"landrover", "land rover":"landrover",
+    ferrari:"ferrari", lamborghini:"lamborghini", maserati:"maserati", mclaren:"mclaren",
+    bentley:"bentley", bugatti:"bugatti", "aston martin":"astonmartin", mini:"mini",
+    infiniti:"infiniti", acura:"acura", buick:"buick", gmc:"gmc", ram:"ram"
+  };
+  const iconBase = "https://cdn.jsdelivr.net/npm/simple-icons@v15.15.0/icons/";
+  const clean = (value) => String(value ?? "").trim();
+  const rowsFrom = (payload) => {
     const source = payload?.data ?? payload?.results ?? payload;
     return Array.isArray(source) ? source : [];
   };
-  const slugOf = (item: any): string => typeof item === "string" || typeof item === "number" ? String(item) : String(item?.slug ?? item?.id ?? item?.code ?? item?.value ?? item?.year ?? "");
-  const labelOf = (item: any): string => typeof item === "string" || typeof item === "number" ? String(item) : String(item?.name ?? item?.title ?? item?.label ?? item?.year ?? item?.trim ?? item?.slug ?? "");
-  const fill = (select: HTMLSelectElement, rows: any[], placeholder: string, firstValue = "") => {
-    select.replaceChildren(new Option(placeholder, ""));
-    for (const item of rows) {
-      const value = slugOf(item);
-      const label = labelOf(item);
-      if (value && label) select.add(new Option(label, value));
-    }
-    select.disabled = rows.length === 0;
-    if (firstValue) select.value = firstValue;
+  const slugOf = (item) => typeof item === "string" || typeof item === "number" ? String(item) : String(item?.slug ?? item?.id ?? item?.code ?? item?.value ?? item?.year ?? "");
+  const labelOf = (item) => typeof item === "string" || typeof item === "number" ? String(item) : String(item?.name ?? item?.title ?? item?.label ?? item?.year ?? item?.trim ?? item?.slug ?? "");
+  const setOptions = (key, rows, placeholder, { disabled = false } = {}) => {
+    dropdowns[key]?.setOptions(rows, placeholder, disabled);
   };
-  const paramsFor = (includeYear = true) => {
-    const params = new URLSearchParams({ region: region!.value });
-    if (make!.value) params.set("make", make!.value);
-    if (model!.value) params.set("model", model!.value);
-    if (includeYear && year!.value) params.set("year", year!.value);
-    if (generation!.value) params.set("generation", generation!.value);
-    return params;
+  const makeLogo = (label) => {
+    const slug = makeLogoSlugs[clean(label).toLowerCase()];
+    if (!slug) return null;
+    const img = document.createElement("img");
+    img.className = "vf-make-logo"; img.alt = ""; img.loading = "lazy";
+    img.src = iconBase + slug + ".svg";
+    img.onerror = () => img.remove();
+    return img;
   };
-  const catalog = async (resource: string, params = new URLSearchParams()) => {
-    const query = new URLSearchParams(params);
-    query.set("resource", resource);
+  document.querySelectorAll("[data-dropdown]").forEach((host) => {
+    const key = host.dataset.dropdown;
+    const trigger = document.createElement("button");
+    trigger.type = "button"; trigger.className = "vf-select-trigger";
+    trigger.setAttribute("aria-haspopup", "listbox"); trigger.setAttribute("aria-expanded", "false");
+    const valueLabel = document.createElement("span"); valueLabel.className = "vf-select-value";
+    const chevron = document.createElement("span"); chevron.className = "vf-select-chevron"; chevron.textContent = "⌄";
+    trigger.append(valueLabel, chevron);
+    const menu = document.createElement("div"); menu.className = "vf-select-menu"; menu.hidden = true; menu.setAttribute("role", "listbox");
+    menu.id = "vf-list-" + key; trigger.setAttribute("aria-controls", menu.id);
+    host.classList.add("vf-select"); host.append(trigger, menu);
+    const placeholder = host.dataset.placeholder || "Select";
+    let options = [];
+    const close = () => { menu.hidden = true; trigger.setAttribute("aria-expanded", "false"); };
+    const render = () => {
+      menu.replaceChildren();
+      for (const item of options) {
+        const option = document.createElement("button"); option.type = "button"; option.className = "vf-select-option";
+        option.setAttribute("role", "option"); option.setAttribute("aria-selected", String(item.value === values[key]));
+        if (key === "make") { const logo = makeLogo(item.label); if (logo) option.append(logo); }
+        const label = document.createElement("span"); label.textContent = item.label; option.append(label);
+        option.addEventListener("click", () => { values[key] = item.value; valueLabel.textContent = item.label; close(); render(); host.dispatchEvent(new CustomEvent("vf-change", { bubbles: true, detail: { key, value: item.value, item } })); });
+        menu.append(option);
+      }
+      if (!options.length) { const empty = document.createElement("div"); empty.className = "vf-select-empty"; empty.textContent = "No options available"; menu.append(empty); }
+    };
+    trigger.addEventListener("click", () => { if (trigger.disabled) return; const open = menu.hidden; document.querySelectorAll(".vf-select-menu").forEach((m) => m.hidden = true); document.querySelectorAll(".vf-select-trigger").forEach((t) => t.setAttribute("aria-expanded","false")); menu.hidden = !open; trigger.setAttribute("aria-expanded", String(open)); });
+    trigger.addEventListener("keydown", (event) => { if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") { event.preventDefault(); trigger.click(); menu.querySelector("button")?.focus(); } });
+    document.addEventListener("click", (event) => { if (!host.contains(event.target)) close(); });
+    dropdowns[key] = {
+      setOptions(items, text = placeholder, disabled = false) {
+        options = (items || []).map((item) => ({ value: slugOf(item), label: labelOf(item), raw: item })).filter((item) => item.value && item.label);
+        trigger.disabled = disabled || !options.length;
+        trigger.classList.toggle("is-disabled", trigger.disabled);
+        if (!options.some((item) => item.value === values[key])) values[key] = "";
+        valueLabel.textContent = options.find((item) => item.value === values[key])?.label || text;
+        render();
+      },
+      reset(text = placeholder, disabled = true) { options = []; values[key] = ""; valueLabel.textContent = text; trigger.disabled = disabled; trigger.classList.toggle("is-disabled", disabled); close(); render(); }
+    };
+    dropdowns[key].reset(placeholder, key !== "region");
+  });
+  const resetAfter = (key) => {
+    const order = ["make","model","year","generation","modification"];
+    const index = order.indexOf(key);
+    order.slice(index + 1).forEach((name) => dropdowns[name].reset(document.querySelector('[data-dropdown="' + name + '"]').dataset.placeholder, true));
+    submit.disabled = true;
+  };
+  const catalog = async (resource, params = {}) => {
+    const query = new URLSearchParams({ resource, ...params });
     const response = await fetch("/vehicle-fitment/catalog?" + query.toString(), { headers: { Accept: "application/json" } });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload?.error || "catalog_request_failed");
-    return items(payload);
+    return rowsFrom(payload);
   };
   const loadMakes = async () => {
-    status!.textContent = "Loading makes for the selected market…";
-    fill(make!, [], "Loading makes");
-    try {
-      const rows = await catalog("makes", new URLSearchParams({ region: region!.value }));
-      fill(make!, rows, "Select make");
-      status!.textContent = rows.length ? "Select your vehicle to view factory fitment." : "No makes are available for this market.";
-    } catch (error) {
-      status!.textContent = error instanceof Error && error.message === "vehicle_fitment_not_configured"
-        ? "Vehicle lookup is not configured yet. Please contact ANVERA."
-        : "Could not load the vehicle catalogue. Please try again.";
-      fill(make!, [], "Catalogue unavailable");
-    }
-    submit!.disabled = true;
+    status.textContent = "Loading manufacturers for this market…";
+    dropdowns.make.reset("Loading manufacturers", true);
+    try { const rows = await catalog("makes", { region: values.region }); dropdowns.make.setOptions(rows, "Select manufacturer"); status.textContent = rows.length ? "Select a manufacturer to begin." : "No manufacturers are available for this market."; }
+    catch { status.textContent = "Could not load the vehicle catalogue. Please try again."; dropdowns.make.reset("Catalogue unavailable", true); }
   };
-  region?.addEventListener("change", () => {
-    fill(model!, [], "Select model"); fill(year!, [], "Select year"); fill(generation!, [], "Any generation"); fill(modification!, [], "All available trims");
-    loadMakes();
+  document.querySelector('[data-dropdown="region"]').addEventListener("vf-change", (event) => { values.region = event.detail.value; resetAfter("make"); loadMakes(); });
+  document.querySelector('[data-dropdown="make"]').addEventListener("vf-change", async (event) => {
+    values.make = event.detail.value; resetAfter("model"); dropdowns.model.reset("Loading models", true);
+    try { const rows = await catalog("models", { region: values.region, make: values.make }); dropdowns.model.setOptions(rows, "Select model"); status.textContent = "Choose a model, then select its year or generation."; }
+    catch { dropdowns.model.reset("Models unavailable", true); status.textContent = "Could not load models for this manufacturer."; }
   });
-  make?.addEventListener("change", async () => {
-    fill(model!, [], "Loading models"); fill(year!, [], "Select year"); fill(generation!, [], "Any generation"); fill(modification!, [], "All available trims");
+  document.querySelector('[data-dropdown="model"]').addEventListener("vf-change", async (event) => {
+    values.model = event.detail.value; resetAfter("year");
+    for (const key of ["year","generation"]) dropdowns[key].reset("Loading…", true);
+    const params = { region: values.region, make: values.make, model: values.model };
     try {
-      const rows = await catalog("models", new URLSearchParams({ region: region!.value, make: make!.value }));
-      fill(model!, rows, "Select model");
-      status!.textContent = "Choose a model and year or generation.";
-    } catch { status!.textContent = "Could not load models for this make."; fill(model!, [], "Models unavailable"); }
-    submit!.disabled = true;
-  });
-  model?.addEventListener("change", async () => {
-    fill(year!, [], "Loading years"); fill(generation!, [], "Loading generations"); fill(modification!, [], "All available trims");
-    const p = new URLSearchParams({ region: region!.value, make: make!.value, model: model!.value });
-    try {
-      const [years, generations] = await Promise.all([catalog("years", p), catalog("generations", p)]);
-      fill(year!, years, "Select year");
-      fill(generation!, generations, "Any generation");
-      status!.textContent = "Select a year or generation, then find the factory fitment.";
-    } catch {
-      status!.textContent = "Could not load model years. You can still select a generation if available.";
-      fill(year!, [], "Years unavailable"); fill(generation!, [], "Generations unavailable");
-    }
-    submit!.disabled = !(year!.value || generation!.value);
+      const [years, generations] = await Promise.all([catalog("years", params), catalog("generations", params)]);
+      dropdowns.year.setOptions(years, "Select year"); dropdowns.generation.setOptions(generations, "Any generation");
+      status.textContent = "Select a model year or generation. Both may be narrowed further by trim.";
+    } catch { dropdowns.year.reset("Years unavailable", true); dropdowns.generation.reset("Generations unavailable", true); status.textContent = "Could not load model years or generations."; }
   });
   const loadModifications = async () => {
-    if (!model!.value || (!year!.value && !generation!.value)) return;
-    const p = paramsFor();
-    try {
-      const rows = await catalog("modifications", p);
-      fill(modification!, rows, "All available trims");
-    } catch { fill(modification!, [], "Trim list unavailable"); }
-    submit!.disabled = false;
+    if (!values.make || !values.model || (!values.year && !values.generation)) return;
+    const params = { region: values.region, make: values.make, model: values.model };
+    if (values.year) params.year = values.year;
+    if (values.generation) params.generation = values.generation;
+    try { const rows = await catalog("modifications", params); dropdowns.modification.setOptions(rows, "All available trims"); }
+    catch { dropdowns.modification.reset("Trim list unavailable", true); }
+    submit.disabled = !(values.year || values.generation);
   };
-  year?.addEventListener("change", () => { loadModifications(); submit!.disabled = !year!.value && !generation!.value; });
-  generation?.addEventListener("change", () => { loadModifications(); submit!.disabled = !year!.value && !generation!.value; });
-
-  form?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    if (!make!.value || !model!.value || (!year!.value && !generation!.value)) return;
-    submit!.disabled = true;
-    status!.textContent = "Searching verified factory fitment data…";
-    results!.hidden = true;
-    const body: Record<string, string> = { make: make!.value, model: model!.value, region: region!.value };
-    if (year!.value) body.year = year!.value;
-    if (generation!.value) body.generation = generation!.value;
-    if (modification!.value) body.modification = modification!.value;
-    try {
-      const response = await fetch("/vehicle-fitment/search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify(body)
-      });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload?.error || "fitment_search_failed");
-      const records = items(payload?.result);
-      results!.replaceChildren();
-      const heading = document.createElement("h3");
-      heading.textContent = "Factory fitment reference";
-      results!.append(heading);
-      if (!records.length) {
-        const empty = document.createElement("p"); empty.textContent = "No fitment records were returned for this exact selection. Try another year, generation or market region."; results!.append(empty);
-      } else {
-        for (const record of records.slice(0, 12)) {
-          const card = document.createElement("article"); card.className = "vehicle-fitment-result";
-          const title = document.createElement("h4");
-          title.textContent = [record?.make?.name, record?.model?.name, record?.modification?.name ?? record?.modification?.trim, record?.year].filter(Boolean).join(" · ") || "Vehicle fitment";
-          card.append(title);
-          const technical = record?.technical ?? {};
-          const specs = [
-            ["Bolt pattern", technical.bolt_pattern ?? technical.pcd],
-            ["PCD", technical.pcd],
-            ["Centre bore", technical.centre_bore ?? technical.centre_bore_diameter],
-            ["Wheel torque", technical.wheel_torque]
-          ].filter(([, value]) => value !== undefined && value !== null && value !== "");
-          const dl = document.createElement("dl");
-          for (const [label, value] of specs) {
-            const wrap = document.createElement("div"); const dt = document.createElement("dt"); const dd = document.createElement("dd");
-            dt.textContent = String(label); dd.textContent = String(value); wrap.append(dt, dd); dl.append(wrap);
-          }
-          if (specs.length) card.append(dl);
-          const raw = document.createElement("details"); const summary = document.createElement("summary"); summary.textContent = "View complete fitment data";
-          const pre = document.createElement("pre"); pre.textContent = JSON.stringify(record, null, 2); raw.append(summary, pre); card.append(raw);
-          results!.append(card);
-        }
-      }
-      results!.hidden = false;
-      status!.textContent = records.length ? records.length + " fitment record(s) found. Review details below." : "No exact fitment match found.";
-    } catch (error) {
-      status!.textContent = error instanceof Error && error.message === "vehicle_fitment_not_configured"
-        ? "Vehicle lookup is not configured yet. Please contact ANVERA."
-        : "Fitment lookup failed. Please check your selection and try again.";
-    } finally { submit!.disabled = false; }
+  for (const key of ["year","generation"]) document.querySelector('[data-dropdown="' + key + '"]').addEventListener("vf-change", (event) => {
+    values[key] = event.detail.value; if (key === "year" && values.year) values.generation = ""; if (key === "generation" && values.generation) values.year = "";
+    resetAfter(key); loadModifications();
   });
-
+  document.querySelector('[data-dropdown="modification"]').addEventListener("vf-change", (event) => { values.modification = event.detail.value; });
+  document.querySelector('[data-dropdown="region"]').dispatchEvent(new CustomEvent("vf-initialize"));
+  dropdowns.region.setOptions(regionOptions, "Southeast Asia");
   loadMakes();
+
+  const valueAt = (obj, paths) => { for (const path of paths) { const value = path.split(".").reduce((v,k) => v?.[k], obj); if (value !== undefined && value !== null && value !== "") return value; } return null; };
+  const display = (value, suffix = "") => value === null || value === undefined || value === "" ? "—" : String(value) + suffix;
+  const pairSpec = (wheel, axle) => {
+    const side = wheel?.[axle] ?? {};
+    return {
+      rim: valueAt(side, ["rim","rim_full","rim_size"]) ?? valueAt(wheel, [axle + "_rim"]),
+      diameter: valueAt(side, ["rim_diameter","diameter"]) ?? valueAt(wheel, [axle + "_rim_diameter"]),
+      width: valueAt(side, ["rim_width","width"]) ?? valueAt(wheel, [axle + "_rim_width"]),
+      offset: valueAt(side, ["rim_offset","offset","et"]) ?? valueAt(wheel, [axle + "_rim_offset"]),
+      tire: valueAt(side, ["tire_full","tire","tire_size"]) ?? valueAt(wheel, [axle + "_tire"]),
+      pcd: valueAt(side, ["pcd","bolt_pattern"]) ?? valueAt(wheel, ["pcd","bolt_pattern"]),
+      centreBore: valueAt(side, ["centre_bore","center_bore","centre_bore_diameter","center_bore_diameter"])
+    };
+  };
+  const allFitments = (record) => {
+    const source = record?.wheels ?? record?.fitments ?? record?.wheel ?? [];
+    const list = Array.isArray(source) ? source : source && typeof source === "object" ? [source] : [];
+    return list.map((wheel, index) => ({ wheel, index, front: pairSpec(wheel,"front"), rear: pairSpec(wheel,"rear"), classification:
+      wheel?.is_stock === true || wheel?.is_oem === true || /^(oe|oem|stock|original)$/i.test(String(wheel?.type ?? wheel?.fitment_type ?? wheel?.kind ?? "")) ? "oem" :
+      wheel?.is_stock === false || wheel?.is_oem === false || /^(aftermarket|option|optional)$/i.test(String(wheel?.type ?? wheel?.fitment_type ?? wheel?.kind ?? "")) ? "aftermarket" : "other"
+    }));
+  };
+  const renderSpecCell = (label, value) => { const cell = document.createElement("div"); cell.className = "vf-spec-cell"; const small = document.createElement("span"); small.textContent = label; const strong = document.createElement("strong"); strong.textContent = display(value); cell.append(small,strong); return cell; };
+  const makeFitmentCard = (record, item, id, selectedId) => {
+    const card = document.createElement("button"); card.type = "button"; card.className = "vf-fitment-card"; card.setAttribute("aria-pressed", String(id === selectedId));
+    const top = document.createElement("div"); top.className = "vf-fitment-card-top";
+    const title = document.createElement("strong"); title.textContent = "Configuration " + (item.index + 1);
+    const badge = document.createElement("span"); badge.className = "vf-fitment-badge vf-fitment-badge--" + item.classification; badge.textContent = item.classification === "oem" ? "OEM / ORIGINAL" : item.classification === "aftermarket" ? "AFTERMARKET" : "UNCLASSIFIED SOURCE";
+    top.append(title,badge); card.append(top);
+    const grid = document.createElement("div"); grid.className = "vf-fitment-spec-grid";
+    const technical = record?.technical ?? {};
+    grid.append(renderSpecCell("Front wheel", item.front.rim ?? [item.front.width,item.front.diameter ? "R"+item.front.diameter : null,item.front.offset ? "ET"+item.front.offset : null].filter(Boolean).join(" × ")));
+    grid.append(renderSpecCell("Rear wheel", item.rear.rim ?? [item.rear.width,item.rear.diameter ? "R"+item.rear.diameter : null,item.rear.offset ? "ET"+item.rear.offset : null].filter(Boolean).join(" × ")));
+    grid.append(renderSpecCell("Front tyre", item.front.tire)); grid.append(renderSpecCell("Rear tyre", item.rear.tire));
+    grid.append(renderSpecCell("PCD / Bolt pattern", valueAt(technical,["bolt_pattern","pcd"]) ?? item.front.pcd ?? item.rear.pcd));
+    grid.append(renderSpecCell("Centre bore", valueAt(technical,["centre_bore","center_bore","centre_bore_diameter"]) ?? item.front.centreBore ?? item.rear.centreBore));
+    grid.append(renderSpecCell("Thread / fastener", valueAt(technical,["thread_size","fastener_type","wheel_fasteners"])));
+    grid.append(renderSpecCell("Wheel torque", valueAt(technical,["wheel_torque","torque"])));
+    card.append(grid);
+    const details = document.createElement("p"); details.className = "vf-fitment-card-note"; details.textContent = "Select this configuration to see matching ANVERA wheel designs."; card.append(details);
+    card.addEventListener("click", () => { document.querySelectorAll(".vf-fitment-card").forEach((node) => { node.setAttribute("aria-pressed","false"); }); card.setAttribute("aria-pressed","true"); renderProducts(item, record); });
+    return card;
+  };
+  const productField = (product, keys) => valueAt(product?.specs, keys) ?? valueAt(product, keys);
+  const renderProducts = (fitment, record) => {
+    let section = results.querySelector("#vf-products");
+    if (!section) { section = document.createElement("section"); section.id = "vf-products"; section.className = "vf-products"; results.append(section); }
+    section.replaceChildren();
+    const heading = document.createElement("div"); heading.className = "vf-products-heading";
+    const title = document.createElement("h3"); title.textContent = "ANVERA wheel recommendations";
+    const intro = document.createElement("p"); intro.textContent = "Filter the collection by construction, diameter and finish. Product specifications are matched only where structured catalogue data is available.";
+    heading.append(title,intro); section.append(heading);
+    const controls = document.createElement("div"); controls.className = "vf-product-filters";
+    const filtered = { construction: "", diameter: "", finish: "" };
+    const productRows = anveraProducts.map((product) => ({...product, specs: product.specs || {}}));
+    const createFilter = (key, label, options) => {
+      const wrap = document.createElement("label"); wrap.className = "vf-product-filter"; const caption = document.createElement("span"); caption.textContent = label; const host = document.createElement("div"); host.className = "vf-mini-select";
+      const button = document.createElement("button"); button.type = "button"; button.className = "vf-mini-trigger"; button.textContent = "All " + label.toLowerCase() + "s  ⌄";
+      const menu = document.createElement("div"); menu.className = "vf-mini-menu"; menu.hidden = true;
+      const choices = ["All",...options.filter(Boolean)];
+      choices.forEach((choice) => { const option = document.createElement("button"); option.type = "button"; option.textContent = choice; option.addEventListener("click", () => { filtered[key] = choice === "All" ? "" : choice; button.textContent = (choice === "All" ? "All " + label.toLowerCase() + "s" : choice) + "  ⌄"; menu.hidden = true; paint(); }); menu.append(option); });
+      button.addEventListener("click", () => { menu.hidden = !menu.hidden; }); host.append(button,menu); wrap.append(caption,host); controls.append(wrap);
+    };
+    const unique = (key) => [...new Set(productRows.map((p) => clean(productField(p,key))).filter(Boolean))].sort();
+    createFilter("construction","Construction",unique(["construction","construction_type"]));
+    createFilter("diameter","Diameter",unique(["diameter","rim_diameter"]));
+    createFilter("finish","Finish",unique(["finish","finish_name"]));
+    section.append(controls);
+    const list = document.createElement("div"); list.className = "vf-product-grid"; section.append(list);
+    const paint = () => {
+      list.replaceChildren();
+      const compatible = productRows.filter((product) => {
+        const construction = clean(productField(product,["construction","construction_type"]));
+        const diameter = clean(productField(product,["diameter","rim_diameter"]));
+        const finish = clean(productField(product,["finish","finish_name"]));
+        return (!filtered.construction || construction === filtered.construction) && (!filtered.diameter || diameter === filtered.diameter) && (!filtered.finish || finish === filtered.finish);
+      });
+      if (!compatible.length) { const empty = document.createElement("p"); empty.className = "vf-product-empty"; empty.textContent = "No published ANVERA products match these filters."; list.append(empty); return; }
+      compatible.forEach((product) => {
+        const article = document.createElement("article"); article.className = "vf-product-card";
+        const meta = document.createElement("div"); meta.className = "vf-product-meta"; meta.textContent = [product.modelCode,product.construction].filter(Boolean).join(" / ").toUpperCase() || "ANVERA / FORGED";
+        const name = document.createElement("h4"); name.textContent = product.title;
+        const specs = document.createElement("p"); specs.className = "vf-product-specs"; specs.textContent = [productField(product,["diameter","rim_diameter"]) ? "Ø"+productField(product,["diameter","rim_diameter"]) : "",productField(product,["width","rim_width"]) ? productField(product,["width","rim_width"])+"J" : "",productField(product,["pcd"]) ? "PCD "+productField(product,["pcd"]) : "",productField(product,["offset","et"]) ? "ET "+productField(product,["offset","et"]) : ""].filter(Boolean).join(" · ") || "Specifications available on request";
+        const finish = document.createElement("p"); finish.className = "vf-product-finish"; finish.textContent = product.finish ? "Finish · " + product.finish : "Custom finish options";
+        const link = document.createElement("a"); link.href = "/wheels/models/" + encodeURIComponent(product.id); link.textContent = "Explore design ↗";
+        article.append(meta,name,specs,finish,link); list.append(article);
+      });
+    };
+    paint();
+  };
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!values.make || !values.model || (!values.year && !values.generation)) return;
+    submit.disabled = true; status.textContent = "Searching original and alternative fitment records…"; results.hidden = true; results.replaceChildren();
+    const body = { make: values.make, model: values.model, region: values.region };
+    if (values.year) body.year = values.year; if (values.generation) body.generation = values.generation; if (values.modification) body.modification = values.modification;
+    try {
+      const response = await fetch("/vehicle-fitment/search", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(body) });
+      const payload = await response.json(); if (!response.ok) throw new Error(payload?.error || "fitment_search_failed");
+      const records = rowsFrom(payload?.result);
+      const intro = document.createElement("div"); intro.className = "vf-results-heading";
+      const title = document.createElement("h3"); title.textContent = "Vehicle fitment results";
+      const count = document.createElement("p"); count.textContent = records.length + " vehicle record(s) returned. Choose a specific wheel configuration below.";
+      intro.append(title,count); results.append(intro);
+      let selected = null;
+      const groups = { oem: [], aftermarket: [], other: [] };
+      records.forEach((record) => allFitments(record).forEach((fitment) => groups[fitment.classification].push({record,fitment})));
+      const renderGroup = (key,label,description) => {
+        const entries = groups[key]; if (!entries.length) return;
+        const group = document.createElement("section"); group.className = "vf-fitment-group";
+        const head = document.createElement("div"); head.className = "vf-fitment-group-heading";
+        const h = document.createElement("h4"); h.textContent = label; const p = document.createElement("p"); p.textContent = description; head.append(h,p); group.append(head);
+        entries.forEach(({record,fitment}) => { const card = makeFitmentCard(record,fitment, key+":"+fitment.index, selected); group.append(card); });
+        results.append(group);
+      };
+      renderGroup("oem","Original equipment (OEM)","Factory-fitted wheel and tyre configurations supplied for this vehicle.");
+      renderGroup("aftermarket","Aftermarket & optional fitments","Alternative or manufacturer-optional configurations returned by the fitment source.");
+      renderGroup("other","Additional records","The source did not provide an explicit OEM / aftermarket classification for these records.");
+      if (!Object.values(groups).some((list) => list.length)) { const empty = document.createElement("p"); empty.className = "vf-product-empty"; empty.textContent = "No wheel configurations were returned for this vehicle selection. Try another year, generation or market."; results.append(empty); }
+      results.hidden = false; status.textContent = records.length ? "Fitment data loaded. Select a configuration to view ANVERA products." : "No fitment records found.";
+    } catch (error) { status.textContent = "Fitment lookup failed. Please review your selection and try again."; }
+    finally { submit.disabled = false; }
+  });
 </script>
+<style>
+.vehicle-finder-section{padding:clamp(64px,8vw,112px) var(--page-gutter);background:#f1f2f3}
+.vehicle-finder-inner{width:min(100%,var(--content-max));margin:auto}
+.vehicle-finder-heading{display:flex;justify-content:space-between;align-items:end;gap:48px;margin-bottom:44px}
+.vehicle-finder-heading h2{margin:14px 0 0;font-family:var(--font-display);font-size:clamp(38px,5.5vw,68px);line-height:.95;letter-spacing:-.045em;text-transform:uppercase}
+.vehicle-finder-heading h2 span{color:var(--anvera-red)}
+.vehicle-finder-heading>p{max-width:430px;margin:0 0 4px;color:var(--cds-text-secondary);font-size:14px;line-height:1.8}
+.vehicle-finder-form{padding:30px;background:#fff}
+.vehicle-finder-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.vehicle-finder-field{display:grid;gap:8px;min-width:0;color:var(--cds-text-secondary);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.vf-select{position:relative;min-width:0}
+.vf-select-trigger,.vf-mini-trigger{width:100%;min-height:50px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 14px;border:0;border-bottom:1px solid #8d8d8d;border-radius:0;background:#f4f4f4;color:#161616;text-align:left;font-size:14px;letter-spacing:0;text-transform:none}
+.vf-select-trigger:hover,.vf-mini-trigger:hover{background:#e8e8e8}
+.vf-select-trigger:disabled,.vf-select-trigger.is-disabled{opacity:.48;cursor:not-allowed}
+.vf-select-chevron{font-size:20px;color:#525252}
+.vf-select-menu,.vf-mini-menu{position:absolute;z-index:50;top:calc(100% + 2px);left:0;right:0;max-height:280px;overflow:auto;padding:5px 0;background:#fff;box-shadow:0 8px 28px rgba(0,0,0,.18)}
+.vf-select-option,.vf-mini-menu button{width:100%;min-height:46px;display:flex;align-items:center;gap:13px;padding:8px 14px;border:0;background:#fff;color:#161616;text-align:left;font-size:14px;letter-spacing:0;text-transform:none}
+.vf-select-option:hover,.vf-select-option[aria-selected=true],.vf-mini-menu button:hover{background:#edf1f5}
+.vf-make-logo{width:27px;height:27px;object-fit:contain;flex:0 0 27px}
+.vf-select-empty{padding:14px;color:#777;font-size:13px}
+.vehicle-finder-actions{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-top:28px}
+.vehicle-finder-actions p{margin:0;color:var(--cds-text-secondary);font-size:12px}
+.vehicle-finder-disclaimer{max-width:850px;margin:24px 0 0;color:#6f6f6f;font-size:12px;line-height:1.7}
+.vehicle-finder-results{margin-top:34px}
+.vf-results-heading{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:24px}
+.vf-results-heading h3,.vf-products-heading h3{margin:0;font-family:var(--font-display);font-size:clamp(26px,3.5vw,42px);letter-spacing:-.035em;text-transform:uppercase}
+.vf-results-heading p,.vf-products-heading p{max-width:520px;margin:0;color:#6f6f6f;font-size:13px;line-height:1.7}
+.vf-fitment-group{margin:26px 0 36px}
+.vf-fitment-group-heading{display:flex;align-items:baseline;gap:18px;margin-bottom:14px}
+.vf-fitment-group-heading h4{margin:0;font-size:16px;text-transform:uppercase;letter-spacing:.06em}
+.vf-fitment-group-heading p{margin:0;color:#6f6f6f;font-size:12px}
+.vf-fitment-card{width:100%;margin:0 0 10px;padding:20px;border:0;border-left:3px solid transparent;background:#fff;text-align:left;transition:background .16s,border-color .16s}
+.vf-fitment-card[aria-pressed=true]{border-left-color:var(--anvera-red);background:#fff}
+.vf-fitment-card:hover{background:#fafafa}
+.vf-fitment-card-top{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:18px}
+.vf-fitment-card-top strong{font-size:14px}
+.vf-fitment-badge{padding:5px 8px;font-size:9px;font-weight:800;letter-spacing:.12em}
+.vf-fitment-badge--oem{background:#e8f0e9;color:#245b32}
+.vf-fitment-badge--aftermarket{background:#e8edf5;color:#244b7a}
+.vf-fitment-badge--other{background:#ededed;color:#555}
+.vf-fitment-spec-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.vf-spec-cell{display:grid;gap:5px;min-width:0;padding:10px;background:#f4f4f4}
+.vf-spec-cell span{color:#6f6f6f;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.vf-spec-cell strong{overflow-wrap:anywhere;color:#161616;font-size:13px;font-weight:600}
+.vf-fitment-card-note{margin:14px 0 0;color:#6f6f6f;font-size:11px}
+.vf-products{margin-top:52px;padding:30px;background:#fff}
+.vf-products-heading{display:flex;justify-content:space-between;align-items:end;gap:20px}
+.vf-product-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:26px 0}
+.vf-product-filter{display:grid;gap:7px;color:#6f6f6f;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.vf-mini-select{position:relative}
+.vf-mini-trigger{min-height:44px;font-size:13px}
+.vf-mini-menu{max-height:220px}
+.vf-mini-menu button{min-height:38px;font-size:13px}
+.vf-product-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:#dedede}
+.vf-product-card{min-width:0;padding:22px;background:#f7f8f9}
+.vf-product-meta{color:#8a8a8a;font-size:9px;font-weight:800;letter-spacing:.12em}
+.vf-product-card h4{margin:14px 0 8px;font-family:var(--font-display);font-size:24px;text-transform:uppercase}
+.vf-product-specs,.vf-product-finish{margin:0 0 8px;color:#6f6f6f;font-size:12px}
+.vf-product-card a{display:inline-block;margin-top:14px;color:#161616;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid #999;padding-bottom:4px}
+.vf-product-empty{padding:20px;background:#f4f4f4;color:#6f6f6f;font-size:13px}
+@media(max-width:760px){.vehicle-finder-heading,.vf-results-heading,.vf-products-heading{display:block}.vehicle-finder-heading>p,.vf-results-heading p,.vf-products-heading p{margin-top:16px}.vehicle-finder-grid{grid-template-columns:1fr 1fr}.vf-spec-grid,.vf-fitment-spec-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.vf-product-grid{grid-template-columns:1fr 1fr}.vf-product-filters{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.vehicle-finder-form,.vf-products{padding:18px}.vehicle-finder-grid,.vf-product-grid,.vf-product-filters{grid-template-columns:1fr}.vehicle-finder-actions{align-items:flex-start;flex-direction:column}.vehicle-finder-actions .cds-btn{width:100%}.vf-fitment-group-heading{display:block}.vf-fitment-group-heading p{margin-top:6px}.vf-fitment-card{padding:14px}.vf-fitment-card-top{align-items:flex-start;flex-direction:column}.vf-fitment-spec-grid{grid-template-columns:1fr 1fr}}
+</style>
