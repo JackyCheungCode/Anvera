@@ -113,6 +113,12 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
+      - name: Upgrade Product Intelligence review and mapping constraints in Preview D1
+        run: pnpm exec wrangler d1 execute anvera-preview --remote --file migrations/0006_product_intelligence_review_mapping_constraint_upgrade.sql --config dist/server/wrangler.preview.json
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
       - name: Validate Wrangler bundle without deploying
         run: pnpm exec wrangler deploy --dry-run --config dist/server/wrangler.preview.json
         env:
