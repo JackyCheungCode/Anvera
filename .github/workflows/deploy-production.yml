@@ -45,12 +45,11 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
-      - name: Inspect generated vehicle API route registration
+      - name: Inspect custom Worker vehicle route handlers
         run: |
           node --input-type=module <<'NODE'
           import fs from "node:fs";
           import path from "node:path";
-          const root = "dist/server";
           const hits = [];
           const walk = (dir) => {
             for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -58,20 +57,18 @@ jobs:
               if (entry.isDirectory()) walk(file);
               else if (entry.name.endsWith(".mjs")) {
                 const source = fs.readFileSync(file, "utf8");
-                for (const needle of ["/vehicle-fitment/catalog", "vehicle-catalog"]) {
-                  const index = source.indexOf(needle);
-                  if (index >= 0) hits.push({ file, needle, excerpt: source.slice(Math.max(0, index - 1200), index + 2400) });
+                for (const needle of ["/vehicle-fitment/catalog", "/vehicle-fitment/search"]) {
+                  if (source.includes(needle)) hits.push({ file, needle });
                 }
               }
             }
           };
-          walk(root);
-          const entry = fs.readFileSync("dist/server/entry.mjs", "utf8");
-          console.log("Worker entry references:", entry.split("\\n").filter(line => line.includes("entrypoints") || line.includes("manifest")).slice(0, 30));
-          console.log(JSON.stringify(hits.slice(0, 12), null, 2));
-          if (!hits.some(hit => hit.needle === "/vehicle-fitment/catalog")) throw new Error("Vehicle fitment catalog route was not emitted.");
+          walk("dist/server");
+          console.log(JSON.stringify(hits, null, 2));
+          for (const route of ["/vehicle-fitment/catalog", "/vehicle-fitment/search"]) {
+            if (!hits.some(hit => hit.needle === route)) throw new Error(`Worker route handler missing from bundle: ${route}`);
+          }
           NODE
-
 
       - name: Validate production Worker bundle
         run: pnpm exec wrangler deploy --dry-run --config dist/server/wrangler.json
@@ -114,6 +111,12 @@ jobs:
             throw new Error(`Wheel-Size returned no make records: ${JSON.stringify(payload).slice(0, 500)}`);
           }
           console.log(JSON.stringify({ pageStatus: page.status, catalogStatus: response.status, makeCount: rows.length, firstRecordKeys: Object.keys(rows[0] ?? {}) }));
+          const searchProbe = await fetch(`${base}/vehicle-fitment/search`, {
+            method: "POST",
+            headers: { Origin: base, "Content-Type": "application/json" },
+            body: "{}"
+          });
+          if (searchProbe.status !== 422) throw new Error(`Vehicle search route check failed (${searchProbe.status}): ${(await searchProbe.text()).slice(0, 300)}`);
           NODE
 
       - name: Verify production homepage

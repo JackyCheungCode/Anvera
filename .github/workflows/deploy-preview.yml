@@ -88,70 +88,10 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
-      - name: Apply EmDash migrations to isolated Preview D1
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          node --input-type=module <<'NODE'
-          import { spawnSync } from "node:child_process";
-          const config = "wrangler.preview.jsonc";
-          const expectedDatabaseId = "9bebf5e9-b020-420f-b398-f2f177c52ede";
-          const run = (args, capture = false) => {
-            const result = spawnSync("pnpm", ["exec", "emdash", "migrate", ...args], {
-              encoding: "utf8",
-              env: process.env,
-              stdio: capture ? ["ignore", "pipe", "inherit"] : "inherit"
-            });
-            return result;
-          };
-          const check = () => {
-            const result = run(["--check", "--json", "--wrangler-config", config], true);
-            const jsonLine = result.stdout.split(/\r?\n/).filter(line => line.trim().startsWith("{")).at(-1);
-            if (!jsonLine) throw new Error("EmDash migration check did not return a JSON report.");
-            const report = JSON.parse(jsonLine);
-            if (report.target?.kind !== "d1" || report.target?.resourceId !== expectedDatabaseId) {
-              throw new Error("Migration target mismatch: refusing to modify any database other than isolated Preview D1.");
-            }
-            if ((report.unknownApplied ?? []).length) {
-              throw new Error("Preview D1 contains unknown applied migrations; refusing automatic migration.");
-            }
-            return report;
-          };
-          let report = check();
-          console.log(JSON.stringify({ target: report.target.label, pending: report.pending ?? [] }));
-          if ((report.pending ?? []).length) {
-            const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-            const token = process.env.CLOUDFLARE_API_TOKEN;
-            const lockResponse = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${expectedDatabaseId}/query`, {
-              method: "POST",
-              headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-              body: JSON.stringify({ sql: "SELECT is_locked FROM _emdash_migrations_lock WHERE id = ?", params: ["migration_lock"] })
-            });
-            const lockPayload = await lockResponse.json();
-            if (!lockResponse.ok || !lockPayload.success) throw new Error("Unable to inspect isolated Preview D1 migration lock.");
-            const lockedAt = Number(lockPayload.result?.[0]?.results?.[0]?.is_locked ?? 0);
-            if (lockedAt > 0) {
-              const lockAgeMs = Date.now() - lockedAt;
-              if (lockAgeMs < 15 * 60 * 1000) throw new Error("Preview D1 migration lock is recent; refusing to interrupt a possibly active migration.");
-              console.log(`Releasing stale Preview-only migration lock aged ${Math.round(lockAgeMs / 60000)} minutes.`);
-              const released = run([`--release-lock=${lockedAt}`, `--expected-target-fingerprint=${report.target.fingerprint}`, "--wrangler-config", config]);
-              if (released.status !== 0) process.exit(released.status ?? 1);
-            }
-            const applied = run([`--expected-target-fingerprint=${report.target.fingerprint}`, "--wrangler-config", config]);
-            if (applied.status !== 0) process.exit(applied.status ?? 1);
-            report = check();
-          }
-          if ((report.pending ?? []).length || (report.unknownApplied ?? []).length) {
-            throw new Error("Preview D1 migrations are not in a clean state after migration.");
-          }
-          console.log("Isolated Preview D1 migration state verified.");
-          NODE
-
       - name: Smoke test Wheel-Size catalog proxy
         run: |
           node --input-type=module <<'NODE'
-          const response = await fetch("https://anvera-preview.xg-y.workers.dev/api/vehicle-catalog?resource=makes&region=sam");
+          const response = await fetch("https://anvera-preview.xg-y.workers.dev/vehicle-fitment/catalog?resource=makes&region=sam");
           const text = await response.text();
           if (!response.ok) throw new Error(`Catalog smoke test failed (${response.status}): ${text.slice(0, 500)}`);
           const payload = JSON.parse(text);
@@ -160,4 +100,10 @@ jobs:
             throw new Error(`Catalog response has no make records: ${JSON.stringify(payload).slice(0, 500)}`);
           }
           console.log(JSON.stringify({ status: response.status, count: rows.length, firstRecordKeys: Object.keys(rows[0] ?? {}) }));
+          const searchProbe = await fetch("https://anvera-preview.xg-y.workers.dev/vehicle-fitment/search", {
+            method: "POST",
+            headers: { Origin: "https://anvera-preview.xg-y.workers.dev", "Content-Type": "application/json" },
+            body: "{}"
+          });
+          if (searchProbe.status !== 422) throw new Error(`Search route smoke test failed (${searchProbe.status}): ${(await searchProbe.text()).slice(0, 300)}`);
           NODE
