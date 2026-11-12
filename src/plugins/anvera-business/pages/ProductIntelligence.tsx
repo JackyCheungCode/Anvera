@@ -90,7 +90,7 @@ const steps: StepDefinition[] = [
   {
     id: "construction", number: "03", title: "Construction & Engineering", subtitle: "Wheel architecture and engineering requirements", eyebrow: "ENGINEERING",
     fields: [
-      { key: "constructionTypes", label: "Supported constructions", required: true, type: "textarea", placeholder: "One construction per line: Monoblock, Two-piece, Three-piece. Include only approved factory capabilities." },
+      { key: "constructionTypes", label: "Legacy construction list (fallback only)", type: "textarea", placeholder: "Used only if the structured Construction Capability Matrix is not installed." , help: "The approved Construction Capability Matrix below is authoritative when available." },
       { key: "constructionNotes", label: "Construction capability details", type: "textarea", placeholder: "Document supported structures, process ownership and limitations." },
       { key: "assemblyMethod", label: "Assembly method", placeholder: "Required for multi-piece products where applicable" },
       { key: "fastenerRequirements", label: "Fastener requirements", placeholder: "Material, grade, size and torque evidence where applicable" },
