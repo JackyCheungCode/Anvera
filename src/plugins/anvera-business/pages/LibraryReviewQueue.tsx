@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 
 type ReviewItem = {
-  id: string; entity_type: "material" | "forging_process" | "finish_profile" | "product_finish_mapping"; code: string; name: string;
+  id: string; entity_type: "material" | "forging_process" | "finish_profile" | "product_finish_mapping" | "construction_capability"; code: string; name: string;
   detail: string; status: string; revision: number; updated_at: string;
 };
 type QueueResponse = { available: boolean; reason?: string; items?: ReviewItem[] };
@@ -64,7 +64,7 @@ export function LibraryReviewQueue() {
       loading ? <div className="api-review-queue-empty"><strong>Loading review queue…</strong></div> :
       items.length ? <div className="api-review-queue-list">{items.map((item) => <article key={item.id}>
         <div className="api-review-queue-record">
-          <span>{item.entity_type === "material" ? "MATERIAL PROFILE" : item.entity_type === "forging_process" ? "FORGING PROCESS" : item.entity_type === "finish_profile" ? "FINISH PROFILE" : "PRODUCT FINISH MAPPING"} · REVISION {item.revision}</span>
+          <span>{item.entity_type === "material" ? "MATERIAL PROFILE" : item.entity_type === "forging_process" ? "FORGING PROCESS" : item.entity_type === "finish_profile" ? "FINISH PROFILE" : item.entity_type === "product_finish_mapping" ? "PRODUCT FINISH MAPPING" : "CONSTRUCTION CAPABILITY"} · REVISION {item.revision}</span>
           <strong>{item.code} · {item.name}</strong>
           <small>{item.detail}</small>
         </div>
