@@ -26,7 +26,7 @@ type StepDefinition = {
   optional?: boolean;
 };
 
-type SpecificationRow = { id: string; role: string; diameter: string; width: string; boltCount: string; pcd: string; offset: string; centerBore: string; loadRating: string; status: string };
+type SpecificationRow = { id: string; role: string; diameter: string; width: string; boltCount: string; pcd: string; offset: string; centerBore: string; loadRating: string; evidenceRef: string; status: string };
 type ProductProfile = { [key: string]: string | string[] | SpecificationRow[] | undefined; specifications?: SpecificationRow[]; finishProfiles?: string[] };
 
 type SetupDocument = {
@@ -49,6 +49,7 @@ type SetupResponse = {
   stepState?: Record<string, string>;
   events?: Array<{ id: string; event_type: string; revision: number; summary: string | null; created_at: string }>;
   versions?: Array<{ id: string; revision: number; version_type: string; note: string | null; created_at: string }>;
+  specificationStatuses?: Record<string, string>;
 };
 
 type SaveResponse = { saved: boolean; sessionId?: string; revision?: number; status?: string; reason?: string; mappingWarning?: string | null };
@@ -208,7 +209,7 @@ function addSpecification(document: SetupDocument, productIndex: number) {
   const product = { ...(products[productIndex] ?? { specifications: [] }) };
   const specifications = [...(product.specifications ?? []), {
     id: crypto.randomUUID(), role: "Front", diameter: "", width: "", boltCount: "", pcd: "",
-    offset: "", centerBore: "", loadRating: "", status: "Draft"
+    offset: "", centerBore: "", loadRating: "", evidenceRef: "", status: "Draft"
   }];
   products[productIndex] = { ...product, specifications };
   return { ...document, products };
@@ -312,7 +313,16 @@ export function ProductIntelligence() {
           : "The Product Intelligence workspace is unavailable.");
         return;
       }
-      setDocument({ ...emptyDocument(), ...(result.document ?? {}) });
+      const loadedDocument = { ...emptyDocument(), ...(result.document ?? {}) };
+      const statusLabels: Record<string, string> = { draft: "Draft", factory_supported: "Factory Supported", pending_review: "Engineering Review", approved: "Engineering Approved", restricted: "Restricted" };
+      loadedDocument.products = (loadedDocument.products ?? []).map((product) => ({
+        ...product,
+        specifications: (product.specifications ?? []).map((row) => ({
+          ...row,
+          status: statusLabels[result.specificationStatuses?.[row.id] ?? ""] ?? row.status ?? "Draft"
+        }))
+      }));
+      setDocument(loadedDocument);
       setRevision(result.session?.revision ?? 0);
       setSessionId(result.session?.id ?? "");
       setStatus(result.session?.status ?? "draft");
@@ -523,7 +533,7 @@ export function ProductIntelligence() {
               {active.id === "products" ? <section className="api-spec-editor">
                 <div className="api-spec-heading"><div><p className="anvera-eyebrow">PRODUCT SPECIFICATIONS</p><h3>Specification Matrix</h3><p>Each row is a specific, reviewable wheel specification. Do not enter a range in place of a confirmed combination.</p></div><button className="api-add-product" type="button" onClick={() => setDocument((current) => addSpecification(current, productIndex))}>＋ Add specification</button></div>
                 <div className="api-spec-table-wrap"><table className="api-spec-table">
-                  <thead><tr><th>POSITION</th><th>DIAMETER</th><th>WIDTH</th><th>BOLT COUNT</th><th>PCD (MM)</th><th>OFFSET (MM)</th><th>CENTER BORE (MM)</th><th>LOAD (KG)</th><th>STATUS</th><th></th></tr></thead>
+                  <thead><tr><th>POSITION</th><th>DIAMETER</th><th>WIDTH</th><th>BOLT COUNT</th><th>PCD (MM)</th><th>OFFSET (MM)</th><th>CENTER BORE (MM)</th><th>LOAD (KG)</th><th>EVIDENCE REFERENCE</th><th>ENGINEERING STATUS</th><th></th></tr></thead>
                   <tbody>{(document.products?.[productIndex]?.specifications ?? []).map((row) => <tr key={row.id}>
                     <td><CustomSelect label="Position" value={row.role} options={["Front", "Rear", "Front & Rear"]} onChange={(value) => setDocument((current) => updateSpecification(current, productIndex, row.id, "role", value))} /></td>
                     <td><input aria-label="Diameter in inches" type="number" min="1" step="0.5" value={row.diameter} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "diameter", event.target.value))} /></td>
@@ -533,12 +543,13 @@ export function ProductIntelligence() {
                     <td><input aria-label="Offset in millimeters" type="number" step="0.5" value={row.offset} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "offset", event.target.value))} /></td>
                     <td><input aria-label="Center bore in millimeters" type="number" min="1" step="0.1" value={row.centerBore} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "centerBore", event.target.value))} /></td>
                     <td><input aria-label="Load rating in kilograms" type="number" min="1" step="1" value={row.loadRating} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "loadRating", event.target.value))} /></td>
-                    <td><CustomSelect label="Specification status" value={row.status} options={["Draft", "Factory Supported", "Engineering Review", "Engineering Approved", "Restricted"]} onChange={(value) => setDocument((current) => updateSpecification(current, productIndex, row.id, "status", value))} /></td>
+                    <td><input aria-label="Specification evidence reference" type="text" value={row.evidenceRef ?? ""} placeholder="Drawing / test report ID" onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "evidenceRef", event.target.value))} /></td>
+                    <td><span className={`api-library-status api-library-status--${row.status === "Engineering Approved" ? "approved" : row.status === "Restricted" ? "restricted" : row.status === "Engineering Review" ? "pending_review" : row.status === "Factory Supported" ? "factory_supported" : "draft"}`}>{row.status || "Draft"}</span></td>
                     <td><button className="api-remove-spec" type="button" aria-label="Remove specification row" onClick={() => setDocument((current) => removeSpecification(current, productIndex, row.id))}>×</button></td>
                   </tr>)}</tbody>
                 </table></div>
                 {missing.some((field) => field.key === "specifications") ? <p className="api-field-error">Add at least one complete specification row before continuing.</p> : null}
-                <p className="anvera-muted">A factory-supported specification is not automatically engineering-approved or vehicle-verified. Load rating is optional during drafting but must be supported before a product claim is published.</p>
+                <p className="anvera-muted">A specification status is controlled by engineering review, not by the product editor. Only approved specifications may be used as candidates for vehicle-fitment validation; approval requires a load rating and evidence reference.</p>
               </section> : null}
 
               {active.id === "review" ? <div className="api-review-summary">
