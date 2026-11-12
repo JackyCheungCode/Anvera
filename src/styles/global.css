@@ -458,3 +458,20 @@ img, video { display: block; max-width: 100%; }
 .dealer-application-form { padding:36px; background:white; }
 @media(max-width:900px) { .dealer-apply-layout { grid-template-columns:1fr; gap:36px; } }
 @media(max-width:560px) { .dealer-apply-layout { padding:64px var(--page-gutter) 80px; } .dealer-application-form { padding:24px 18px; } }
+
+
+/* Live EmDash wheel catalogue */
+.cms-products { background:#f4f4f4; }
+.cms-product-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1px; margin-top:44px; background:#c6c6c6; }
+.cms-product-card { display:block; padding:16px 16px 28px; color:#161616; background:#e8e8e8; }
+.cms-product-card:nth-child(3n+2) { background:#dedfe1; }
+.cms-product-media { display:grid; place-items:center; aspect-ratio:4/3; overflow:hidden; background:radial-gradient(ellipse at center,#59616b,#1c2127 62%,#0b0d10); }
+.cms-product-media img { width:100%; height:100%; object-fit:cover; }
+.cms-product-placeholder { display:grid; place-items:center; width:100%; height:100%; color:rgba(255,255,255,.45); font-size:10px; font-weight:800; letter-spacing:.2em; }
+.cms-product-meta { display:flex; justify-content:space-between; gap:12px; margin-top:22px; color:var(--anvera-red); font-size:9px; font-weight:800; letter-spacing:.12em; }
+.cms-product-meta span:last-child { color:#525252; text-align:right; }
+.cms-product-card h3 { margin:14px 0 8px; font-family:var(--font-display); font-size:30px; text-transform:uppercase; }
+.cms-product-card > p { min-height:44px; color:#525252; font-size:12px; line-height:1.7; }
+.cms-product-link { display:inline-block; margin-top:10px; font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
+@media(max-width:800px) { .cms-product-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:560px) { .cms-product-grid { grid-template-columns:1fr; } }
