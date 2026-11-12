@@ -1,0 +1,47 @@
+---
+import Base from "../../layouts/Base.astro";
+const families = [
+  { slug: "monoblock", number: "01", name: "Monoblock", descriptor: "A singular form. A unified expression.", copy: "A one-piece forged construction for a clean, purposeful design language.", tag: "ONE-PIECE CONSTRUCTION", visual: "mono" },
+  { slug: "two-piece", number: "02", name: "Two-piece", descriptor: "Precision, with room for expression.", copy: "A multi-component approach that opens up more possibilities for proportion, finish and detail.", tag: "MODULAR CONSTRUCTION", visual: "two" },
+  { slug: "three-piece", number: "03", name: "Three-piece", descriptor: "A composition built around your vision.", copy: "A configurable multi-piece architecture for highly individual wheel projects.", tag: "MULTI-PIECE CONSTRUCTION", visual: "three" }
+];
+---
+<Base title="Forged Wheel Collection" description="Explore ANVERA forged wheel construction families and begin a wheel project tailored to your vehicle.">
+  <section class="collection-hero">
+    <div class="collection-hero-art" aria-hidden="true"><div class="wheel-render wheel-render--large"></div></div>
+    <div class="collection-hero-content">
+      <p class="eyebrow">ANVERA / THE COLLECTION</p>
+      <h1>Built around<br /><span>your vision.</span></h1>
+      <p>Discover the construction approaches behind our forged wheel programme. Every project begins with the vehicle, the intended fitment and the details that make it yours.</p>
+      <a class="cds-btn cds-btn--primary" href="/custom-inquiry">Start a wheel project <span aria-hidden="true">↗</span></a>
+    </div>
+    <div class="collection-hero-index">01 — 03 <span>CONSTRUCTION FAMILIES</span></div>
+  </section>
+
+  <section class="collection-intro section">
+    <div class="section-inner collection-intro-grid">
+      <div><p class="section-kicker">The forged programme</p><h2 class="section-title">Three approaches.<br />One ANVERA standard.</h2></div>
+      <p class="section-lead">The right construction depends on the vehicle, the fitment and the design direction. Explore the fundamentals, then tell us what you have in mind.</p>
+    </div>
+  </section>
+
+  <section class="family-list" aria-label="Wheel construction families">
+    {families.map((family) => (
+      <a class="family-card" href={`/wheels/${family.slug}`}>
+        <div class:list={["family-card-visual", `family-card-visual--${family.visual}`]} aria-hidden="true"><div class="wheel-render"></div></div>
+        <div class="family-card-copy">
+          <div class="family-card-meta"><span>{family.number} / 03</span><span>{family.tag}</span></div>
+          <h3>{family.name}</h3>
+          <p class="family-descriptor">{family.descriptor}</p>
+          <p>{family.copy}</p>
+          <span class="family-link">Explore construction <b aria-hidden="true">↗</b></span>
+        </div>
+      </a>
+    ))}
+  </section>
+
+  <section class="collection-cta">
+    <div><p class="section-kicker">A considered fit starts here</p><h2>Tell us what<br />you drive.</h2><p>Share your vehicle and design direction. Our team will help define the right specification.</p></div>
+    <a class="cds-btn cds-btn--primary" href="/custom-inquiry">Request a consultation <span aria-hidden="true">↗</span></a>
+  </section>
+</Base>
