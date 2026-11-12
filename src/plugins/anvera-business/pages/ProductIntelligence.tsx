@@ -376,14 +376,14 @@ export function ProductIntelligence() {
                 {active.fields.map((field) => {
                   let resolvedField = field;
                   if (active.id === "products" && field.key === "construction") {
-                    const supported = (document.construction.constructionTypes ?? "").split(/[\\n,;]+/).map((value) => value.trim()).filter((value) => ["Monoblock", "Two-piece", "Three-piece"].includes(value));
+                    const supported = (document.construction.constructionTypes ?? "").split(/[\n,;]+/).map((value) => value.trim()).filter((value) => ["Monoblock", "Two-piece", "Three-piece"].includes(value));
                     resolvedField = { ...field, options: supported };
                   }
                   if (active.id === "products" && field.key === "materialProfile") {
-                    resolvedField = { ...field, options: (document.material.materialGrade ?? "").split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean) };
+                    resolvedField = { ...field, options: (document.material.materialGrade ?? "").split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean) };
                   }
                   if (active.id === "products" && field.key === "forgingProfile") {
-                    resolvedField = { ...field, options: (document.material.forgingMethod ?? "").split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean) };
+                    resolvedField = { ...field, options: (document.material.forgingMethod ?? "").split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean) };
                   }
                   return <Field key={field.key} field={resolvedField} value={getPath(document, active.id, field.key, productIndex)} onChange={(value) => updateField(field.key, value)} error={missing.some((item) => item.key === field.key)} />;
                 })}
