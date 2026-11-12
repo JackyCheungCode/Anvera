@@ -1,0 +1,51 @@
+name: ANVERA preview deployment
+
+on:
+  push:
+    branches:
+      - feat/bmw-carbon-design-system
+    paths-ignore:
+      - "docs/**"
+      - "*.md"
+      - "README*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: anvera-preview-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    environment: anvera-preview
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Verify
+        run: |
+          pnpm test
+          pnpm typecheck
+          pnpm build
+
+      - name: Deploy isolated preview Worker
+        run: pnpm exec wrangler deploy --config wrangler.preview.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
