@@ -83,7 +83,7 @@ const regions = [
   const catalog = async (resource: string, params = new URLSearchParams()) => {
     const query = new URLSearchParams(params);
     query.set("resource", resource);
-    const response = await fetch("/api/vehicle-catalog?" + query.toString(), { headers: { Accept: "application/json" } });
+    const response = await fetch("/vehicle-fitment/catalog?" + query.toString(), { headers: { Accept: "application/json" } });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload?.error || "catalog_request_failed");
     return items(payload);
@@ -153,7 +153,7 @@ const regions = [
     if (generation!.value) body.generation = generation!.value;
     if (modification!.value) body.modification = modification!.value;
     try {
-      const response = await fetch("/api/vehicle-fitment", {
+      const response = await fetch("/vehicle-fitment/search", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(body)
