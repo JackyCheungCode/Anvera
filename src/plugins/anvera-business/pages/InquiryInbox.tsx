@@ -38,6 +38,7 @@ type InquiryDetailResponse = {
   found: boolean;
   inquiry?: Inquiry;
   events?: Array<{ id: string; event_type: string; actor_user_id: string | null; previous_value: string | null; new_value: string | null; note: string | null; created_at: string }>;
+  attachments?: Array<{ id: string; original_filename: string; content_type: string; byte_size: number; uploaded_at: string }>;
 };
 
 const statusLabels: Record<string, string> = {
@@ -67,6 +68,8 @@ export function InquiryInbox() {
   const [selectedId, setSelectedId] = useState("");
   const [selected, setSelected] = useState<Inquiry | null>(null);
   const [events, setEvents] = useState<InquiryDetailResponse["events"]>([]);
+  const [attachments, setAttachments] = useState<NonNullable<InquiryDetailResponse["attachments"]>>([]);
+  const [downloadingId, setDownloadingId] = useState("");
   const [detailLoading, setDetailLoading] = useState(false);
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
@@ -100,6 +103,7 @@ export function InquiryInbox() {
       const result = await parseApiResponse<InquiryDetailResponse>(response, "Unable to load inquiry details.");
       setSelected(result.inquiry ?? null);
       setEvents(result.events ?? []);
+      setAttachments(result.attachments ?? []);
       if (!result.found) setError("This inquiry could not be found.");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to load inquiry details.");
@@ -108,6 +112,31 @@ export function InquiryInbox() {
       setDetailLoading(false);
     }
   }, []);
+
+  const downloadAttachment = async (attachment: NonNullable<InquiryDetailResponse["attachments"]>[number]) => {
+    setDownloadingId(attachment.id);
+    setError("");
+    try {
+      const response = await apiFetch(`/_emdash/api/plugins/anvera-business/inquiries/attachment?id=${encodeURIComponent(attachment.id)}`);
+      const result = await parseApiResponse<{ available: boolean; found: boolean; filename: string; contentType: string; base64: string }>(response, "Unable to download attachment.");
+      if (!result.available || !result.found || !result.base64) throw new Error("The private attachment is unavailable.");
+      const binary = atob(result.base64);
+      const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+      const blob = new Blob([bytes], { type: result.contentType || attachment.content_type });
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = result.filename || attachment.original_filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to download attachment.");
+    } finally {
+      setDownloadingId("");
+    }
+  };
 
   const updateStatus = async (status: string) => {
     if (!selected) return;
@@ -208,7 +237,7 @@ export function InquiryInbox() {
         <section className="anvera-detail-panel">
           <div className="anvera-panel-heading">
             <h2>Inquiry details</h2>
-            <button className="anvera-refresh anvera-refresh--light" type="button" onClick={() => { setSelectedId(""); setSelected(null); setEvents([]); }}>Close</button>
+            <button className="anvera-refresh anvera-refresh--light" type="button" onClick={() => { setSelectedId(""); setSelected(null); setEvents([]); setAttachments([]); }}>Close</button>
           </div>
           {detailLoading ? <div className="anvera-empty"><p>Loading project details…</p></div> : selected ? (
             <div className="anvera-detail-content">
@@ -227,6 +256,21 @@ export function InquiryInbox() {
                 <div><span>FINISH / QUANTITY</span><strong>{[selected.finish_code, selected.quantity].filter(Boolean).join(" / ") || "—"}</strong></div>
               </div>
               {selected.project_notes ? <div className="anvera-detail-notes"><span>PROJECT NOTES</span><p>{selected.project_notes}</p></div> : null}
+              <div className="anvera-action-section">
+                <h3>Customer attachments</h3>
+                {attachments.length ? (
+                  <ul className="anvera-attachment-list">
+                    {attachments.map((attachment) => (
+                      <li key={attachment.id}>
+                        <div><strong>{attachment.original_filename}</strong><small>{attachment.content_type} · {(attachment.byte_size / 1024 / 1024).toFixed(2)} MB</small></div>
+                        <button className="anvera-action-button" type="button" disabled={downloadingId === attachment.id} onClick={() => void downloadAttachment(attachment)}>
+                          {downloadingId === attachment.id ? "Preparing…" : "Download"}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : <p className="anvera-muted">No files were attached to this inquiry.</p>}
+              </div>
               <div className="anvera-action-section">
                 <h3>Update status</h3>
                 <div className="anvera-action-row">
