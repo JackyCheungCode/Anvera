@@ -61,3 +61,24 @@ The final Review & Activation step includes a Material & Forging Review Queue:
 - Every decision is recorded in the append-only `anvera_pi_library_review_decisions` table with reviewer identity, note and before/after revisions.
 
 Review migration: `migrations/0003_product_intelligence_library_reviews.sql` (Preview only).
+
+## Finish Library and product mappings
+
+The Finish & Customization step now includes a controlled Finish Library with:
+- Finish code, name and process type
+- Process description and appearance reference
+- Explicit supported constructions (Monoblock / Two-piece / Three-piece)
+- Restrictions and evidence reference
+- Draft, pending review, approved, restricted and archived lifecycle
+
+Only approved finish profiles compatible with the selected product construction appear in the Product Definition finish mapper. Product-to-finish associations are stored in `anvera_pi_product_finish_mappings`, begin as `pending_review`, and are synchronized with the global setup draft. Removed associations become `superseded`; re-added associations return to review.
+
+The engineering review queue now includes finish profiles and product finish mappings. A mapping decision is recorded with reviewer identity, note and before/after revision in `anvera_pi_library_review_decisions`; mapping changes also append to `anvera_pi_finish_events`.
+
+Preview migration: `migrations/0004_product_intelligence_finish_library.sql`.
+
+## Product capability references
+
+Product Definition now stores the selected approved Material Profile ID and Forging Process ID, not just free-text grade or process labels. The server validates those references against approved library records before a global setup can be submitted. In environments where the normalized library migration is not installed, the existing legacy text fields remain the compatibility path.
+
+Product finish mappings are separately stored and reviewed. Selecting an approved finish does not automatically approve the product mapping.
