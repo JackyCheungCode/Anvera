@@ -16,6 +16,7 @@ const safeProducts = products.map((product) => ({
   modelCode: String(product.modelCode ?? ""),
   construction: String(product.construction ?? ""),
   finish: String(product.finish ?? ""),
+  finishes: Array.isArray(product.finishes) ? product.finishes.map(String) : [],
   specs: product.specs && typeof product.specs === "object" ? product.specs : {},
   verifiedFitments: Array.isArray(product.verifiedFitments) ? product.verifiedFitments : []
 }));
@@ -220,7 +221,18 @@ const safeProducts = products.map((product) => ({
     card.addEventListener("click", () => { document.querySelectorAll(".vf-fitment-card").forEach((node) => { node.setAttribute("aria-pressed","false"); }); card.setAttribute("aria-pressed","true"); renderProducts(item, record); });
     return card;
   };
-  const productField = (product, keys) => valueAt(product?.specs, keys) ?? valueAt(product, keys);
+  const productValues = (product, keys) => {
+    const found = [];
+    const direct = valueAt(product?.specs, keys) ?? valueAt(product, keys);
+    if (Array.isArray(direct)) found.push(...direct); else if (direct !== null && direct !== undefined && direct !== "") found.push(direct);
+    if (keys.some((key) => key === "finish" || key === "finish_name")) found.push(...(product.finishes || []));
+    for (const approved of product.verifiedFitments || []) for (const axle of ["front","rear"]) {
+      const value = valueAt(approved?.[axle], keys);
+      if (value !== null && value !== undefined && value !== "") found.push(value);
+    }
+    return [...new Set(found.map(clean).filter(Boolean))];
+  };
+  const productField = (product, keys) => productValues(product, keys)[0] ?? null;
   const numeric = (value) => { const match = String(value ?? "").match(/-?\\d+(?:\\.\\d+)?/); return match ? Number(match[0]) : null; };
   const normalizePcd = (value) => clean(value).toLowerCase().replace(/\\s+/g,"").replace(/x/g,"×");
   const fitmentMatchesProduct = (fitment, record, product) => {
@@ -279,7 +291,7 @@ const safeProducts = products.map((product) => ({
       choices.forEach((choice) => { const option = document.createElement("button"); option.type = "button"; option.textContent = choice; option.addEventListener("click", () => { filtered[key] = choice === "All" ? "" : choice; button.textContent = (choice === "All" ? "All " + label.toLowerCase() + "s" : choice) + "  ⌄"; menu.hidden = true; paint(); }); menu.append(option); });
       button.addEventListener("click", () => { menu.hidden = !menu.hidden; }); host.append(button,menu); wrap.append(caption,host); controls.append(wrap);
     };
-    const unique = (key) => [...new Set(productRows.map((p) => clean(productField(p,key))).filter(Boolean))].sort();
+    const unique = (key) => [...new Set(productRows.flatMap((product) => productValues(product,key)))].sort();
     createFilter("construction","Construction",unique(["construction","construction_type"]));
     createFilter("diameter","Diameter",unique(["diameter","rim_diameter"]));
     createFilter("width","Width",unique(["width","rim_width"]));
@@ -291,19 +303,19 @@ const safeProducts = products.map((product) => ({
     const paint = () => {
       list.replaceChildren();
       const compatible = productRows.filter((product) => {
-        const construction = clean(productField(product,["construction","construction_type"]));
-        const diameter = clean(productField(product,["diameter","rim_diameter"]));
-        const width = clean(productField(product,["width","rim_width"]));
-        const pcd = clean(productField(product,["pcd","bolt_pattern"]));
-        const offset = clean(productField(product,["offset","et","rim_offset"]));
-        const finish = clean(productField(product,["finish","finish_name"]));
+        const construction = productValues(product,["construction","construction_type"]);
+        const diameter = productValues(product,["diameter","rim_diameter"]);
+        const width = productValues(product,["width","rim_width"]);
+        const pcd = productValues(product,["pcd","bolt_pattern"]);
+        const offset = productValues(product,["offset","et","rim_offset"]);
+        const finish = productValues(product,["finish","finish_name"]);
         return fitmentMatchesProduct(fitment,record,product) !== "not-fit" &&
-          (!filtered.construction || construction === filtered.construction) &&
-          (!filtered.diameter || diameter === filtered.diameter) &&
-          (!filtered.width || width === filtered.width) &&
-          (!filtered.pcd || pcd === filtered.pcd) &&
-          (!filtered.offset || offset === filtered.offset) &&
-          (!filtered.finish || finish === filtered.finish);
+          (!filtered.construction || construction.includes(filtered.construction)) &&
+          (!filtered.diameter || diameter.includes(filtered.diameter)) &&
+          (!filtered.width || width.includes(filtered.width)) &&
+          (!filtered.pcd || pcd.includes(filtered.pcd)) &&
+          (!filtered.offset || offset.includes(filtered.offset)) &&
+          (!filtered.finish || finish.includes(filtered.finish));
       });
       if (!compatible.length) { const empty = document.createElement("p"); empty.className = "vf-product-empty"; empty.textContent = "No published ANVERA products match these filters."; list.append(empty); return; }
       compatible.forEach((product) => {
