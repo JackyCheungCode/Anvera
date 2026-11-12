@@ -776,6 +776,7 @@ async function syncProductFinishMappings(db: D1Database, sessionId: string, docu
   const desired = new Map<string, { productCode: string; finishId: string; construction: string }>();
   for (const product of products) {
     const productCode = inputString(product?.productCode, 80);
+    if (!productCode) continue;
     const finishIds = Array.isArray(product?.finishProfiles) ? product.finishProfiles.map((value) => inputString(value, 128)).filter(Boolean) : [];
     for (const finishId of finishIds) desired.set(`${productCode}::${finishId}`, { productCode, finishId, construction: inputString(product?.construction, 40) });
   }
@@ -800,7 +801,8 @@ async function syncProductFinishMappings(db: D1Database, sessionId: string, docu
     const valid = profile?.status === "approved" && supported.includes(item.construction);
     const current = existingByKey.get(key);
     if (current) {
-      const nextStatus = valid ? "pending_review" : "restricted";
+      const nextStatus = !valid ? "restricted" :
+        ["superseded", "restricted"].includes(current.mapping_status) ? "pending_review" : current.mapping_status;
       if (current.mapping_status !== nextStatus) {
         statements.push(db.prepare("UPDATE anvera_pi_product_finish_mappings SET mapping_status = ?, revision = revision + 1, updated_by_user_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND revision = ?")
           .bind(nextStatus, actorId, current.id, current.revision));
