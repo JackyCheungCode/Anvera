@@ -40,20 +40,13 @@
           "label": "Construction Type",
           "type": "select",
           "required": true,
-          "options": [
-            {
-              "label": "Monoblock",
-              "value": "monoblock"
-            },
-            {
-              "label": "Two-piece",
-              "value": "two_piece"
-            },
-            {
-              "label": "Three-piece",
-              "value": "three_piece"
-            }
-          ]
+          "validation": {
+            "options": [
+              "monoblock",
+              "two_piece",
+              "three_piece"
+            ]
+          }
         },
         {
           "slug": "short_description",
@@ -75,14 +68,35 @@
         {
           "slug": "gallery_images",
           "label": "Gallery Images",
-          "type": "repeater"
+          "type": "repeater",
+          "validation": {
+            "subFields": [
+              {
+                "slug": "image",
+                "label": "Image",
+                "type": "image",
+                "required": true
+              },
+              {
+                "slug": "alt_text",
+                "label": "Alt Text",
+                "type": "string"
+              },
+              {
+                "slug": "caption",
+                "label": "Caption",
+                "type": "text"
+              }
+            ],
+            "maxItems": 16
+          }
         },
         {
           "slug": "available_finishes",
           "label": "Available Finishes",
           "type": "reference",
-          "options": {
-            "collection": "wheel_finishes",
+          "validation": {
+            "targetCollection": "wheel_finishes",
             "multiple": true
           }
         },
@@ -136,24 +150,14 @@
           "label": "Finish Family",
           "type": "select",
           "required": true,
-          "options": [
-            {
-              "label": "Paint",
-              "value": "paint"
-            },
-            {
-              "label": "Metal",
-              "value": "metal"
-            },
-            {
-              "label": "Machined",
-              "value": "machined"
-            },
-            {
-              "label": "Special",
-              "value": "special"
-            }
-          ]
+          "validation": {
+            "options": [
+              "paint",
+              "metal",
+              "machined",
+              "special"
+            ]
+          }
         },
         {
           "slug": "finish_description",
@@ -241,8 +245,8 @@
           "slug": "products",
           "label": "Applicable Products",
           "type": "reference",
-          "options": {
-            "collection": "wheel_products",
+          "validation": {
+            "targetCollection": "wheel_products",
             "multiple": true
           }
         },
@@ -251,21 +255,14 @@
           "label": "Verification Status",
           "type": "select",
           "required": true,
-          "options": [
-            {
-              "label": "Pending",
-              "value": "pending"
-            },
-            {
-              "label": "Verified",
-              "value": "verified"
-            },
-            {
-              "label": "Retired",
-              "value": "retired"
-            }
-          ],
-          "indexed": true
+          "indexed": true,
+          "validation": {
+            "options": [
+              "pending",
+              "verified",
+              "retired"
+            ]
+          }
         },
         {
           "slug": "verification_note",
