@@ -69,7 +69,7 @@ jobs:
           const entry = fs.readFileSync("dist/server/entry.mjs", "utf8");
           console.log("Worker entry references:", entry.split("\\n").filter(line => line.includes("entrypoints") || line.includes("manifest")).slice(0, 30));
           console.log(JSON.stringify(hits.slice(0, 12), null, 2));
-          if (!hits.some(hit => hit.needle === "vehicle-catalog")) throw new Error("Vehicle catalog route module was not emitted.");
+          if (!hits.some(hit => hit.needle === "/vehicle-fitment/catalog")) throw new Error("Vehicle fitment catalog route was not emitted.");
           NODE
 
 
