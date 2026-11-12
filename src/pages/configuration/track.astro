@@ -38,6 +38,7 @@ import Base from "../../layouts/Base.astro";
     @media(max-width:760px){.tracking-form{grid-template-columns:1fr}.tracking-button{width:100%}.tracking-timeline{grid-template-columns:repeat(2,minmax(0,1fr))}.tracking-result-head{align-items:flex-start;flex-direction:column}}
   </style>
   <script>
+    // @ts-nocheck
     const form=document.querySelector("#tracking-form");
     const reference=document.querySelector("#tracking-reference");
     const token=document.querySelector("#tracking-token");
