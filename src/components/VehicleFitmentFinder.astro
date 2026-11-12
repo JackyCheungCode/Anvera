@@ -71,13 +71,15 @@ const safeProducts = products.map((product) => ({
   const setOptions = (key, rows, placeholder, { disabled = false } = {}) => {
     dropdowns[key]?.setOptions(rows, placeholder, disabled);
   };
-  const makeLogo = (label) => {
+  const makeLogo = (label, raw) => {
+    const imageValue = raw?.logo ?? raw?.logo_url ?? raw?.image_url ?? raw?.image ?? raw?.icon ?? null;
+    const source = typeof imageValue === "string" ? imageValue : imageValue?.url ?? imageValue?.src ?? null;
     const slug = makeLogoSlugs[clean(label).toLowerCase()];
-    if (!slug) return null;
+    if (!source && !slug) return null;
     const img = document.createElement("img");
-    img.className = "vf-make-logo"; img.alt = ""; img.loading = "lazy";
-    img.src = iconBase + slug + ".svg";
-    img.onerror = () => img.remove();
+    img.className = "vf-make-logo"; img.alt = ""; img.loading = "lazy"; img.decoding = "async";
+    img.src = source || (iconBase + slug + ".svg");
+    img.onerror = () => { if (source && slug) { img.src = iconBase + slug + ".svg"; } else img.remove(); };
     return img;
   };
   document.querySelectorAll("[data-dropdown]").forEach((host) => {
@@ -99,7 +101,7 @@ const safeProducts = products.map((product) => ({
       for (const item of options) {
         const option = document.createElement("button"); option.type = "button"; option.className = "vf-select-option";
         option.setAttribute("role", "option"); option.setAttribute("aria-selected", String(item.value === values[key]));
-        if (key === "make") { const logo = makeLogo(item.label); if (logo) option.append(logo); }
+        if (key === "make") { const logo = makeLogo(item.label, item.raw); if (logo) option.append(logo); }
         const label = document.createElement("span"); label.textContent = item.label; option.append(label);
         option.addEventListener("click", () => { values[key] = item.value; valueLabel.textContent = item.label; close(); render(); host.dispatchEvent(new CustomEvent("vf-change", { bubbles: true, detail: { key, value: item.value, item } })); });
         menu.append(option);
