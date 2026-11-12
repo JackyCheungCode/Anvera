@@ -595,11 +595,12 @@ async function listProductLibrary(ctx: AdminContext) {
   const access = await getProductLibraryDatabase(ctx);
   if ("error" in access) return access.error;
   try {
-    const [materials, forgingProcesses] = await Promise.all([
+    const [materials, forgingProcesses, finishes] = await Promise.all([
       access.db.prepare("SELECT id, code, name, family, grade, standard, supplier, certificate_ref, evidence_note, status, revision, created_at, updated_at FROM anvera_pi_material_profiles ORDER BY code COLLATE NOCASE").all(),
-      access.db.prepare("SELECT id, code, name, process_type, equipment, capacity_notes, heat_treatment, cnc_capability, evidence_ref, status, revision, created_at, updated_at FROM anvera_pi_forging_processes ORDER BY code COLLATE NOCASE").all()
+      access.db.prepare("SELECT id, code, name, process_type, equipment, capacity_notes, heat_treatment, cnc_capability, evidence_ref, status, revision, created_at, updated_at FROM anvera_pi_forging_processes ORDER BY code COLLATE NOCASE").all(),
+      access.db.prepare("SELECT id, code, name, finish_type, process_description, appearance_reference, supported_constructions_json, restrictions, evidence_ref, status, revision, created_at, updated_at FROM anvera_pi_finish_profiles ORDER BY code COLLATE NOCASE").all()
     ]);
-    return { available: true, materials: materials.results, forgingProcesses: forgingProcesses.results };
+    return { available: true, materials: materials.results, forgingProcesses: forgingProcesses.results, finishes: finishes.results };
   } catch (cause) {
     if (String(cause).toLowerCase().includes("no such table")) return { available: false, reason: "migration_pending" };
     throw cause;
@@ -704,6 +705,105 @@ async function saveForgingProcess(ctx: AdminContext) {
     if (String(cause).toLowerCase().includes("no such table")) return { saved: false, reason: "migration_pending" };
     throw cause;
   }
+}
+
+
+
+type FinishProfileInput = {
+  code: string; name: string; finishType: string; processDescription: string;
+  appearanceReference: string; supportedConstructions: string[]; restrictions: string;
+  evidenceRef: string; status: string;
+};
+
+async function saveFinishProfile(ctx: AdminContext) {
+  if (ctx.request.method !== "POST") return { saved: false, reason: "method_not_allowed" };
+  const access = await getProductLibraryDatabase(ctx);
+  if ("error" in access) return access.error;
+  const body = inputRecord(ctx.input);
+  const id = inputString(body?.id, 128);
+  const revision = Math.max(0, Math.floor(Number(body?.revision) || 0));
+  const rawConstructions = Array.isArray(body?.supportedConstructions) ? body.supportedConstructions : [];
+  const supportedConstructions = [...new Set(rawConstructions.map((value) => inputString(value, 32)).filter((value) => ["Monoblock", "Two-piece", "Three-piece"].includes(value)))];
+  const value: FinishProfileInput = {
+    code: inputString(body?.code, 48).toUpperCase(),
+    name: inputString(body?.name, 120),
+    finishType: inputString(body?.finishType, 80),
+    processDescription: inputString(body?.processDescription, 2000),
+    appearanceReference: inputString(body?.appearanceReference, 200),
+    supportedConstructions,
+    restrictions: inputString(body?.restrictions, 2000),
+    evidenceRef: inputString(body?.evidenceRef, 200),
+    status: libraryStatus(body?.status)
+  };
+  if (!value.code || !value.name || !value.finishType || !value.supportedConstructions.length || !value.status) {
+    return { saved: false, reason: "invalid_input" };
+  }
+  const actorId = ctx.user!.id;
+  const nextRevision = revision + 1;
+  try {
+    if (!id) {
+      const newId = crypto.randomUUID();
+      await access.db.batch([
+        access.db.prepare("INSERT INTO anvera_pi_finish_profiles (id, code, name, finish_type, process_description, appearance_reference, supported_constructions_json, restrictions, evidence_ref, status, revision, created_by_user_id, updated_by_user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)")
+          .bind(newId, value.code, value.name, value.finishType, value.processDescription || null, value.appearanceReference || null, JSON.stringify(value.supportedConstructions), value.restrictions || null, value.evidenceRef || null, value.status, actorId, actorId),
+        access.db.prepare("INSERT INTO anvera_pi_finish_events (id, entity_type, entity_id, event_type, actor_user_id, revision, summary) VALUES (?, 'finish_profile', ?, ?, ?, 1, ?)")
+          .bind(crypto.randomUUID(), newId, value.status === "pending_review" ? "submitted_for_review" : "created", actorId, `Finish profile ${value.code} created`)
+      ]);
+      return { saved: true, id: newId, revision: 1 };
+    }
+    const result = await access.db.batch([
+      access.db.prepare("UPDATE anvera_pi_finish_profiles SET code = ?, name = ?, finish_type = ?, process_description = ?, appearance_reference = ?, supported_constructions_json = ?, restrictions = ?, evidence_ref = ?, status = ?, revision = ?, updated_by_user_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND revision = ? AND status IN ('draft', 'pending_review')")
+        .bind(value.code, value.name, value.finishType, value.processDescription || null, value.appearanceReference || null, JSON.stringify(value.supportedConstructions), value.restrictions || null, value.evidenceRef || null, value.status, nextRevision, actorId, id, revision),
+      access.db.prepare("INSERT INTO anvera_pi_finish_events (id, entity_type, entity_id, event_type, actor_user_id, revision, summary) SELECT ?, 'finish_profile', ?, ?, ?, ?, ? WHERE changes() > 0")
+        .bind(crypto.randomUUID(), id, value.status === "pending_review" ? "submitted_for_review" : "updated", actorId, nextRevision, `Finish profile ${value.code} updated`)
+    ]);
+    if ((result[0]?.meta?.changes ?? 0) === 0) return { saved: false, reason: "revision_conflict_or_locked" };
+    return { saved: true, id, revision: nextRevision };
+  } catch (cause) {
+    if (String(cause).toLowerCase().includes("unique")) return { saved: false, reason: "duplicate_code" };
+    if (String(cause).toLowerCase().includes("no such table")) return { saved: false, reason: "migration_pending" };
+    throw cause;
+  }
+}
+
+async function syncProductFinishMappings(db: D1Database, sessionId: string, document: Record<string, unknown>, actorId: string) {
+  const products = Array.isArray(document.products) ? document.products.map(inputRecord).filter(Boolean) : [];
+  const desired = new Map<string, { productCode: string; finishId: string }>();
+  for (const product of products) {
+    const productCode = inputString(product?.productCode, 80);
+    const finishIds = Array.isArray(product?.finishProfiles) ? product.finishProfiles.map((value) => inputString(value, 128)).filter(Boolean) : [];
+    for (const finishId of finishIds) desired.set(`${productCode}::${finishId}`, { productCode, finishId });
+  }
+  const existing = await db.prepare("SELECT id, product_code, finish_profile_id, mapping_status, revision FROM anvera_pi_product_finish_mappings WHERE setup_session_id = ?")
+    .bind(sessionId).all<{ id: string; product_code: string; finish_profile_id: string; mapping_status: string; revision: number }>();
+  const currentKeys = new Set(existing.results.map((item) => `${item.product_code}::${item.finish_profile_id}`));
+  const statements = [];
+  for (const item of existing.results) {
+    const key = `${item.product_code}::${item.finish_profile_id}`;
+    if (!desired.has(key) && item.mapping_status !== "superseded") {
+      statements.push(db.prepare("UPDATE anvera_pi_product_finish_mappings SET mapping_status = 'superseded', revision = revision + 1, updated_by_user_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND revision = ?")
+        .bind(actorId, item.id, item.revision));
+      statements.push(db.prepare("INSERT INTO anvera_pi_finish_events (id, entity_type, entity_id, event_type, actor_user_id, revision, summary) VALUES (?, 'product_finish_mapping', ?, 'mapping_removed', ?, ?, ?)")
+        .bind(crypto.randomUUID(), item.id, actorId, item.revision + 1, `Finish mapping ${item.product_code} removed`));
+    }
+  }
+  for (const [key, item] of desired) {
+    if (currentKeys.has(key)) continue;
+    const profile = await db.prepare("SELECT status, supported_constructions_json FROM anvera_pi_finish_profiles WHERE id = ? LIMIT 1")
+      .bind(item.finishId).first<{ status: string; supported_constructions_json: string }>();
+    if (!profile || profile.status !== "approved") throw new Error("finish_profile_not_approved");
+    const product = products.find((entry) => inputString(entry?.productCode, 80) === item.productCode);
+    const construction = inputString(product?.construction, 40);
+    let supported: string[] = [];
+    try { supported = JSON.parse(profile.supported_constructions_json) as string[]; } catch { supported = []; }
+    if (!supported.includes(construction)) throw new Error("finish_construction_not_supported");
+    const mappingId = crypto.randomUUID();
+    statements.push(db.prepare("INSERT INTO anvera_pi_product_finish_mappings (id, setup_session_id, product_code, finish_profile_id, mapping_status, created_by_user_id, updated_by_user_id) VALUES (?, ?, ?, ?, 'pending_review', ?, ?)")
+      .bind(mappingId, sessionId, item.productCode, item.finishId, actorId, actorId));
+    statements.push(db.prepare("INSERT INTO anvera_pi_finish_events (id, entity_type, entity_id, event_type, actor_user_id, revision, summary) VALUES (?, 'product_finish_mapping', ?, 'mapping_created', ?, 1, ?)")
+      .bind(crypto.randomUUID(), mappingId, actorId, `Finish profile mapped to product ${item.productCode}`));
+  }
+  if (statements.length) await db.batch(statements);
 }
 
 
