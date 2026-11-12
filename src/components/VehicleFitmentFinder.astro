@@ -1,0 +1,204 @@
+---
+const regions = [
+  { value: "usdm", label: "USA & North America" },
+  { value: "cdm", label: "Canada" },
+  { value: "mxndm", label: "Mexico" },
+  { value: "ladm", label: "Central & South America" },
+  { value: "eudm", label: "Europe" },
+  { value: "rus", label: "Russia & CIS" },
+  { value: "jdm", label: "Japan" },
+  { value: "chdm", label: "China" },
+  { value: "skdm", label: "South Korea" },
+  { value: "sam", label: "Southeast Asia" },
+  { value: "medm", label: "Middle East" },
+  { value: "nadm", label: "North Africa" },
+  { value: "sadm", label: "South Africa" },
+  { value: "audm", label: "Oceania" }
+];
+---
+<section class="vehicle-finder-section">
+  <div class="vehicle-finder-inner">
+    <div class="vehicle-finder-heading">
+      <div>
+        <p class="section-kicker">ANVERA / VEHICLE FITMENT</p>
+        <h2>Find wheels<br /><span>for your vehicle.</span></h2>
+      </div>
+      <p>Choose your vehicle and market to explore factory wheel specifications. Our team will confirm final brake clearance and custom fitment before production.</p>
+    </div>
+    <form class="vehicle-finder-form" id="vehicle-finder-form">
+      <div class="vehicle-finder-grid">
+        <label class="vehicle-finder-field"><span>Market region</span><select name="region" id="vf-region" required>{regions.map((region) => <option value={region.value} selected={region.value === "sam"}>{region.label}</option>)}</select></label>
+        <label class="vehicle-finder-field"><span>Make</span><select name="make" id="vf-make" required><option value="">Select make</option></select></label>
+        <label class="vehicle-finder-field"><span>Model</span><select name="model" id="vf-model" required disabled><option value="">Select model</option></select></label>
+        <label class="vehicle-finder-field"><span>Year</span><select name="year" id="vf-year" disabled><option value="">Select year</option></select></label>
+        <label class="vehicle-finder-field"><span>Generation</span><select name="generation" id="vf-generation" disabled><option value="">Any generation</option></select></label>
+        <label class="vehicle-finder-field"><span>Modification / trim</span><select name="modification" id="vf-modification" disabled><option value="">All available trims</option></select></label>
+      </div>
+      <div class="vehicle-finder-actions">
+        <p id="vf-status" role="status" aria-live="polite">Loading vehicle catalogue…</p>
+        <button class="cds-btn cds-btn--primary" type="submit" id="vf-submit" disabled>Find factory fitment <span aria-hidden="true">↗</span></button>
+      </div>
+    </form>
+    <div class="vehicle-finder-results" id="vf-results" hidden aria-live="polite"></div>
+    <p class="vehicle-finder-disclaimer">Fitment information is supplied by Wheel-Size and is a starting reference, not a production approval. ANVERA will verify wheel load rating, brake clearance, hub fit, offsets and front/rear stagger before confirming a specification.</p>
+  </div>
+</section>
+<script>
+  // @ts-nocheck — this browser-only script uses DOM APIs that conflict with Cloudflare Workers ambient DOM types.
+  const form = document.querySelector<HTMLFormElement>("#vehicle-finder-form");
+  const region = document.querySelector<HTMLSelectElement>("#vf-region");
+  const make = document.querySelector<HTMLSelectElement>("#vf-make");
+  const model = document.querySelector<HTMLSelectElement>("#vf-model");
+  const year = document.querySelector<HTMLSelectElement>("#vf-year");
+  const generation = document.querySelector<HTMLSelectElement>("#vf-generation");
+  const modification = document.querySelector<HTMLSelectElement>("#vf-modification");
+  const status = document.querySelector<HTMLElement>("#vf-status");
+  const submit = document.querySelector<HTMLButtonElement>("#vf-submit");
+  const results = document.querySelector<HTMLElement>("#vf-results");
+
+  const items = (payload: any): any[] => {
+    const source = payload?.data ?? payload?.results ?? payload;
+    return Array.isArray(source) ? source : [];
+  };
+  const slugOf = (item: any): string => typeof item === "string" || typeof item === "number" ? String(item) : String(item?.slug ?? item?.id ?? item?.code ?? item?.value ?? item?.year ?? "");
+  const labelOf = (item: any): string => typeof item === "string" || typeof item === "number" ? String(item) : String(item?.name ?? item?.title ?? item?.label ?? item?.year ?? item?.trim ?? item?.slug ?? "");
+  const fill = (select: HTMLSelectElement, rows: any[], placeholder: string, firstValue = "") => {
+    select.replaceChildren(new Option(placeholder, ""));
+    for (const item of rows) {
+      const value = slugOf(item);
+      const label = labelOf(item);
+      if (value && label) select.add(new Option(label, value));
+    }
+    select.disabled = rows.length === 0;
+    if (firstValue) select.value = firstValue;
+  };
+  const paramsFor = (includeYear = true) => {
+    const params = new URLSearchParams({ region: region!.value });
+    if (make!.value) params.set("make", make!.value);
+    if (model!.value) params.set("model", model!.value);
+    if (includeYear && year!.value) params.set("year", year!.value);
+    if (generation!.value) params.set("generation", generation!.value);
+    return params;
+  };
+  const catalog = async (resource: string, params = new URLSearchParams()) => {
+    const query = new URLSearchParams(params);
+    query.set("resource", resource);
+    const response = await fetch("/api/vehicle-catalog?" + query.toString(), { headers: { Accept: "application/json" } });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload?.error || "catalog_request_failed");
+    return items(payload);
+  };
+  const loadMakes = async () => {
+    status!.textContent = "Loading makes for the selected market…";
+    fill(make!, [], "Loading makes");
+    try {
+      const rows = await catalog("makes", new URLSearchParams({ region: region!.value }));
+      fill(make!, rows, "Select make");
+      status!.textContent = rows.length ? "Select your vehicle to view factory fitment." : "No makes are available for this market.";
+    } catch (error) {
+      status!.textContent = error instanceof Error && error.message === "vehicle_fitment_not_configured"
+        ? "Vehicle lookup is not configured yet. Please contact ANVERA."
+        : "Could not load the vehicle catalogue. Please try again.";
+      fill(make!, [], "Catalogue unavailable");
+    }
+    submit!.disabled = true;
+  };
+  region?.addEventListener("change", () => {
+    fill(model!, [], "Select model"); fill(year!, [], "Select year"); fill(generation!, [], "Any generation"); fill(modification!, [], "All available trims");
+    loadMakes();
+  });
+  make?.addEventListener("change", async () => {
+    fill(model!, [], "Loading models"); fill(year!, [], "Select year"); fill(generation!, [], "Any generation"); fill(modification!, [], "All available trims");
+    try {
+      const rows = await catalog("models", new URLSearchParams({ region: region!.value, make: make!.value }));
+      fill(model!, rows, "Select model");
+      status!.textContent = "Choose a model and year or generation.";
+    } catch { status!.textContent = "Could not load models for this make."; fill(model!, [], "Models unavailable"); }
+    submit!.disabled = true;
+  });
+  model?.addEventListener("change", async () => {
+    fill(year!, [], "Loading years"); fill(generation!, [], "Loading generations"); fill(modification!, [], "All available trims");
+    const p = new URLSearchParams({ region: region!.value, make: make!.value, model: model!.value });
+    try {
+      const [years, generations] = await Promise.all([catalog("years", p), catalog("generations", p)]);
+      fill(year!, years, "Select year");
+      fill(generation!, generations, "Any generation");
+      status!.textContent = "Select a year or generation, then find the factory fitment.";
+    } catch {
+      status!.textContent = "Could not load model years. You can still select a generation if available.";
+      fill(year!, [], "Years unavailable"); fill(generation!, [], "Generations unavailable");
+    }
+    submit!.disabled = !(year!.value || generation!.value);
+  });
+  const loadModifications = async () => {
+    if (!model!.value || (!year!.value && !generation!.value)) return;
+    const p = paramsFor();
+    try {
+      const rows = await catalog("modifications", p);
+      fill(modification!, rows, "All available trims");
+    } catch { fill(modification!, [], "Trim list unavailable"); }
+    submit!.disabled = false;
+  };
+  year?.addEventListener("change", () => { loadModifications(); submit!.disabled = !year!.value && !generation!.value; });
+  generation?.addEventListener("change", () => { loadModifications(); submit!.disabled = !year!.value && !generation!.value; });
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!make!.value || !model!.value || (!year!.value && !generation!.value)) return;
+    submit!.disabled = true;
+    status!.textContent = "Searching verified factory fitment data…";
+    results!.hidden = true;
+    const body: Record<string, string> = { make: make!.value, model: model!.value, region: region!.value };
+    if (year!.value) body.year = year!.value;
+    if (generation!.value) body.generation = generation!.value;
+    if (modification!.value) body.modification = modification!.value;
+    try {
+      const response = await fetch("/api/vehicle-fitment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(body)
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload?.error || "fitment_search_failed");
+      const records = items(payload?.result);
+      results!.replaceChildren();
+      const heading = document.createElement("h3");
+      heading.textContent = "Factory fitment reference";
+      results!.append(heading);
+      if (!records.length) {
+        const empty = document.createElement("p"); empty.textContent = "No fitment records were returned for this exact selection. Try another year, generation or market region."; results!.append(empty);
+      } else {
+        for (const record of records.slice(0, 12)) {
+          const card = document.createElement("article"); card.className = "vehicle-fitment-result";
+          const title = document.createElement("h4");
+          title.textContent = [record?.make?.name, record?.model?.name, record?.modification?.name ?? record?.modification?.trim, record?.year].filter(Boolean).join(" · ") || "Vehicle fitment";
+          card.append(title);
+          const technical = record?.technical ?? {};
+          const specs = [
+            ["Bolt pattern", technical.bolt_pattern ?? technical.pcd],
+            ["PCD", technical.pcd],
+            ["Centre bore", technical.centre_bore ?? technical.centre_bore_diameter],
+            ["Wheel torque", technical.wheel_torque]
+          ].filter(([, value]) => value !== undefined && value !== null && value !== "");
+          const dl = document.createElement("dl");
+          for (const [label, value] of specs) {
+            const wrap = document.createElement("div"); const dt = document.createElement("dt"); const dd = document.createElement("dd");
+            dt.textContent = String(label); dd.textContent = String(value); wrap.append(dt, dd); dl.append(wrap);
+          }
+          if (specs.length) card.append(dl);
+          const raw = document.createElement("details"); const summary = document.createElement("summary"); summary.textContent = "View complete fitment data";
+          const pre = document.createElement("pre"); pre.textContent = JSON.stringify(record, null, 2); raw.append(summary, pre); card.append(raw);
+          results!.append(card);
+        }
+      }
+      results!.hidden = false;
+      status!.textContent = records.length ? records.length + " fitment record(s) found. Review details below." : "No exact fitment match found.";
+    } catch (error) {
+      status!.textContent = error instanceof Error && error.message === "vehicle_fitment_not_configured"
+        ? "Vehicle lookup is not configured yet. Please contact ANVERA."
+        : "Fitment lookup failed. Please check your selection and try again.";
+    } finally { submit!.disabled = false; }
+  });
+
+  loadMakes();
+</script>
