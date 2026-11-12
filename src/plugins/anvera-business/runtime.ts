@@ -326,7 +326,7 @@ async function suspendDealer(ctx: AdminContext) {
   return { suspended: (batch[0]?.meta?.changes ?? 0) > 0 };
 }
 
-const jsonPost = { methods: ["POST"] as const, request: { body: "json" as const, maxBytes: 16 * 1024 } };
+const jsonPost: { methods: ("GET" | "POST" | "HEAD" | "PUT" | "PATCH" | "DELETE")[]; request: { body: "json"; maxBytes: number } } = { methods: ["POST"], request: { body: "json", maxBytes: 16 * 1024 } };
 
 export function createPlugin() {
   return definePlugin({
