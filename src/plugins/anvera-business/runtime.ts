@@ -422,7 +422,6 @@ function setupDocumentIsSubmittable(document: Record<string, unknown>) {
         (loadRating === null || (Number.isFinite(loadRating) && loadRating > 0)) &&
         ["Draft", "Factory Supported", "Engineering Review", "Engineering Approved", "Restricted"].includes(inputString(row?.status, 32));
     });
-    const forgingMethods = inputString(material.forgingMethod, 500).split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean);
     return Boolean(inputString(product?.productCode, 80)) &&
       Boolean(inputString(product?.productName, 120)) &&
       Boolean(selectedConstruction) &&
@@ -438,8 +437,8 @@ function setupDocumentIsSubmittable(document: Record<string, unknown>) {
 async function validateProductCapabilityReferences(db: D1Database, document: Record<string, unknown>) {
   const products = Array.isArray(document.products) ? document.products.map(inputRecord).filter(Boolean) : [];
   const material = inputRecord(document.material) ?? {};
-  const legacyGrades = inputString(material.materialGrade, 2000).split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean);
-  const legacyProcesses = inputString(material.forgingMethod, 2000).split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean);
+  const legacyGrades = inputString(material.materialGrade, 2000).split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean);
+  const legacyProcesses = inputString(material.forgingMethod, 2000).split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean);
   const materialIds = [...new Set(products.map((product) => inputString(product?.materialProfile, 128)).filter(Boolean))];
   const processIds = [...new Set(products.map((product) => inputString(product?.forgingProfile, 128)).filter(Boolean))];
   if (!materialIds.length || !processIds.length) return false;
