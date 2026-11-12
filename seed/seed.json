@@ -2,9 +2,9 @@
   "$schema": "https://emdashcms.com/seed.schema.json",
   "version": "1",
   "meta": {
-    "name": "Anvera",
-    "description": "Anvera CMS content model",
-    "author": "Anvera"
+    "name": "ANVERA",
+    "description": "ANVERA forged wheel brand content model and development catalogue",
+    "author": "ANVERA"
   },
   "settings": {
     "title": "Anvera",
@@ -16,12 +16,38 @@
       "label": "Posts",
       "labelSingular": "Post",
       "urlPattern": "/posts/{slug}",
-      "supports": ["drafts", "revisions", "preview", "scheduling", "search", "seo"],
+      "supports": [
+        "drafts",
+        "revisions",
+        "preview",
+        "scheduling",
+        "search",
+        "seo"
+      ],
       "fields": [
-        {"slug":"title","label":"Title","type":"string","required":true,"searchable":true},
-        {"slug":"featured_image","label":"Featured Image","type":"image"},
-        {"slug":"content","label":"Content","type":"portableText","searchable":true},
-        {"slug":"excerpt","label":"Excerpt","type":"text"}
+        {
+          "slug": "title",
+          "label": "Title",
+          "type": "string",
+          "required": true,
+          "searchable": true
+        },
+        {
+          "slug": "featured_image",
+          "label": "Featured Image",
+          "type": "image"
+        },
+        {
+          "slug": "content",
+          "label": "Content",
+          "type": "portableText",
+          "searchable": true
+        },
+        {
+          "slug": "excerpt",
+          "label": "Excerpt",
+          "type": "text"
+        }
       ]
     },
     {
@@ -29,43 +55,1152 @@
       "label": "Pages",
       "labelSingular": "Page",
       "urlPattern": "/{slug}",
-      "supports": ["drafts", "revisions", "preview", "search", "seo"],
+      "supports": [
+        "drafts",
+        "revisions",
+        "preview",
+        "search",
+        "seo"
+      ],
       "fields": [
-        {"slug":"title","label":"Title","type":"string","required":true,"searchable":true},
-        {"slug":"content","label":"Content","type":"portableText","searchable":true}
+        {
+          "slug": "title",
+          "label": "Title",
+          "type": "string",
+          "required": true,
+          "searchable": true
+        },
+        {
+          "slug": "content",
+          "label": "Content",
+          "type": "portableText",
+          "searchable": true
+        }
+      ]
+    },
+    {
+      "slug": "wheel_products",
+      "label": "Wheel Products",
+      "labelSingular": "Wheel Product",
+      "description": "ANVERA forged wheel designs and their technical and marketing content.",
+      "supports": [
+        "drafts",
+        "revisions",
+        "preview",
+        "search",
+        "seo"
+      ],
+      "urlPattern": "/wheels/models/{slug}",
+      "titleField": "title",
+      "admin": {
+        "listColumns": [
+          "model_code",
+          "construction_type",
+          "family",
+          "display_order"
+        ]
+      },
+      "fields": [
+        {
+          "slug": "title",
+          "label": "Product Name",
+          "type": "string",
+          "required": true,
+          "searchable": true
+        },
+        {
+          "slug": "model_code",
+          "label": "Model Code",
+          "type": "string",
+          "required": true,
+          "unique": true,
+          "indexed": true
+        },
+        {
+          "slug": "family",
+          "label": "Collection / Family",
+          "type": "string"
+        },
+        {
+          "slug": "construction_type",
+          "label": "Construction Type",
+          "type": "select",
+          "validation": {
+            "options": [
+              "monoblock",
+              "two_piece",
+              "three_piece"
+            ]
+          }
+        },
+        {
+          "slug": "material",
+          "label": "Material",
+          "type": "text"
+        },
+        {
+          "slug": "manufacturing_process",
+          "label": "Manufacturing Process",
+          "type": "text"
+        },
+        {
+          "slug": "design_style",
+          "label": "Design Language",
+          "type": "text"
+        },
+        {
+          "slug": "short_description",
+          "label": "Short Description",
+          "type": "text",
+          "searchable": true
+        },
+        {
+          "slug": "design_story",
+          "label": "Design Story",
+          "type": "portableText"
+        },
+        {
+          "slug": "hero_image",
+          "label": "Hero Image",
+          "type": "image"
+        },
+        {
+          "slug": "gallery_images",
+          "label": "Product Gallery",
+          "type": "json"
+        },
+        {
+          "slug": "diameter_options",
+          "label": "Diameter Options",
+          "type": "json"
+        },
+        {
+          "slug": "width_options",
+          "label": "Width Options",
+          "type": "json"
+        },
+        {
+          "slug": "pcd_options",
+          "label": "PCD Options",
+          "type": "json"
+        },
+        {
+          "slug": "offset_range",
+          "label": "Offset Range",
+          "type": "text"
+        },
+        {
+          "slug": "centre_bore_options",
+          "label": "Centre Bore Options",
+          "type": "json"
+        },
+        {
+          "slug": "finish_options",
+          "label": "Finish Directions",
+          "type": "json"
+        },
+        {
+          "slug": "intended_use",
+          "label": "Intended Use",
+          "type": "json"
+        },
+        {
+          "slug": "technical_disclaimer",
+          "label": "Technical Disclaimer",
+          "type": "text"
+        },
+        {
+          "slug": "development_sample",
+          "label": "Development Sample",
+          "type": "boolean",
+          "defaultValue": true
+        },
+        {
+          "slug": "display_order",
+          "label": "Display Order",
+          "type": "integer"
+        },
+        {
+          "slug": "available_finishes",
+          "label": "Available Finishes",
+          "type": "reference",
+          "validation": {
+            "relation": "wheel_product_finishes"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "wheel_finishes",
+      "label": "Wheel Finishes",
+      "labelSingular": "Wheel Finish",
+      "description": "Finish options, codes, swatches and sample media.",
+      "supports": [
+        "drafts",
+        "revisions",
+        "search"
+      ],
+      "routable": false,
+      "fields": [
+        {
+          "slug": "title",
+          "label": "Finish Name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "slug": "finish_code",
+          "label": "Finish Code",
+          "type": "string",
+          "unique": true
+        },
+        {
+          "slug": "finish_description",
+          "label": "Description",
+          "type": "text"
+        },
+        {
+          "slug": "swatch_hex",
+          "label": "Swatch Colour",
+          "type": "string"
+        },
+        {
+          "slug": "sample_image",
+          "label": "Sample Image",
+          "type": "image"
+        },
+        {
+          "slug": "active",
+          "label": "Active",
+          "type": "boolean",
+          "defaultValue": true
+        },
+        {
+          "slug": "display_order",
+          "label": "Display Order",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "slug": "wheel_fitments",
+      "label": "Wheel Fitments",
+      "labelSingular": "Wheel Fitment",
+      "description": "Vehicle-specific fitment records. Only engineering-verified records may be published.",
+      "supports": [
+        "drafts",
+        "revisions",
+        "search"
+      ],
+      "routable": false,
+      "fields": [
+        {
+          "slug": "vehicle_make",
+          "label": "Vehicle Make",
+          "type": "string",
+          "required": true,
+          "indexed": true
+        },
+        {
+          "slug": "vehicle_model",
+          "label": "Vehicle Model",
+          "type": "string",
+          "required": true,
+          "indexed": true
+        },
+        {
+          "slug": "model_year_from",
+          "label": "Year From",
+          "type": "integer"
+        },
+        {
+          "slug": "model_year_to",
+          "label": "Year To",
+          "type": "integer"
+        },
+        {
+          "slug": "front_spec",
+          "label": "Front Specification",
+          "type": "json"
+        },
+        {
+          "slug": "rear_spec",
+          "label": "Rear Specification",
+          "type": "json"
+        },
+        {
+          "slug": "verification_status",
+          "label": "Verification Status",
+          "type": "select",
+          "validation": {
+            "options": [
+              "unverified",
+              "under_review",
+              "verified",
+              "rejected"
+            ]
+          }
+        },
+        {
+          "slug": "verified_at",
+          "label": "Verified At",
+          "type": "datetime"
+        },
+        {
+          "slug": "products",
+          "label": "Compatible Wheel Products",
+          "type": "reference",
+          "validation": {
+            "relation": "wheel_fitment_products"
+          }
+        }
       ]
     }
   ],
   "taxonomies": [
-    {"name":"category","label":"Categories","labelSingular":"Category","hierarchical":true,"collections":["posts"],"terms":[{"slug":"general","label":"General"},{"slug":"updates","label":"Updates"}]},
-    {"name":"tag","label":"Tags","labelSingular":"Tag","hierarchical":false,"collections":["posts"],"terms":[{"slug":"starter","label":"Starter"},{"slug":"example","label":"Example"}]}
+    {
+      "name": "category",
+      "label": "Categories",
+      "labelSingular": "Category",
+      "hierarchical": true,
+      "collections": [
+        "posts"
+      ],
+      "terms": [
+        {
+          "slug": "general",
+          "label": "General"
+        },
+        {
+          "slug": "updates",
+          "label": "Updates"
+        }
+      ]
+    },
+    {
+      "name": "tag",
+      "label": "Tags",
+      "labelSingular": "Tag",
+      "hierarchical": false,
+      "collections": [
+        "posts"
+      ],
+      "terms": [
+        {
+          "slug": "starter",
+          "label": "Starter"
+        },
+        {
+          "slug": "example",
+          "label": "Example"
+        }
+      ]
+    }
   ],
   "menus": [
-    {"name":"primary","label":"Primary Navigation","items":[{"type":"custom","label":"Home","url":"/"},{"type":"custom","label":"Posts","url":"/posts"},{"type":"custom","label":"About","url":"/about"}]}
+    {
+      "name": "primary",
+      "label": "Primary Navigation",
+      "items": [
+        {
+          "type": "custom",
+          "label": "Home",
+          "url": "/"
+        },
+        {
+          "type": "custom",
+          "label": "Posts",
+          "url": "/posts"
+        },
+        {
+          "type": "custom",
+          "label": "About",
+          "url": "/about"
+        }
+      ]
+    }
   ],
   "widgetAreas": [
-    {"name":"sidebar","label":"Sidebar","description":"Sidebar widget area","widgets":[{"type":"component","componentId":"core:search","title":"Search"},{"type":"component","componentId":"core:categories","title":"Categories"},{"type":"component","componentId":"core:recent-posts","title":"Recent Posts","props":{"count":5}}]}
+    {
+      "name": "sidebar",
+      "label": "Sidebar",
+      "description": "Sidebar widget area",
+      "widgets": [
+        {
+          "type": "component",
+          "componentId": "core:search",
+          "title": "Search"
+        },
+        {
+          "type": "component",
+          "componentId": "core:categories",
+          "title": "Categories"
+        },
+        {
+          "type": "component",
+          "componentId": "core:recent-posts",
+          "title": "Recent Posts",
+          "props": {
+            "count": 5
+          }
+        }
+      ]
+    }
   ],
   "content": {
-    "pages": [{
-      "id":"about",
-      "slug":"about",
-      "status":"published",
-      "data":{
-        "title":"About Anvera",
-        "content":[{"_type":"block","style":"normal","children":[{"_type":"span","text":"Welcome to Anvera.","_key":"k1"}],"_key":"k0"}]
+    "pages": [
+      {
+        "id": "about",
+        "slug": "about",
+        "status": "published",
+        "data": {
+          "title": "About Anvera",
+          "content": [
+            {
+              "_type": "block",
+              "style": "normal",
+              "children": [
+                {
+                  "_type": "span",
+                  "text": "Welcome to Anvera.",
+                  "_key": "k1"
+                }
+              ],
+              "_key": "k0"
+            }
+          ]
+        }
       }
-    }],
-    "posts": [{
-      "id":"post-1",
-      "slug":"welcome",
-      "status":"published",
-      "data":{
-        "title":"Welcome to Anvera",
-        "excerpt":"Your Anvera CMS is ready to be configured.",
-        "content":[{"_type":"block","style":"normal","children":[{"_type":"span","text":"This is your first post. Edit or replace it from the EmDash admin panel.","_key":"k1"}],"_key":"k0"}]
+    ],
+    "posts": [
+      {
+        "id": "post-1",
+        "slug": "welcome",
+        "status": "published",
+        "data": {
+          "title": "Welcome to Anvera",
+          "excerpt": "Your Anvera CMS is ready to be configured.",
+          "content": [
+            {
+              "_type": "block",
+              "style": "normal",
+              "children": [
+                {
+                  "_type": "span",
+                  "text": "This is your first post. Edit or replace it from the EmDash admin panel.",
+                  "_key": "k1"
+                }
+              ],
+              "_key": "k0"
+            }
+          ]
+        },
+        "taxonomies": {
+          "category": [
+            "general"
+          ],
+          "tag": [
+            "starter",
+            "example"
+          ]
+        }
+      }
+    ],
+    "wheel_products": [
+      {
+        "id": "dev-av01-vector",
+        "slug": "av01-vector",
+        "status": "draft",
+        "data": {
+          "title": "VECTOR",
+          "model_code": "AV01",
+          "family": "Performance Series",
+          "construction_type": "monoblock",
+          "material": "Forged aluminium alloy (development specification)",
+          "manufacturing_process": "Forging blank, CNC machining, component finishing and project-specific quality inspection.",
+          "design_style": "Directional multi-spoke with a motorsport-led, lightweight visual language.",
+          "short_description": "Directional multi-spoke with a motorsport-led, lightweight visual language.",
+          "design_story": [
+            {
+              "_type": "block",
+              "style": "normal",
+              "children": [
+                {
+                  "_type": "span",
+                  "text": "Directional multi-spoke with a motorsport-led, lightweight visual language. Final design language and manufacturing details require ANVERA product-team approval.",
+                  "_key": "story-0"
+                }
+              ],
+              "_key": "story-block-0"
+            }
+          ],
+          "diameter_options": [
+            "19",
+            "20",
+            "21 in"
+          ],
+          "width_options": [
+            "8.5J",
+            "9.0J",
+            "9.5J",
+            "10.0J",
+            "10.5J",
+            "11.0J"
+          ],
+          "pcd_options": [
+            "5x112",
+            "5x114.3",
+            "5x120",
+            "5x130"
+          ],
+          "offset_range": "Vehicle-specific; engineering confirmation required",
+          "centre_bore_options": [
+            "Vehicle-specific hub bore",
+            "Bespoke centre bore on request"
+          ],
+          "finish_options": [
+            "Satin black",
+            "Brushed titanium",
+            "Gloss graphite",
+            "Custom colour"
+          ],
+          "intended_use": [
+            "Development sample — intended application to be confirmed"
+          ],
+          "technical_disclaimer": "DEVELOPMENT SAMPLE ONLY. All model names and technical values are illustrative, unverified and not approved for manufacturing, sale or vehicle fitment.",
+          "development_sample": true,
+          "display_order": 1,
+          "gallery_images": []
+        }
       },
-      "taxonomies":{"category":["general"],"tag":["starter","example"]}
-    }]
-  }
+      {
+        "id": "dev-av02-strata",
+        "slug": "av02-strata",
+        "status": "draft",
+        "data": {
+          "title": "STRATA",
+          "model_code": "AV02",
+          "family": "Performance Series",
+          "construction_type": "monoblock",
+          "material": "Forged aluminium alloy (development specification)",
+          "manufacturing_process": "Forging blank, CNC machining, component finishing and project-specific quality inspection.",
+          "design_style": "Layered split spokes bring depth and definition to a contemporary forged monoblock.",
+          "short_description": "Layered split spokes bring depth and definition to a contemporary forged monoblock.",
+          "design_story": [
+            {
+              "_type": "block",
+              "style": "normal",
+              "children": [
+                {
+                  "_type": "span",
+                  "text": "Layered split spokes bring depth and definition to a contemporary forged monoblock. Final design language and manufacturing details require ANVERA product-team approval.",
+                  "_key": "story-1"
+                }
+              ],
+              "_key": "story-block-1"
+            }
+          ],
+          "diameter_options": [
+            "19",
+            "20",
+            "21",
+            "22 in"
+          ],
+          "width_options": [
+            "8.5J",
+            "9.0J",
+            "9.5J",
+            "10.0J",
+            "10.5J",
+            "11.0J",
+            "12.0J"
+          ],
+          "pcd_options": [
+            "5x112",
+            "5x114.3",
+            "5x120",
+            "5x130"
+          ],
+          "offset_range": "Vehicle-specific; engineering confirmation required",
+          "centre_bore_options": [
+            "Vehicle-specific hub bore",
+            "Bespoke centre bore on request"
+          ],
+          "finish_options": [
+            "Gloss black",
+            "Satin titanium",
+            "Brushed clear",
+            "Custom colour"
+          ],
+          "intended_use": [
+            "Development sample — intended application to be confirmed"
+          ],
+          "technical_disclaimer": "DEVELOPMENT SAMPLE ONLY. All model names and technical values are illustrative, unverified and not approved for manufacturing, sale or vehicle fitment.",
+          "development_sample": true,
+          "display_order": 2,
+          "gallery_images": []
+        }
+      },
+      {
+        "id": "dev-av03-vantage",
+        "slug": "av03-vantage",
+        "status": "draft",
+        "data": {
+          "title": "VANTAGE",
+          "model_code": "AV03",
+          "family": "Performance Series",
+          "construction_type": "monoblock",
+          "material": "Forged aluminium alloy (development specification)",
+          "manufacturing_process": "Forging blank, CNC machining, component finishing and project-specific quality inspection.",
+          "design_style": "A confident twin-spoke profile balancing muscular proportions with precise detailing.",
+          "short_description": "A confident twin-spoke profile balancing muscular proportions with precise detailing.",
+          "design_story": [
+            {
+              "_type": "block",
+              "style": "normal",
+              "children": [
+                {
+                  "_type": "span",
+                  "text": "A confident twin-spoke profile balancing muscular proportions with precise detailing. Final design language and manufacturing details require ANVERA product-team approval.",
+                  "_key": "story-2"
+                }
+              ],
+              "_key": "story-block-2"
+            }
+          ],
+          "diameter_options": [
+            "19",
+            "20",
+            "21 in"
+          ],
+          "width_options": [
+            "8.5J",
+            "9.0J",
+            "9.5J",
+            "10.0J",
+            "10.5J",
+            "11.0J"
+          ],
+          "pcd_options": [
+            "5x112",
+            "5x120",
+            "5x130"
+          ],
+          "offset_range": "Vehicle-specific; engineering confirmation required",
+          "centre_bore_options": [
+            "Vehicle-specific hub bore",
+            "Bespoke centre bore on request"
+          ],
+          "finish_options": [
+            "Satin black",
+            "Gloss silver",
+            "Brushed smoke",
+            "Custom colour"
+          ],
+          "intended_use": [
+            "Development sample — intended application to be confirmed"
+          ],
+          "technical_disclaimer": "DEVELOPMENT SAMPLE ONLY. All model names and technical values are illustrative, unverified and not approved for manufacturing, sale or vehicle fitment.",
+          "development_sample": true,
+          "display_order": 3,
+          "gallery_images": []
+        }
+      },
+      {
+        "id": "dev-av04-monolith",
+        "slug": "av04-monolith",
+        "status": "draft",
+        "data": {
+          "title": "MONOLITH",
+          "model_code": "AV04",
+          "family": "Signature Series",
+          "construction_type": "monoblock",
+          "material": "Forged aluminium alloy (development specification)",
+          "manufacturing_process": "Forging blank, CNC machining, component finishing and project-specific quality inspection.",
+          "design_style": "A sculptural monoblock design for understated luxury and strong visual presence.",
+          "short_description": "A sculptural monoblock design for understated luxury and strong visual presence.",
+          "design_story": [
+            {
+              "_type": "block",
+              "style": "normal",
+              "children": [
+                {
+                  "_type": "span",
+                  "text": "A sculptural monoblock design for understated luxury and strong visual presence. Final design language and manufacturing details require ANVERA product-team approval.",
+                  "_key": "story-3"
+                }
+              ],
+              "_key": "story-block-3"
+            }
+          ],
+          "diameter_options": [
+            "20",
+            "21",
+            "22 in"
+          ],
+          "width_options": [
+            "9.0J",
+            "9.5J",
+            "10.0J",
+            "10.5J",
+            "11.0J",
+            "12.0J"
+          ],
+          "pcd_options": [
+            "5x112",
+            "5x120",
+            "5x130"
+          ],
+          "offset_range": "Vehicle-specific; engineering confirmation required",
+          "centre_bore_options": [
+            "Vehicle-specific hub bore",
+            "Bespoke centre bore on request"
+          ],
+          "finish_options": [
+            "Satin platinum",
+            "Polished silver",
+            "Gloss black",
+            "Custom colour"
+          ],
+          "intended_use": [
+            "Development sample — intended application to be confirmed"
+          ],
+          "technical_disclaimer": "DEVELOPMENT SAMPLE ONLY. All model names and technical values are illustrative, unverified and not approved for manufacturing, sale or vehicle fitment.",
+          "development_sample": true,
+          "display_order": 4,
+          "gallery_images": []
+        }
+      },
+      {
+        "id": "dev-av05-aeroform",
+        "slug": "av05-aeroform",
+        "status": "draft",
+        "data": {
+          "title": "AEROFORM",
+          "model_code": "AV05",
+          "family": "Performance Series",
+          "construction_type": "monoblock",
+          "material": "Forged aluminium alloy (development specification)",
+          "manufacturing_process": "Forging blank, CNC machining, component finishing and project-specific quality inspection.",
+          "design_style": "An aerodynamic visual study with flowing spokes and a clean, modern face.",
+          "short_description": "An aerodynamic visual study with flowing spokes and a clean, modern face.",
+          "design_story": [
+            {
+              "_type": "block",
+              "style": "normal",
+              "children": [
+                {
+                  "_type": "span",
+                  "text": "An aerodynamic visual study with flowing spokes and a clean, modern face. Final design language and manufacturing details require ANVERA product-team approval.",
+                  "_key": "story-4"
+                }
+              ],
+              "_key": "story-block-4"
+            }
+          ],
+          "diameter_options": [
+            "19",
+            "20",
+            "21 in"
+          ],
+          "width_options": [
+            "8.5J",
+            "9.0J",
+            "9.5J",
+            "10.0J",
+            "10.5J"
+          ],
+          "pcd_options": [
+            "5x112",
+            "5x114.3",
+            "5x120"
+          ],
+          "offset_range": "Vehicle-specific; engineering confirmation required",
+          "centre_bore_options": [
+            "Vehicle-specific hub bore",
+            "Bespoke centre bore on request"
+          ],
+          "finish_options": [
+            "Satin graphite",
+            "Brushed aluminium",
+            "Gloss black",
+            "Custom colour"
+          ],
+          "intended_use": [
+            "Development sample — intended application to be confirmed"
+          ],
+          "technical_disclaimer": "DEVELOPMENT SAMPLE ONLY. All model names and technical values are illustrative, unverified and not approved for manufacturing, sale or vehicle fitment.",
+          "development_sample": true,
+          "display_order": 5,
+          "gallery_images": []
+        }
+      },
+      {
+        "id": "dev-av06-forma",
+        "slug": "av06-forma",
+        "status": "draft",
+        "data": {
+          "title": "FORMA",
+          "model_code": "AV06",
+          "family": "Atelier Series",
+          "construction_type": "two_piece",
+          "material": "Forged aluminium components (development specification)",
+          "manufacturing_process": "Forging blank, CNC machining, component finishing and project-specific quality inspection.",
+          "design_style": "A two-piece platform that opens up more possibilities for depth, finish and proportion.",
+          "short_description": "A two-piece platform that opens up more possibilities for depth, finish and proportion.",
+          "design_story": [
+            {
+              "_type": "block",
+              "style": "normal",
+              "children": [
+                {
+                  "_type": "span",
+                  "text": "A two-piece platform that opens up more possibilities for depth, finish and proportion. Final design language and manufacturing details require ANVERA product-team approval.",
+                  "_key": "story-5"
+                }
+              ],
+              "_key": "story-block-5"
+            }
+          ],
+          "diameter_options": [
+            "19",
+            "20",
+            "21",
+            "22 in"
+          ],
+          "width_options": [
+            "8.5J",
+            "9.0J",
+            "9.5J",
+            "10.0J",
+            "10.5J",
+            "11.0J",
+            "12.0J"
+          ],
+          "pcd_options": [
+            "5x112",
+            "5x114.3",
+            "5x120",
+            "5x130"
+          ],
+          "offset_range": "Vehicle-specific; engineering confirmation required",
+          "centre_bore_options": [
+            "Vehicle-specific hub bore",
+            "Bespoke centre bore on request"
+          ],
+          "finish_options": [
+            "Brushed centre",
+            "polished lip",
+            "Satin black",
+            "gloss lip",
+            "Custom combination"
+          ],
+          "intended_use": [
+            "Development sample — intended application to be confirmed"
+          ],
+          "technical_disclaimer": "DEVELOPMENT SAMPLE ONLY. All model names and technical values are illustrative, unverified and not approved for manufacturing, sale or vehicle fitment.",
+          "development_sample": true,
+          "display_order": 6,
+          "gallery_images": []
+        }
+      },
+      {
+        "id": "dev-av07-spline",
+        "slug": "av07-spline",
+        "status": "draft",
+        "data": {
+          "title": "SPLINE",
+          "model_code": "AV07",
+          "family": "Atelier Series",
+          "construction_type": "two_piece",
+          "material": "Forged aluminium components (development specification)",
+          "manufacturing_process": "Forging blank, CNC machining, component finishing and project-specific quality inspection.",
+          "design_style": "A detailed multi-spoke design for projects where precision and individuality matter.",
+          "short_description": "A detailed multi-spoke design for projects where precision and individuality matter.",
+          "design_story": [
+            {
+              "_type": "block",
+              "style": "normal",
+              "children": [
+                {
+                  "_type": "span",
+                  "text": "A detailed multi-spoke design for projects where precision and individuality matter. Final design language and manufacturing details require ANVERA product-team approval.",
+                  "_key": "story-6"
+                }
+              ],
+              "_key": "story-block-6"
+            }
+          ],
+          "diameter_options": [
+            "19",
+            "20",
+            "21",
+            "22 in"
+          ],
+          "width_options": [
+            "8.5J",
+            "9.0J",
+            "9.5J",
+            "10.0J",
+            "10.5J",
+            "11.0J",
+            "12.0J"
+          ],
+          "pcd_options": [
+            "5x112",
+            "5x114.3",
+            "5x120",
+            "5x130"
+          ],
+          "offset_range": "Vehicle-specific; engineering confirmation required",
+          "centre_bore_options": [
+            "Vehicle-specific hub bore",
+            "Bespoke centre bore on request"
+          ],
+          "finish_options": [
+            "Brushed titanium",
+            "Satin black",
+            "Polished outer lip",
+            "Custom combination"
+          ],
+          "intended_use": [
+            "Development sample — intended application to be confirmed"
+          ],
+          "technical_disclaimer": "DEVELOPMENT SAMPLE ONLY. All model names and technical values are illustrative, unverified and not approved for manufacturing, sale or vehicle fitment.",
+          "development_sample": true,
+          "display_order": 7,
+          "gallery_images": []
+        }
+      },
+      {
+        "id": "dev-av08-quantum",
+        "slug": "av08-quantum",
+        "status": "draft",
+        "data": {
+          "title": "QUANTUM",
+          "model_code": "AV08",
+          "family": "Atelier Series",
+          "construction_type": "two_piece",
+          "material": "Forged aluminium components (development specification)",
+          "manufacturing_process": "Forging blank, CNC machining, component finishing and project-specific quality inspection.",
+          "design_style": "A bold two-piece design built around contrast, depth and a pronounced centre profile.",
+          "short_description": "A bold two-piece design built around contrast, depth and a pronounced centre profile.",
+          "design_story": [
+            {
+              "_type": "block",
+              "style": "normal",
+              "children": [
+                {
+                  "_type": "span",
+                  "text": "A bold two-piece design built around contrast, depth and a pronounced centre profile. Final design language and manufacturing details require ANVERA product-team approval.",
+                  "_key": "story-7"
+                }
+              ],
+              "_key": "story-block-7"
+            }
+          ],
+          "diameter_options": [
+            "20",
+            "21",
+            "22 in"
+          ],
+          "width_options": [
+            "9.0J",
+            "9.5J",
+            "10.0J",
+            "10.5J",
+            "11.0J",
+            "12.0J"
+          ],
+          "pcd_options": [
+            "5x112",
+            "5x120",
+            "5x130"
+          ],
+          "offset_range": "Vehicle-specific; engineering confirmation required",
+          "centre_bore_options": [
+            "Vehicle-specific hub bore",
+            "Bespoke centre bore on request"
+          ],
+          "finish_options": [
+            "Gloss black",
+            "Brushed dark clear",
+            "Satin platinum",
+            "Custom combination"
+          ],
+          "intended_use": [
+            "Development sample — intended application to be confirmed"
+          ],
+          "technical_disclaimer": "DEVELOPMENT SAMPLE ONLY. All model names and technical values are illustrative, unverified and not approved for manufacturing, sale or vehicle fitment.",
+          "development_sample": true,
+          "display_order": 8,
+          "gallery_images": []
+        }
+      },
+      {
+        "id": "dev-av09-radius",
+        "slug": "av09-radius",
+        "status": "draft",
+        "data": {
+          "title": "RADIUS",
+          "model_code": "AV09",
+          "family": "Atelier Series",
+          "construction_type": "three_piece",
+          "material": "Forged aluminium components (development specification)",
+          "manufacturing_process": "Forging blank, CNC machining, component finishing and project-specific quality inspection.",
+          "design_style": "A timeless five-spoke foundation for highly individual multi-piece wheel projects.",
+          "short_description": "A timeless five-spoke foundation for highly individual multi-piece wheel projects.",
+          "design_story": [
+            {
+              "_type": "block",
+              "style": "normal",
+              "children": [
+                {
+                  "_type": "span",
+                  "text": "A timeless five-spoke foundation for highly individual multi-piece wheel projects. Final design language and manufacturing details require ANVERA product-team approval.",
+                  "_key": "story-8"
+                }
+              ],
+              "_key": "story-block-8"
+            }
+          ],
+          "diameter_options": [
+            "18",
+            "19",
+            "20",
+            "21",
+            "22 in"
+          ],
+          "width_options": [
+            "8.0J",
+            "8.5J",
+            "9.0J",
+            "9.5J",
+            "10.0J",
+            "10.5J",
+            "11.0J",
+            "12.0J"
+          ],
+          "pcd_options": [
+            "5x112",
+            "5x114.3",
+            "5x120",
+            "5x130"
+          ],
+          "offset_range": "Vehicle-specific; engineering confirmation required",
+          "centre_bore_options": [
+            "Vehicle-specific hub bore",
+            "Bespoke centre bore on request"
+          ],
+          "finish_options": [
+            "Brushed centre",
+            "polished lip",
+            "Satin centre",
+            "polished hardware",
+            "Custom multi-finish"
+          ],
+          "intended_use": [
+            "Development sample — intended application to be confirmed"
+          ],
+          "technical_disclaimer": "DEVELOPMENT SAMPLE ONLY. All model names and technical values are illustrative, unverified and not approved for manufacturing, sale or vehicle fitment.",
+          "development_sample": true,
+          "display_order": 9,
+          "gallery_images": []
+        }
+      },
+      {
+        "id": "dev-av10-forged-gt",
+        "slug": "av10-forged-gt",
+        "status": "draft",
+        "data": {
+          "title": "FORGED GT",
+          "model_code": "AV10",
+          "family": "Atelier Series",
+          "construction_type": "three_piece",
+          "material": "Forged aluminium components (development specification)",
+          "manufacturing_process": "Forging blank, CNC machining, component finishing and project-specific quality inspection.",
+          "design_style": "A motorsport-inspired multi-piece platform for a fully considered bespoke specification.",
+          "short_description": "A motorsport-inspired multi-piece platform for a fully considered bespoke specification.",
+          "design_story": [
+            {
+              "_type": "block",
+              "style": "normal",
+              "children": [
+                {
+                  "_type": "span",
+                  "text": "A motorsport-inspired multi-piece platform for a fully considered bespoke specification. Final design language and manufacturing details require ANVERA product-team approval.",
+                  "_key": "story-9"
+                }
+              ],
+              "_key": "story-block-9"
+            }
+          ],
+          "diameter_options": [
+            "18",
+            "19",
+            "20",
+            "21 in"
+          ],
+          "width_options": [
+            "8.0J",
+            "8.5J",
+            "9.0J",
+            "9.5J",
+            "10.0J",
+            "10.5J",
+            "11.0J"
+          ],
+          "pcd_options": [
+            "5x112",
+            "5x114.3",
+            "5x120",
+            "5x130"
+          ],
+          "offset_range": "Vehicle-specific; engineering confirmation required",
+          "centre_bore_options": [
+            "Vehicle-specific hub bore",
+            "Bespoke centre bore on request"
+          ],
+          "finish_options": [
+            "Satin black",
+            "polished lip",
+            "Brushed titanium",
+            "gloss lip",
+            "Custom multi-finish"
+          ],
+          "intended_use": [
+            "Development sample — intended application to be confirmed"
+          ],
+          "technical_disclaimer": "DEVELOPMENT SAMPLE ONLY. All model names and technical values are illustrative, unverified and not approved for manufacturing, sale or vehicle fitment.",
+          "development_sample": true,
+          "display_order": 10,
+          "gallery_images": []
+        }
+      }
+    ]
+  },
+  "relations": [
+    {
+      "slug": "wheel_product_finishes",
+      "parentCollection": "wheel_products",
+      "childCollection": "wheel_finishes",
+      "parentLabel": "Wheel Products",
+      "parentLabelSingular": "Wheel Product",
+      "childLabel": "Available Finishes",
+      "childLabelSingular": "Finish",
+      "maxChildrenPerParent": null,
+      "maxParentsPerChild": null
+    },
+    {
+      "slug": "wheel_fitment_products",
+      "parentCollection": "wheel_fitments",
+      "childCollection": "wheel_products",
+      "parentLabel": "Wheel Fitments",
+      "parentLabelSingular": "Wheel Fitment",
+      "childLabel": "Compatible Products",
+      "childLabelSingular": "Wheel Product",
+      "maxChildrenPerParent": null,
+      "maxParentsPerChild": null
+    }
+  ]
 }

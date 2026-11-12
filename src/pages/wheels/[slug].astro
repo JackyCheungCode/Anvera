@@ -1,5 +1,8 @@
 ---
 import Base from "../../layouts/Base.astro";
+import { getEmDashCollection } from "emdash";
+import { Image } from "emdash/ui";
+import { wheelDevelopmentProducts } from "../../data/wheel-products";
 const slug = Astro.params.slug ?? "";
 const families = {
   "monoblock": {
@@ -26,6 +29,13 @@ const families = {
 };
 const family = families[slug as keyof typeof families];
 if (!family) return Astro.rewrite("/404");
+const construction = slug.replace("-", "_");
+const { entries: cmsEntries = [] } = await getEmDashCollection("wheel_products", { status: "published", limit: 60, orderBy: { display_order: "asc" } }).catch(() => ({ entries: [] }));
+const cmsFamilyProducts = cmsEntries.filter((entry: any) => String(entry.data?.construction_type ?? "") === construction).map((entry: any) => ({
+  slug: entry.id, title: String(entry.data?.title ?? "Wheel design"), modelCode: String(entry.data?.model_code ?? ""),
+  description: String(entry.data?.short_description ?? ""), image: entry.data?.hero_image ?? null
+}));
+const familyProducts = cmsFamilyProducts.length ? cmsFamilyProducts : wheelDevelopmentProducts.filter((product) => product.constructionType === construction);
 ---
 <Base title={`${family.name} Forged Wheels`} description={family.intro}>
   <section class="family-detail-hero">
@@ -45,6 +55,21 @@ if (!family) return Astro.rewrite("/404");
       <div><p class="section-lead">{family.detail}</p><ul class="feature-points">{family.points.map((point) => <li>{point}</li>)}</ul></div>
     </div>
   </section>
+
+  {familyProducts.length > 0 && <section class="family-products section">
+    <div class="section-inner">
+      <p class="section-kicker">ANVERA / {family.name} collection</p>
+      <h2 class="section-title">Explore the<br />designs.</h2>
+      <div class="family-products-grid">
+        {familyProducts.map((product: any, index: number) => <a class="family-product-card" href={`/wheels/models/${product.slug}`}>
+          <div class="family-product-media">{product.image ? <Image image={product.image} width={900} height={675} /> : <div class="demo-wheel-art"><div class="wheel-render"></div></div>}</div>
+          <span>{product.modelCode || "ANVERA DESIGN"}</span>
+          <h3>{product.title}</h3><p>{product.description ?? product.shortDescription}</p><b>Explore design ↗</b>
+          {product.developmentOnly && <small>DEVELOPMENT SAMPLE</small>}
+        </a>)}
+      </div>
+    </div>
+  </section>}
 
   <section class="family-detail-note">
     <p class="section-kicker">Your vehicle defines the brief</p>

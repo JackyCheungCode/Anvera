@@ -2,38 +2,52 @@
 import Base from "../../layouts/Base.astro";
 import { getEmDashCollection } from "emdash";
 import { Image } from "emdash/ui";
+import { wheelDevelopmentProducts } from "../../data/wheel-products";
+
 const families = [
   { slug: "monoblock", number: "01", name: "Monoblock", descriptor: "A singular form. A unified expression.", copy: "A one-piece forged construction for a clean, purposeful design language.", tag: "ONE-PIECE CONSTRUCTION", visual: "mono" },
   { slug: "two-piece", number: "02", name: "Two-piece", descriptor: "Precision, with room for expression.", copy: "A multi-component approach that opens up more possibilities for proportion, finish and detail.", tag: "MODULAR CONSTRUCTION", visual: "two" },
   { slug: "three-piece", number: "03", name: "Three-piece", descriptor: "A composition built around your vision.", copy: "A configurable multi-piece architecture for highly individual wheel projects.", tag: "MULTI-PIECE CONSTRUCTION", visual: "three" }
 ];
-const { entries: wheelEntries = [], cacheHint } = await getEmDashCollection("wheel_products", { status: "published", limit: 24, orderBy: { display_order: "asc" } }).catch(() => ({ entries: [], cacheHint: null }));
+const { entries: wheelEntries = [], cacheHint } = await getEmDashCollection("wheel_products", { status: "published", limit: 60, orderBy: { display_order: "asc" } }).catch(() => ({ entries: [], cacheHint: null }));
 if (cacheHint && Astro.cache?.enabled) Astro.cache.set(cacheHint);
-const productCards = wheelEntries.map((entry: any) => ({
+const cmsProducts = wheelEntries.map((entry: any) => ({
   slug: entry.id,
   title: String(entry.data?.title ?? "Untitled wheel"),
   modelCode: String(entry.data?.model_code ?? ""),
   construction: String(entry.data?.construction_type ?? "").replaceAll("_", "-"),
   description: String(entry.data?.short_description ?? ""),
-  image: entry.data?.hero_image ?? null
+  image: entry.data?.hero_image ?? null,
+  diameter: Array.isArray(entry.data?.diameter_options) ? entry.data.diameter_options.join(" / ") : "",
+  status: "CMS"
+}));
+const products = cmsProducts.length ? cmsProducts : wheelDevelopmentProducts.map((product) => ({
+  slug: product.slug,
+  title: product.title,
+  modelCode: product.modelCode,
+  construction: product.constructionType.replaceAll("_", "-"),
+  description: product.shortDescription,
+  image: null,
+  diameter: product.diameterOptions.join(" / "),
+  status: "DEVELOPMENT SAMPLE"
 }));
 ---
-<Base title="Forged Wheel Collection" description="Explore ANVERA forged wheel construction families and begin a wheel project tailored to your vehicle.">
+<Base title="Forged Wheel Collection" description="Explore the ANVERA forged wheel collection, construction families, design details and vehicle-specific project possibilities.">
   <section class="collection-hero">
     <div class="collection-hero-art" aria-hidden="true"><div class="wheel-render wheel-render--large"></div></div>
     <div class="collection-hero-content">
       <p class="eyebrow">ANVERA / THE COLLECTION</p>
       <h1>Built around<br /><span>your vision.</span></h1>
-      <p>Discover the construction approaches behind our forged wheel programme. Every project begins with the vehicle, the intended fitment and the details that make it yours.</p>
-      <a class="cds-btn cds-btn--primary" href="/custom-inquiry">Start a wheel project <span aria-hidden="true">↗</span></a>
+      <p>Forged wheels, considered from the first line to the final specification. Explore the collection and discover a design direction for your vehicle.</p>
+      <a class="cds-btn cds-btn--primary" href="#wheel-models">Explore wheel designs <span aria-hidden="true">↓</span></a>
     </div>
-    <div class="collection-hero-index">01 — 03 <span>CONSTRUCTION FAMILIES</span></div>
+    <div class="collection-hero-index">10 DESIGNS <span>3 CONSTRUCTION FAMILIES</span></div>
   </section>
 
   <section class="collection-intro section">
     <div class="section-inner collection-intro-grid">
       <div><p class="section-kicker">The forged programme</p><h2 class="section-title">Three approaches.<br />One ANVERA standard.</h2></div>
-      <p class="section-lead">The right construction depends on the vehicle, the fitment and the design direction. Explore the fundamentals, then tell us what you have in mind.</p>
+      <p class="section-lead">The right construction depends on the vehicle, the fitment and the design direction. Explore the fundamentals, then find the wheel design that fits your brief.</p>
     </div>
   </section>
 
@@ -52,22 +66,76 @@ const productCards = wheelEntries.map((entry: any) => ({
     ))}
   </section>
 
-  {productCards.length > 0 && <section class="cms-products section" aria-labelledby="cms-products-title">
+  <section class="cms-products section" id="wheel-models" aria-labelledby="cms-products-title">
     <div class="section-inner">
-      <p class="section-kicker">The ANVERA catalogue</p>
-      <h2 class="section-title" id="cms-products-title">Explore individual<br />wheel designs.</h2>
-      <div class="cms-product-grid">
-        {productCards.map((product: any) => <a class="cms-product-card" href={`/wheels/models/${product.slug}`}>
-          <div class="cms-product-media">{product.image ? <Image image={product.image} width={900} height={675} /> : <div class="cms-product-placeholder" aria-hidden="true"><span>ANVERA / FORGED</span></div>}</div>
-          <div class="cms-product-meta"><span>{product.modelCode || "ANVERA DESIGN"}</span><span>{product.construction.replaceAll("-", " ").toUpperCase()}</span></div>
-          <h3>{product.title}</h3><p>{product.description}</p><span class="cms-product-link">Explore design ↗</span>
-        </a>)}
+      <div class="wheel-catalog-heading">
+        <div><p class="section-kicker">The ANVERA catalogue / 01—10</p><h2 class="section-title" id="cms-products-title">Find your<br />wheel design.</h2></div>
+        <p class="section-lead">Explore each design by construction, then open its product page for design details, available finishes and specification planning.</p>
       </div>
+      <div class="wheel-catalog-tools">
+        <label class="wheel-search-wrap"><span class="sr-only">Search wheel designs</span><input id="wheel-search" class="wheel-search" type="search" placeholder="Search model or design…" autocomplete="off" /></label>
+        <div class="wheel-filter-group" role="group" aria-label="Filter by construction">
+          <button type="button" class="wheel-filter is-active" data-wheel-filter="all" aria-pressed="true">All designs <span>10</span></button>
+          <button type="button" class="wheel-filter" data-wheel-filter="monoblock" aria-pressed="false">Monoblock</button>
+          <button type="button" class="wheel-filter" data-wheel-filter="two-piece" aria-pressed="false">Two-piece</button>
+          <button type="button" class="wheel-filter" data-wheel-filter="three-piece" aria-pressed="false">Three-piece</button>
+        </div>
+        <p class="wheel-results-count" id="wheel-results-count" aria-live="polite">Showing {products.length} designs</p>
+      </div>
+      <div class="cms-product-grid wheel-product-grid" id="wheel-product-grid">
+        {products.map((product: any, index: number) => (
+          <a class="cms-product-card wheel-product-card" href={`/wheels/models/${product.slug}`} data-wheel-card data-construction={product.construction} data-search={`${product.title} ${product.modelCode} ${product.description}`.toLowerCase()}>
+            <div class="cms-product-media">
+              {product.image ? <Image image={product.image} width={900} height={675} /> : <div class="demo-wheel-art" aria-hidden="true"><div class:list={["wheel-render", `demo-wheel-art--${index % 5}`]}></div></div>}
+              <span class="wheel-card-index">{String(index + 1).padStart(2, "0")}</span>
+            </div>
+            <div class="cms-product-meta"><span>{product.modelCode || "ANVERA DESIGN"}</span><span>{product.construction.replaceAll("-", " ").toUpperCase()}</span></div>
+            <h3>{product.title}</h3>
+            <p>{product.description}</p>
+            <div class="wheel-card-spec-line"><span>DIAMETER</span><strong>{product.diameter || "Vehicle-specific"}</strong></div>
+            <span class="cms-product-link">Explore design <b aria-hidden="true">↗</b></span>
+            {product.status === "DEVELOPMENT SAMPLE" && <span class="wheel-demo-label">DEVELOPMENT SAMPLE</span>}
+          </a>
+        ))}
+      </div>
+      <p class="wheel-no-results" id="wheel-no-results" hidden>No wheel designs match your search. Try another model name or construction type.</p>
+      <p class="wheel-catalog-note">Development catalogue: model names and technical values are illustrative and have not been approved for manufacturing or vehicle fitment.</p>
     </div>
-  </section>}
+  </section>
 
   <section class="collection-cta">
     <div><p class="section-kicker">A considered fit starts here</p><h2>Tell us what<br />you drive.</h2><p>Share your vehicle and design direction. Our team will help define the right specification.</p></div>
     <a class="cds-btn cds-btn--primary" href="/custom-inquiry">Request a consultation <span aria-hidden="true">↗</span></a>
   </section>
 </Base>
+<script>
+  const cards = Array.from(document.querySelectorAll<HTMLElement>("[data-wheel-card]"));
+  const filters = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-wheel-filter]"));
+  const search = document.querySelector<HTMLInputElement>("#wheel-search");
+  const count = document.querySelector<HTMLElement>("#wheel-results-count");
+  const empty = document.querySelector<HTMLElement>("#wheel-no-results");
+  let activeFilter = "all";
+  const applyFilters = () => {
+    const query = (search?.value ?? "").trim().toLowerCase();
+    let visible = 0;
+    for (const card of cards) {
+      const matchesType = activeFilter === "all" || card.dataset.construction === activeFilter;
+      const matchesSearch = !query || (card.dataset.search ?? "").includes(query);
+      const show = matchesType && matchesSearch;
+      card.hidden = !show;
+      if (show) visible += 1;
+    }
+    if (count) count.textContent = `Showing ${visible} of ${cards.length} designs`;
+    if (empty) empty.hidden = visible > 0;
+  };
+  filters.forEach((button) => button.addEventListener("click", () => {
+    activeFilter = button.dataset.wheelFilter ?? "all";
+    filters.forEach((item) => {
+      const active = item === button;
+      item.classList.toggle("is-active", active);
+      item.setAttribute("aria-pressed", String(active));
+    });
+    applyFilters();
+  }));
+  search?.addEventListener("input", applyFilters);
+</script>
