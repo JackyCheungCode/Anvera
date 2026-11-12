@@ -521,3 +521,22 @@ img, video { display: block; max-width: 100%; }
 .wheel-finish-image img { width:100%; aspect-ratio:3/2; object-fit:cover; }
 .wheel-finish-swatch { display:block; width:42px; height:42px; margin:0 0 16px; border-radius:50%; background:var(--finish-swatch); border:1px solid rgba(255,255,255,.35); box-shadow:inset 0 0 0 3px rgba(0,0,0,.12); }
 .wheel-finish-code { display:inline-block; margin-top:12px; color:var(--anvera-red); font-size:10px; font-weight:800; letter-spacing:.14em; }
+
+
+/* Verified vehicle fitments */
+.wheel-fitments { padding:88px var(--page-gutter); background:#f0f0f0; }
+.wheel-fitments-heading { display:grid; grid-template-columns:1fr minmax(240px,420px); align-items:end; gap:36px; margin-bottom:38px; }
+.wheel-fitments-heading h2 { margin:0; font-family:var(--font-display); font-size:clamp(38px,5vw,64px); line-height:.94; text-transform:uppercase; }
+.wheel-fitments-heading > p { margin:0; color:#52575c; font-size:13px; line-height:1.8; }
+.wheel-fitment-list { display:grid; gap:1px; background:#d4d6d8; }
+.wheel-fitment-row { display:grid; grid-template-columns:1.25fr 1fr 1fr auto; align-items:center; gap:22px; padding:22px 24px; background:#f8f8f8; }
+.wheel-fitment-row h3 { margin:0 0 5px; font-size:16px; font-weight:700; }
+.wheel-fitment-row p { margin:0; color:#656b70; font-size:12px; }
+.wheel-fitment-row > div:nth-child(2),.wheel-fitment-row > div:nth-child(3) { display:grid; gap:7px; }
+.wheel-fitment-row > div:nth-child(2) span,.wheel-fitment-row > div:nth-child(3) span { color:#6a7075; font-size:9px; font-weight:800; letter-spacing:.14em; }
+.wheel-fitment-row strong { font-size:12px; font-weight:600; }
+.wheel-fitment-status { display:grid; justify-items:end; gap:5px; }
+.wheel-fitment-status > span { padding:6px 8px; color:#176b45; background:#dcefe5; font-size:9px; font-weight:800; letter-spacing:.12em; }
+.wheel-fitment-status small { color:#74797e; font-size:10px; }
+@media(max-width:800px) { .wheel-fitments-heading { grid-template-columns:1fr; gap:18px; } .wheel-fitment-row { grid-template-columns:1fr 1fr; } .wheel-fitment-status { justify-items:start; } }
+@media(max-width:520px) { .wheel-fitment-row { grid-template-columns:1fr; gap:14px; } }
