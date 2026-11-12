@@ -2,7 +2,7 @@
 
 Status: first implementation slice  
 Feature branch: `feat/product-intelligence-global-setup`  
-Production D1: not migrated; feature flag remains disabled  
+Production D1: three setup tables are applied by the production deployment workflow; feature flag enabled  
 Preview D1: isolated schema is applied by the Product Intelligence preview workflow
 
 ## Product decision
@@ -98,7 +98,8 @@ Each save increments the revision. A stale revision is rejected rather than over
 
 ## Deployment and migration boundary
 
-- The preview workflow applies `migrations/0001_product_intelligence_global_setup.sql` only to the isolated `anvera-preview` D1 database.
-- Preview configuration enables `ANVERA_PRODUCT_INTELLIGENCE_ENABLED`.
-- Production configuration keeps the feature disabled.
-- No production D1 migration, seed, feature enablement or Worker deployment is authorized by this implementation slice.
+- The preview workflow applies `migrations/0001_product_intelligence_global_setup.sql` to the isolated `anvera-preview` D1 database.
+- The production workflow applies the same idempotent migration to the production `anvera` D1 database before deploying the Worker.
+- Preview and production configurations explicitly enable `ANVERA_PRODUCT_INTELLIGENCE_ENABLED`.
+- `ANVERA_BUSINESS_API_ENABLED` remains disabled in production.
+- The initial release does not seed product records or publish unreviewed data.
