@@ -1,0 +1,45 @@
+---
+import Base from "../layouts/Base.astro";
+const stages = [
+  { n:"01", title:"The vehicle", copy:"Start with the vehicle make, model, year and brake package. These details establish the fitment envelope." },
+  { n:"02", title:"The specification", copy:"Define diameter, width, PCD, offset, centre bore and front-to-rear requirements. Unknown values can be reviewed with our team." },
+  { n:"03", title:"The design", copy:"Choose a construction direction, spoke character and finish palette. Reference images help communicate the intended result." },
+  { n:"04", title:"Engineering review", copy:"Our team reviews technical feasibility before a final specification or quotation is confirmed." }
+];
+---
+<Base title="Wheel Customization" description="A considered process for custom forged wheels, from vehicle fitment and construction to finish and engineering review.">
+  <section class="custom-hero">
+    <div class="custom-hero-visual" aria-hidden="true"><div class="wheel-render wheel-render--custom"></div></div>
+    <div class="custom-hero-copy">
+      <p class="eyebrow">ANVERA / MADE TO YOUR BRIEF</p>
+      <h1>Personal<br />by design.</h1>
+      <p>A custom wheel project is a collaboration between your vision, your vehicle and our engineering process. Start with the details that matter. We will help shape the rest.</p>
+      <a class="cds-btn cds-btn--primary" href="/custom-inquiry">Begin your inquiry <span aria-hidden="true">↗</span></a>
+    </div>
+  </section>
+  <section class="section custom-process">
+    <div class="section-inner">
+      <p class="section-kicker">The process</p>
+      <h2 class="section-title">From first brief<br />to final specification.</h2>
+      <div class="process-grid">
+        {stages.map((stage) => <article class="process-step"><span>{stage.n}</span><h3>{stage.title}</h3><p>{stage.copy}</p></article>)}
+      </div>
+    </div>
+  </section>
+  <section class="custom-spec">
+    <div class="custom-spec-copy">
+      <p class="section-kicker">Fitment is fundamental</p>
+      <h2>Details define<br />the right fit.</h2>
+      <p>Wheel fitment is evaluated as a system. Diameter, width, offset, PCD, centre bore, brake clearance, load requirements and intended use all matter. A visual reference alone is never treated as a technical approval.</p>
+    </div>
+    <div class="spec-list">
+      {["Diameter & width","PCD / bolt pattern","Offset & centre bore","Brake clearance","Front / rear configuration","Finish & surface treatment"].map((item,index) => <div><span>0{index+1}</span><b>{item}</b></div>)}
+    </div>
+  </section>
+  <section class="custom-cta">
+    <p class="section-kicker">Your vehicle. Your direction.</p>
+    <h2>Let's define<br />your specification.</h2>
+    <p>Send us your vehicle details and the direction you have in mind. Our team will follow up to review the project.</p>
+    <a class="cds-btn cds-btn--primary" href="/custom-inquiry">Start a custom inquiry <span aria-hidden="true">↗</span></a>
+  </section>
+</Base>
