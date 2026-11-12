@@ -95,3 +95,5 @@ Each record captures capability scope, assembly method, fastener requirements, q
 Product Definition uses the approved construction matrix when the normalized schema is installed. The server rechecks construction approval before a global setup can be submitted. The previous free-text construction list remains a compatibility fallback only when the normalized Preview migration is absent.
 
 Preview migration: `migrations/0005_product_intelligence_construction_capabilities.sql`.
+
+Constraint upgrade: `migrations/0006_product_intelligence_review_mapping_constraint_upgrade.sql` rebuilds the append-only review decision and product finish mapping tables to extend their allowed entity/status values. It copies existing rows before replacing the tables and is designed to be repeatable when Preview deployment reapplies the migration set.
