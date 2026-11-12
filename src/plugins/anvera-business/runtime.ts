@@ -397,11 +397,17 @@ function setupDocumentIsSubmittable(document: Record<string, unknown>) {
     construction.constructionTypes,
     specification.diameterRange, specification.widthRange, specification.boltPatterns
   ];
-  const validProducts = products.length > 0 && products.every((product) =>
-    Boolean(inputString(product?.productCode, 80)) &&
-    Boolean(inputString(product?.productName, 120)) &&
-    Boolean(inputString(product?.construction, 40))
-  );
+  const supportedConstructions = inputString(construction.constructionTypes, 1000).split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean);
+  const materialGrades = inputString(material.materialGrade, 2000).split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean);
+  const validProducts = products.length > 0 && products.every((product) => {
+    const selectedConstruction = inputString(product?.construction, 40);
+    const selectedMaterial = inputString(product?.materialProfile, 200);
+    return Boolean(inputString(product?.productCode, 80)) &&
+      Boolean(inputString(product?.productName, 120)) &&
+      Boolean(selectedConstruction) &&
+      supportedConstructions.includes(selectedConstruction) &&
+      (!selectedMaterial || materialGrades.includes(selectedMaterial));
+  });
   return required.every((value) => typeof value === "string" && value.trim().length > 0) && validProducts;
 }
 
