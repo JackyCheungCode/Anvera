@@ -530,6 +530,148 @@ async function saveProductSetup(ctx: AdminContext) {
   return { saved: true, sessionId: existing.id, revision: nextRevision, status: nextStatus };
 }
 
+
+type MaterialProfileInput = {
+  code: string; name: string; family: string; grade: string; standard: string;
+  supplier: string; certificateRef: string; evidenceNote: string; status: string;
+};
+
+type ForgingProcessInput = {
+  code: string; name: string; processType: string; equipment: string;
+  capacityNotes: string; heatTreatment: string; cncCapability: string;
+  evidenceRef: string; status: string;
+};
+
+async function getProductLibraryDatabase(ctx: AdminContext) {
+  if (ctx.user?.role !== 50) return { error: { available: false, reason: "forbidden" } as const };
+  const { env } = await import("cloudflare:workers");
+  if (env.ANVERA_PRODUCT_INTELLIGENCE_ENABLED !== "true") {
+    return { error: { available: false, reason: "feature_disabled" } as const };
+  }
+  return { db: env.DB };
+}
+
+function libraryStatus(value: unknown) {
+  const status = inputString(value, 32) || "draft";
+  return ["draft", "pending_review"].includes(status) ? status : "";
+}
+
+async function listProductLibrary(ctx: AdminContext) {
+  if (ctx.request.method !== "GET") return { available: false, reason: "method_not_allowed" };
+  const access = await getProductLibraryDatabase(ctx);
+  if ("error" in access) return access.error;
+  try {
+    const [materials, forgingProcesses] = await Promise.all([
+      access.db.prepare("SELECT id, code, name, family, grade, standard, supplier, certificate_ref, evidence_note, status, revision, created_at, updated_at FROM anvera_pi_material_profiles ORDER BY code COLLATE NOCASE").all(),
+      access.db.prepare("SELECT id, code, name, process_type, equipment, capacity_notes, heat_treatment, cnc_capability, evidence_ref, status, revision, created_at, updated_at FROM anvera_pi_forging_processes ORDER BY code COLLATE NOCASE").all()
+    ]);
+    return { available: true, materials: materials.results, forgingProcesses: forgingProcesses.results };
+  } catch (cause) {
+    if (String(cause).toLowerCase().includes("no such table")) return { available: false, reason: "migration_pending" };
+    throw cause;
+  }
+}
+
+async function saveMaterialProfile(ctx: AdminContext) {
+  if (ctx.request.method !== "POST") return { saved: false, reason: "method_not_allowed" };
+  const access = await getProductLibraryDatabase(ctx);
+  if ("error" in access) return access.error;
+  const body = inputRecord(ctx.input);
+  const id = inputString(body?.id, 128);
+  const revision = Math.max(0, Math.floor(Number(body?.revision) || 0));
+  const value: MaterialProfileInput = {
+    code: inputString(body?.code, 48).toUpperCase(),
+    name: inputString(body?.name, 120),
+    family: inputString(body?.family, 64),
+    grade: inputString(body?.grade, 80),
+    standard: inputString(body?.standard, 120),
+    supplier: inputString(body?.supplier, 160),
+    certificateRef: inputString(body?.certificateRef, 200),
+    evidenceNote: inputString(body?.evidenceNote, 2000),
+    status: libraryStatus(body?.status)
+  };
+  if (!value.code || !value.name || !value.family || !value.grade || !value.status) {
+    return { saved: false, reason: "invalid_input" };
+  }
+  const actorId = ctx.user!.id;
+  const nextRevision = revision + 1;
+  const eventId = crypto.randomUUID();
+  try {
+    if (!id) {
+      const newId = crypto.randomUUID();
+      await access.db.batch([
+        access.db.prepare("INSERT INTO anvera_pi_material_profiles (id, code, name, family, grade, standard, supplier, certificate_ref, evidence_note, status, revision, created_by_user_id, updated_by_user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)")
+          .bind(newId, value.code, value.name, value.family, value.grade, value.standard || null, value.supplier || null, value.certificateRef || null, value.evidenceNote || null, value.status, actorId, actorId),
+        access.db.prepare("INSERT INTO anvera_pi_library_events (id, entity_type, entity_id, event_type, actor_user_id, revision, summary) VALUES (?, 'material', ?, ?, ?, 1, ?)")
+          .bind(eventId, newId, value.status === "pending_review" ? "submitted_for_review" : "created", actorId, `Material profile ${value.code} created`)
+      ]);
+      return { saved: true, id: newId, revision: 1 };
+    }
+    const result = await access.db.batch([
+      access.db.prepare("UPDATE anvera_pi_material_profiles SET code = ?, name = ?, family = ?, grade = ?, standard = ?, supplier = ?, certificate_ref = ?, evidence_note = ?, status = ?, revision = ?, updated_by_user_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND revision = ? AND status IN ('draft', 'pending_review')")
+        .bind(value.code, value.name, value.family, value.grade, value.standard || null, value.supplier || null, value.certificateRef || null, value.evidenceNote || null, value.status, nextRevision, actorId, id, revision),
+      access.db.prepare("INSERT INTO anvera_pi_library_events (id, entity_type, entity_id, event_type, actor_user_id, revision, summary) SELECT ?, 'material', ?, ?, ?, ?, ? WHERE changes() > 0")
+        .bind(eventId, id, value.status === "pending_review" ? "submitted_for_review" : "updated", actorId, nextRevision, `Material profile ${value.code} updated`)
+    ]);
+    if ((result[0]?.meta?.changes ?? 0) === 0) return { saved: false, reason: "revision_conflict_or_locked" };
+    return { saved: true, id, revision: nextRevision };
+  } catch (cause) {
+    if (String(cause).toLowerCase().includes("unique")) return { saved: false, reason: "duplicate_code" };
+    if (String(cause).toLowerCase().includes("no such table")) return { saved: false, reason: "migration_pending" };
+    throw cause;
+  }
+}
+
+async function saveForgingProcess(ctx: AdminContext) {
+  if (ctx.request.method !== "POST") return { saved: false, reason: "method_not_allowed" };
+  const access = await getProductLibraryDatabase(ctx);
+  if ("error" in access) return access.error;
+  const body = inputRecord(ctx.input);
+  const id = inputString(body?.id, 128);
+  const revision = Math.max(0, Math.floor(Number(body?.revision) || 0));
+  const value: ForgingProcessInput = {
+    code: inputString(body?.code, 48).toUpperCase(),
+    name: inputString(body?.name, 120),
+    processType: inputString(body?.processType, 80),
+    equipment: inputString(body?.equipment, 160),
+    capacityNotes: inputString(body?.capacityNotes, 2000),
+    heatTreatment: inputString(body?.heatTreatment, 1000),
+    cncCapability: inputString(body?.cncCapability, 2000),
+    evidenceRef: inputString(body?.evidenceRef, 200),
+    status: libraryStatus(body?.status)
+  };
+  if (!value.code || !value.name || !value.processType || !value.status) {
+    return { saved: false, reason: "invalid_input" };
+  }
+  const actorId = ctx.user!.id;
+  const nextRevision = revision + 1;
+  const eventId = crypto.randomUUID();
+  try {
+    if (!id) {
+      const newId = crypto.randomUUID();
+      await access.db.batch([
+        access.db.prepare("INSERT INTO anvera_pi_forging_processes (id, code, name, process_type, equipment, capacity_notes, heat_treatment, cnc_capability, evidence_ref, status, revision, created_by_user_id, updated_by_user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)")
+          .bind(newId, value.code, value.name, value.processType, value.equipment || null, value.capacityNotes || null, value.heatTreatment || null, value.cncCapability || null, value.evidenceRef || null, value.status, actorId, actorId),
+        access.db.prepare("INSERT INTO anvera_pi_library_events (id, entity_type, entity_id, event_type, actor_user_id, revision, summary) VALUES (?, 'forging_process', ?, ?, ?, 1, ?)")
+          .bind(eventId, newId, value.status === "pending_review" ? "submitted_for_review" : "created", actorId, `Forging process ${value.code} created`)
+      ]);
+      return { saved: true, id: newId, revision: 1 };
+    }
+    const result = await access.db.batch([
+      access.db.prepare("UPDATE anvera_pi_forging_processes SET code = ?, name = ?, process_type = ?, equipment = ?, capacity_notes = ?, heat_treatment = ?, cnc_capability = ?, evidence_ref = ?, status = ?, revision = ?, updated_by_user_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND revision = ? AND status IN ('draft', 'pending_review')")
+        .bind(value.code, value.name, value.processType, value.equipment || null, value.capacityNotes || null, value.heatTreatment || null, value.cncCapability || null, value.evidenceRef || null, value.status, nextRevision, actorId, id, revision),
+      access.db.prepare("INSERT INTO anvera_pi_library_events (id, entity_type, entity_id, event_type, actor_user_id, revision, summary) SELECT ?, 'forging_process', ?, ?, ?, ?, ? WHERE changes() > 0")
+        .bind(eventId, id, value.status === "pending_review" ? "submitted_for_review" : "updated", actorId, nextRevision, `Forging process ${value.code} updated`)
+    ]);
+    if ((result[0]?.meta?.changes ?? 0) === 0) return { saved: false, reason: "revision_conflict_or_locked" };
+    return { saved: true, id, revision: nextRevision };
+  } catch (cause) {
+    if (String(cause).toLowerCase().includes("unique")) return { saved: false, reason: "duplicate_code" };
+    if (String(cause).toLowerCase().includes("no such table")) return { saved: false, reason: "migration_pending" };
+    throw cause;
+  }
+}
+
 const jsonPost: { methods: ("GET" | "POST" | "HEAD" | "PUT" | "PATCH" | "DELETE")[]; request: { body: "json"; maxBytes: number } } = { methods: ["POST"], request: { body: "json", maxBytes: 16 * 1024 } };
 
 export function createPlugin() {
@@ -540,6 +682,23 @@ export function createPlugin() {
     version: "0.1.0",
     capabilities: ["users:read"],
     routes: {
+      "product-library/list": {
+        methods: ["GET"],
+        permission: "plugins:manage",
+        handler: listProductLibrary
+      },
+      "product-library/material/save": {
+        methods: ["POST"],
+        request: { body: "json", maxBytes: 12 * 1024 },
+        permission: "plugins:manage",
+        handler: saveMaterialProfile
+      },
+      "product-library/forging/save": {
+        methods: ["POST"],
+        request: { body: "json", maxBytes: 12 * 1024 },
+        permission: "plugins:manage",
+        handler: saveForgingProcess
+      },
       "product-setup/load": {
         methods: ["GET"],
         permission: "plugins:manage",
