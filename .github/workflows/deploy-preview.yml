@@ -6,6 +6,7 @@ on:
       - feat/bmw-carbon-design-system
       - feature/wheel-size-fitment
       - fix/vehicle-fitment-worker-dispatch
+      - feat/vehicle-fitment-oem-aftermarket-products
     paths-ignore:
       - "docs/**"
       - "*.md"
