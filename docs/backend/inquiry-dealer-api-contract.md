@@ -92,12 +92,18 @@ explicit unavailable state until the approved D1 migration is applied and the
 feature flag is deliberately enabled. They do not create, update, or delete
 records.
 
-Planned administrator write routes:
-- `POST inquiries/update`: validate the inquiry state transition and append a status event atomically.
-- `POST inquiries/note`: append an internal note event.
-- `POST dealer-applications/review`: validate the application transition, record reviewer identity and append an audit event atomically.
-- `POST dealers/activate`: link an approved application to an existing EmDash Subscriber identity; never create or promote a user.
-- `POST dealers/suspend`: suspend an active dealer and append an audit event atomically.
+Implemented administrator write routes:
+- `POST inquiries/update`: validates the inquiry state transition and appends a status event in the same D1 batch.
+- `POST inquiries/note`: appends an internal note event for an existing inquiry.
+- `POST dealer-applications/review`: validates the application transition, records reviewer identity and appends an audit event in the same D1 batch.
+- `POST dealers/activate`: links an approved application to an existing EmDash Subscriber identity (role 10); it never creates or promotes a user.
+- `POST dealers/suspend`: suspends an active dealer and appends an audit event in the same D1 batch.
+
+All write routes are private, require `plugins:manage`, re-check the Admin
+role server-side, and accept bounded JSON request bodies. The runtime also
+requires `ANVERA_BUSINESS_API_ENABLED=true`; the binding is unset by default.
+The read pages currently have live data-loading states, but review, status,
+note, activation and suspension controls are not yet connected in the UI.
 
 The schema draft includes `anvera_dealer_application_events` so dealer
 application review decisions have an append-only audit trail. This is an
