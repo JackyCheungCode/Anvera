@@ -1,6 +1,13 @@
 name: ANVERA preview deployment
 
 on:
+  push:
+    branches:
+      - feat/bmw-carbon-design-system
+    paths-ignore:
+      - "docs/**"
+      - "*.md"
+      - "README*"
   workflow_dispatch:
 
 permissions:
@@ -36,11 +43,6 @@ jobs:
           pnpm test
           pnpm typecheck
           pnpm build
-
-      - name: Inspect Astro Worker build output
-        run: |
-          find dist -maxdepth 3 -type f -print | sort | head -100
-          find dist -maxdepth 3 -type d -print | sort | head -100
 
       - name: Deploy isolated preview Worker
         run: pnpm exec wrangler deploy --config wrangler.preview.jsonc
