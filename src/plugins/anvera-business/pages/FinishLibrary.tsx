@@ -141,14 +141,14 @@ export function FinishLibrary({ onCatalogChange }: {
 }
 
 export function ProductFinishMapping({ finishes, construction, selected, onChange }: {
-  finishes: FinishOption[] | null; construction: string; selected: string[]; onChange: (next: string[]) => void;
+  finishes: FinishOption[] | null | undefined; construction: string; selected: string[]; onChange: (next: string[]) => void;
 }) {
   const compatible = useMemo(() => (finishes ?? []).filter((item) => item.supported_constructions.includes(construction)), [finishes, construction]);
   const selectedLabels = new Map((finishes ?? []).map((item) => [item.id, item.code + " · " + item.name]));
   const incompatible = selected.filter((id) => !compatible.some((item) => item.id === id));
   return <section className="api-product-finish-mapping">
     <div><p className="anvera-eyebrow">PRODUCT FINISH MAPPING</p><h3>Approved finish options</h3><p>Choose only approved finish profiles compatible with this product's construction. Product mappings remain pending engineering review.</p></div>
-    {finishes === null ? <p className="anvera-muted">Finish library is not installed in this environment. Finish mapping will be available after the Preview schema is applied.</p> :
+    {finishes === undefined ? <p className="anvera-muted">Open the Finish & Customization step to load the approved finish catalog.</p> : finishes === null ? <p className="anvera-muted">Finish library is not installed in this environment. Finish mapping will be available after the Preview schema is applied.</p> :
       compatible.length ? <div className="api-product-finish-options">{compatible.map((item) => <button key={item.id} type="button" className={selected.includes(item.id) ? "is-active" : ""} aria-pressed={selected.includes(item.id)} onClick={() => onChange(selected.includes(item.id) ? selected.filter((id) => id !== item.id) : [...selected, item.id])}><span>{selected.includes(item.id) ? "✓" : "+"}</span><strong>{item.code}</strong><small>{item.name} · {item.finish_type}</small></button>)}</div> :
       <p className="anvera-muted">No approved finish profiles support the selected construction yet.</p>}
     {incompatible.length ? <p className="anvera-inline-message" role="alert">Some selected finishes do not support {construction}: {incompatible.map((id) => selectedLabels.get(id) ?? id).join(", ")}. Remove them before continuing.</p> : null}
