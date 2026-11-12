@@ -130,6 +130,19 @@ export async function acceptPublicSubmission(ctx: RequestContext, required: stri
   }
   const email = clean(data.email, 254).toLowerCase();
   if (!EMAIL_PATTERN.test(email)) return { ok: false, response: json({ ok: false, error: "invalid_email" }, 422) };
+  try {
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(email));
+    const emailKey = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+    const decision = await env.PUBLIC_INTAKE_LIMITER!.limit({ key: url.pathname + ":email:" + emailKey });
+    if (!decision.success) {
+      return { ok: false, response: new Response(JSON.stringify({ ok: false, error: "rate_limit_exceeded" }), {
+        status: 429,
+        headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", "Retry-After": "60", "X-Content-Type-Options": "nosniff" }
+      }) };
+    }
+  } catch {
+    return { ok: false, response: json({ ok: false, error: "rate_limiting_unavailable" }, 503) };
+  }
 
   const token = clean(data.turnstileToken, 2048);
   const verified = await verifyTurnstile(token, env.TURNSTILE_SECRET_KEY!, remoteIp, url.hostname);
