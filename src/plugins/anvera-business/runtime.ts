@@ -514,6 +514,9 @@ async function saveProductSetup(ctx: AdminContext) {
     if (!await validateProductCapabilityReferences(access.db, document)) {
       return { saved: false, reason: "product_capability_reference_invalid" };
     }
+    if (!await validateProductFinishMappings(access.db, document)) {
+      return { saved: false, reason: "product_finish_mapping_invalid" };
+    }
   }
 
   const existing = await access.db.prepare(
@@ -768,15 +771,15 @@ async function saveFinishProfile(ctx: AdminContext) {
 
 async function syncProductFinishMappings(db: D1Database, sessionId: string, document: Record<string, unknown>, actorId: string) {
   const products = Array.isArray(document.products) ? document.products.map(inputRecord).filter(Boolean) : [];
-  const desired = new Map<string, { productCode: string; finishId: string }>();
+  const desired = new Map<string, { productCode: string; finishId: string; construction: string }>();
   for (const product of products) {
     const productCode = inputString(product?.productCode, 80);
     const finishIds = Array.isArray(product?.finishProfiles) ? product.finishProfiles.map((value) => inputString(value, 128)).filter(Boolean) : [];
-    for (const finishId of finishIds) desired.set(`${productCode}::${finishId}`, { productCode, finishId });
+    for (const finishId of finishIds) desired.set(`${productCode}::${finishId}`, { productCode, finishId, construction: inputString(product?.construction, 40) });
   }
   const existing = await db.prepare("SELECT id, product_code, finish_profile_id, mapping_status, revision FROM anvera_pi_product_finish_mappings WHERE setup_session_id = ?")
     .bind(sessionId).all<{ id: string; product_code: string; finish_profile_id: string; mapping_status: string; revision: number }>();
-  const currentKeys = new Set(existing.results.map((item) => `${item.product_code}::${item.finish_profile_id}`));
+  const existingByKey = new Map(existing.results.map((item) => [`${item.product_code}::${item.finish_profile_id}`, item]));
   const statements = [];
   for (const item of existing.results) {
     const key = `${item.product_code}::${item.finish_profile_id}`;
@@ -788,24 +791,56 @@ async function syncProductFinishMappings(db: D1Database, sessionId: string, docu
     }
   }
   for (const [key, item] of desired) {
-    if (currentKeys.has(key)) continue;
     const profile = await db.prepare("SELECT status, supported_constructions_json FROM anvera_pi_finish_profiles WHERE id = ? LIMIT 1")
       .bind(item.finishId).first<{ status: string; supported_constructions_json: string }>();
-    if (!profile || profile.status !== "approved") throw new Error("finish_profile_not_approved");
-    const product = products.find((entry) => inputString(entry?.productCode, 80) === item.productCode);
-    const construction = inputString(product?.construction, 40);
     let supported: string[] = [];
-    try { supported = JSON.parse(profile.supported_constructions_json) as string[]; } catch { supported = []; }
-    if (!supported.includes(construction)) throw new Error("finish_construction_not_supported");
+    try { supported = JSON.parse(profile?.supported_constructions_json ?? "[]") as string[]; } catch { supported = []; }
+    const valid = profile?.status === "approved" && supported.includes(item.construction);
+    const current = existingByKey.get(key);
+    if (current) {
+      const nextStatus = valid ? "pending_review" : "restricted";
+      if (current.mapping_status !== nextStatus && current.mapping_status !== "superseded") {
+        statements.push(db.prepare("UPDATE anvera_pi_product_finish_mappings SET mapping_status = ?, revision = revision + 1, updated_by_user_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND revision = ?")
+          .bind(nextStatus, actorId, current.id, current.revision));
+        statements.push(db.prepare("INSERT INTO anvera_pi_finish_events (id, entity_type, entity_id, event_type, actor_user_id, revision, summary) VALUES (?, 'product_finish_mapping', ?, 'mapping_updated', ?, ?, ?)")
+          .bind(crypto.randomUUID(), current.id, actorId, current.revision + 1, valid ? "Finish mapping resubmitted for engineering review" : "Finish mapping restricted because its profile is not approved or does not support the product construction"));
+      }
+      continue;
+    }
+    if (!valid) continue;
     const mappingId = crypto.randomUUID();
     statements.push(db.prepare("INSERT INTO anvera_pi_product_finish_mappings (id, setup_session_id, product_code, finish_profile_id, mapping_status, created_by_user_id, updated_by_user_id) VALUES (?, ?, ?, ?, 'pending_review', ?, ?)")
       .bind(mappingId, sessionId, item.productCode, item.finishId, actorId, actorId));
     statements.push(db.prepare("INSERT INTO anvera_pi_finish_events (id, entity_type, entity_id, event_type, actor_user_id, revision, summary) VALUES (?, 'product_finish_mapping', ?, 'mapping_created', ?, 1, ?)")
-      .bind(crypto.randomUUID(), mappingId, actorId, `Finish profile mapped to product ${item.productCode}`));
+      .bind(crypto.randomUUID(), mappingId, actorId, `Finish profile mapped to product ${item.productCode}; pending engineering review`));
   }
   if (statements.length) await db.batch(statements);
 }
 
+async function validateProductFinishMappings(db: D1Database, document: Record<string, unknown>) {
+  const products = Array.isArray(document.products) ? document.products.map(inputRecord).filter(Boolean) : [];
+  const selected = products.flatMap((product) => {
+    const productCode = inputString(product?.productCode, 80);
+    const construction = inputString(product?.construction, 40);
+    const ids = Array.isArray(product?.finishProfiles) ? product.finishProfiles.map((value) => inputString(value, 128)).filter(Boolean) : [];
+    return ids.map((id) => ({ id, construction, productCode }));
+  });
+  if (!selected.length) return true;
+  try {
+    const ids = [...new Set(selected.map((item) => item.id))];
+    const rows = await db.prepare(`SELECT id, status, supported_constructions_json FROM anvera_pi_finish_profiles WHERE id IN (${ids.map(() => "?").join(",")})`)
+      .bind(...ids).all<{ id: string; status: string; supported_constructions_json: string }>();
+    const profiles = new Map(rows.results.map((item) => [item.id, item]));
+    return selected.every((item) => {
+      const profile = profiles.get(item.id);
+      if (!profile || profile.status !== "approved") return false;
+      try { return (JSON.parse(profile.supported_constructions_json) as string[]).includes(item.construction); } catch { return false; }
+    });
+  } catch (cause) {
+    if (String(cause).toLowerCase().includes("no such table")) return false;
+    throw cause;
+  }
+}
 
 async function listProductLibraryReviewQueue(ctx: AdminContext) {
   if (ctx.request.method !== "GET") return { available: false, reason: "method_not_allowed" };
