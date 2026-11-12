@@ -1,14 +1,16 @@
 ---
 import Base from "../../../layouts/Base.astro";
 import { getEmDashEntry } from "emdash";
-import { PortableText } from "emdash/ui";
+import { Image, PortableText } from "emdash/ui";
 
-const result = await getEmDashEntry("wheel_products", Astro.params.slug ?? "").catch(() => ({ entry: null }));
-const product = result.entry as any;
+const { entry: product, error, cacheHint } = await getEmDashEntry("wheel_products", Astro.params.slug ?? "", { references: { available_finishes: true } });
+if (error) throw error;
+if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+const galleryImages = Array.isArray(product?.data?.gallery_images) ? product.data.gallery_images : [];
+const finishes = product?.references?.available_finishes?.entries ?? [];
 const data = product?.data ?? {};
 const title = String(data.title ?? "Wheel design");
-const heroImage = typeof data.hero_image?.src === "string" ? data.hero_image.src : null;
-const heroAlt = String(data.hero_image?.alt ?? title);
+const heroImage = data.hero_image ?? null;
 const construction = String(data.construction_type ?? "").replaceAll("_", " ");
 const description = String(data.short_description ?? "");
 const modelCode = String(data.model_code ?? "");
@@ -16,7 +18,7 @@ const modelCode = String(data.model_code ?? "");
 <Base title={product ? title : "Wheel design unavailable"} description={description || "Explore an ANVERA forged wheel design and discuss a vehicle-specific configuration."}>
   {product ? <>
     <section class="wheel-product-hero">
-      <div class="wheel-product-visual">{heroImage ? <img src={heroImage} alt={heroAlt} /> : <div class="wheel-product-visual-placeholder"><span>ANVERA / FORGED</span></div>}</div>
+      <div class="wheel-product-visual">{heroImage ? <Image image={heroImage} width={1600} height={1200} priority /> : <div class="wheel-product-visual-placeholder"><span>ANVERA / FORGED</span></div>}</div>
       <div class="wheel-product-intro">
         <p class="eyebrow">ANVERA / WHEEL DESIGN</p>
         <p class="wheel-product-code">{modelCode || "BESPOKE DESIGN"}{construction ? ` / ${construction.toUpperCase()}` : ""}</p>
@@ -25,6 +27,8 @@ const modelCode = String(data.model_code ?? "");
         <a class="cds-btn cds-btn--primary" href={`/custom-inquiry?model=${encodeURIComponent(modelCode || title)}`}>Discuss this design <span aria-hidden="true">↗</span></a>
       </div>
     </section>
+    {galleryImages.length > 0 && <section class="wheel-product-gallery"><div class="wheel-product-gallery-heading"><p class="section-kicker">Details / 01</p><h2>Considered<br />from every angle.</h2></div><div class="wheel-product-gallery-grid">{galleryImages.map((item: any) => item.image && <figure><Image image={item.image} width={1000} height={750} /><figcaption>{String(item.caption ?? item.alt_text ?? "")}</figcaption></figure>)}</div></section>}
+    {finishes.length > 0 && <section class="wheel-product-finishes"><p class="section-kicker">Finish library</p><h2>Make it<br />your own.</h2><div class="wheel-finish-grid">{finishes.map((finish: any) => <article><h3>{String(finish.data?.title ?? "Finish")}</h3><p>{String(finish.data?.finish_description ?? "")}</p>{finish.data?.finish_code && <span>{String(finish.data.finish_code)}</span>}</article>)}</div></section>}
     {data.design_story && <section class="wheel-product-story">
       <p class="section-kicker">Design perspective</p>
       <div class="wheel-product-richtext"><PortableText value={data.design_story} /></div>
