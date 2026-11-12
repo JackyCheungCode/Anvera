@@ -435,7 +435,7 @@ function setupDocumentIsSubmittable(document: Record<string, unknown>) {
 async function validateProductConstructionCapabilities(db: D1Database, document: Record<string, unknown>) {
   const products = Array.isArray(document.products) ? document.products.map(inputRecord).filter(Boolean) : [];
   const construction = inputRecord(document.construction) ?? {};
-  const legacy = inputString(construction.constructionTypes, 1000).split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean);
+  const legacy = inputString(construction.constructionTypes, 1000).split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean);
   const selected = [...new Set(products.map((product) => inputString(product?.construction, 40)).filter(Boolean))];
   if (!selected.length) return false;
   try {
