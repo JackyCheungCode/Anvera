@@ -69,7 +69,7 @@ export function ConstructionCapabilityMatrix({ onCatalogChange }: {
         body: JSON.stringify({ ...form, status })
       });
       const result = await parseApiResponse<SaveResponse>(response, "Unable to save construction capability.");
-      if (!result.saved) throw new Error(result.reason === "construction_already_exists" ? "A capability record for this construction already exists." : result.reason ?? "Capability record was not saved.");
+      if (!result.saved) throw new Error(result.reason === "construction_already_exists" ? "A capability record for this construction already exists." : result.reason === "engineering_evidence_required" ? "Add capability scope, quality processes and evidence. Two-piece and Three-piece also require assembly and fastener requirements." : result.reason ?? "Capability record was not saved.");
       setEditing(false);
       setNotice(status === "pending_review" ? "Construction capability submitted for engineering review." : "Construction capability saved as draft.");
       await load();
@@ -91,6 +91,7 @@ export function ConstructionCapabilityMatrix({ onCatalogChange }: {
 
   const existingTypes = new Set(items.map((item) => item.construction_type));
   const newTypes = TYPES.filter((type) => !existingTypes.has(type));
+  const reviewReady = Boolean(form.capabilityScope.trim() && form.qualityProcesses.trim() && form.evidenceRef.trim() && (!["Two-piece", "Three-piece"].includes(form.constructionType) || (form.assemblyMethod.trim() && form.fastenerRequirements.trim())));
 
   return <section className="api-library">
     <div className="api-library-heading">
@@ -112,7 +113,7 @@ export function ConstructionCapabilityMatrix({ onCatalogChange }: {
       <div className="api-library-actions">
         <button type="button" className="anvera-action-button anvera-action-button--quiet" onClick={() => setEditing(false)}>Cancel</button>
         <button type="button" className="anvera-action-button anvera-action-button--quiet" disabled={saving} onClick={() => void save("draft")}>Save draft</button>
-        <button type="button" className="anvera-action-button" disabled={saving} onClick={() => void save("pending_review")}>{saving ? "Saving…" : "Submit for review"}</button>
+        <button type="button" className="anvera-action-button" disabled={saving || !reviewReady} onClick={() => void save("pending_review")}>{saving ? "Saving…" : "Submit for review"}</button>
       </div>
     </div> : <div className="api-library-actions"><button type="button" className="anvera-action-button" disabled={!newTypes.length} onClick={() => { setForm(blankForm(newTypes[0])); setEditing(true); }}>＋ Add construction capability</button></div>}
     <div className="api-library-list">
