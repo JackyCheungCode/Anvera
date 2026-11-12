@@ -1,6 +1,6 @@
 ---
-interface Props { products?: Array<Record<string, unknown>> }
-const { products = [] } = Astro.props;
+interface Props { products?: Array<Record<string, unknown>>; compact?: boolean }
+const { products = [], compact = false } = Astro.props;
 const regions = [
   { value: "usdm", label: "USA & North America" }, { value: "cdm", label: "Canada" },
   { value: "mxndm", label: "Mexico" }, { value: "ladm", label: "Central & South America" },
@@ -21,12 +21,12 @@ const safeProducts = products.map((product) => ({
   verifiedFitments: Array.isArray(product.verifiedFitments) ? product.verifiedFitments : []
 }));
 ---
-<section class="vehicle-finder-section">
+<section class:list={["vehicle-finder-section", compact && "vehicle-finder-section--compact"]}>
   <div class="vehicle-finder-inner">
-    <div class="vehicle-finder-heading">
+    {!compact && <div class="vehicle-finder-heading">
       <div><p class="section-kicker">ANVERA / VEHICLE FITMENT</p><h2>Find wheels<br /><span>for your vehicle.</span></h2></div>
       <p>Choose your vehicle and market to compare original equipment and alternative fitments, then explore ANVERA forged wheel designs for your selected specification.</p>
-    </div>
+    </div>}
     <form class="vehicle-finder-form" id="vehicle-finder-form">
       <div class="vehicle-finder-grid" id="vf-vehicle-fields">
         <div class="vehicle-finder-field"><span>Market region</span><div data-dropdown="region" data-placeholder="Southeast Asia"></div></div>
@@ -36,13 +36,13 @@ const safeProducts = products.map((product) => ({
         <div class="vehicle-finder-field"><span>Generation</span><div data-dropdown="generation" data-placeholder="Any generation"></div></div>
         <div class="vehicle-finder-field"><span>Modification / trim</span><div data-dropdown="modification" data-placeholder="All available trims"></div></div>
       </div>
-      <div class="vehicle-finder-actions"><p id="vf-status" role="status" aria-live="polite">Loading vehicle catalogue…</p><button class="cds-btn cds-btn--primary" type="submit" id="vf-submit" disabled>Find fitment <span aria-hidden="true">↗</span></button></div>
+      <div class="vehicle-finder-actions"><p id="vf-status" role="status" aria-live="polite">Loading vehicle catalogue…</p>{!compact && <button class="cds-btn cds-btn--primary" type="submit" id="vf-submit" disabled>Find fitment <span aria-hidden="true">↗</span></button>}</div>
     </form>
     <div class="vehicle-finder-results" id="vf-results" hidden aria-live="polite"></div>
-    <p class="vehicle-finder-disclaimer">Fitment information is supplied by Wheel-Size as a reference. ANVERA will verify load rating, brake clearance, hub fit, offsets and vehicle-specific requirements before confirming any production specification.</p>
+    {!compact && <p class="vehicle-finder-disclaimer">Fitment information is supplied by Wheel-Size as a reference. ANVERA will verify load rating, brake clearance, hub fit, offsets and vehicle-specific requirements before confirming any production specification.</p>}
   </div>
 </section>
-<script define:vars={{ regionOptions: regions, anveraProducts: safeProducts }}>
+<script define:vars={{ regionOptions: regions, anveraProducts: safeProducts, compactMode: compact }}>
   // @ts-nocheck
   const form = document.querySelector("#vehicle-finder-form");
   const status = document.querySelector("#vf-status");
@@ -141,7 +141,7 @@ const safeProducts = products.map((product) => ({
   const renderSelectedValue = (valueLabel, key, item, label) => {
     valueLabel.replaceChildren();
     if (key === "make") { const logo = makeLogo(label, item?.raw); if (logo) valueLabel.append(logo); }
-    if (key === "model") { const image = modelImage(item?.raw, label); if (image) valueLabel.append(image); }
+    if (key === "model" && !compactMode) { const image = modelImage(item?.raw, label); if (image) valueLabel.append(image); }
     const text = document.createElement("span"); text.className = "vf-select-value-text"; text.textContent = label; valueLabel.append(text);
   };
   document.querySelectorAll("[data-dropdown]").forEach((host) => {
@@ -164,7 +164,7 @@ const safeProducts = products.map((product) => ({
         const option = document.createElement("button"); option.type = "button"; option.className = "vf-select-option";
         option.setAttribute("role", "option"); option.setAttribute("aria-selected", String(item.value === values[key]));
         if (key === "make") { const logo = makeLogo(item.label, item.raw); if (logo) option.append(logo); }
-        if (key === "model") { const image = modelImage(item.raw, item.label); if (image) option.append(image); }
+        if (key === "model" && !compactMode) { const image = modelImage(item.raw, item.label); if (image) option.append(image); }
         const label = document.createElement("span"); label.textContent = item.label; option.append(label);
         option.addEventListener("click", () => { values[key] = item.value; renderSelectedValue(valueLabel, key, item, item.label); close(); render(); host.dispatchEvent(new CustomEvent("vf-change", { bubbles: true, detail: { key, value: item.value, item } })); });
         menu.append(option);
@@ -279,7 +279,7 @@ const safeProducts = products.map((product) => ({
     ];
     cells.forEach(([label,value],index) => { const cell=document.createElement("td"); if(index===0){const title=document.createElement("strong");title.textContent=value;const badge=document.createElement("span");badge.className="vf-fitment-badge vf-fitment-badge--"+item.classification;badge.textContent=item.classification==="oem"?"OEM":item.classification==="aftermarket"?"AFTERMARKET":"UNCLASSIFIED";cell.append(title,badge);}else{const span=document.createElement("span");span.className="vf-table-cell-label";span.textContent=label;const text=document.createElement("strong");text.textContent=display(value);cell.append(span,text);} row.append(cell);});
     const actionCell=document.createElement("td");actionCell.className="vf-fitment-action-cell";const choose=document.createElement("button");choose.type="button";choose.className="cds-btn cds-btn--secondary vf-choose-fitment";choose.textContent=id===selectedId?"Selected":"Select";choose.setAttribute("aria-label","Select "+cells[0][1]);actionCell.append(choose);row.append(actionCell);
-    const select=()=>{document.querySelectorAll(".vf-fitment-row").forEach((node)=>{node.setAttribute("aria-selected","false");const button=node.querySelector(".vf-choose-fitment");if(button)button.textContent="Select";});row.setAttribute("aria-selected","true");choose.textContent="Selected";renderProducts(item,record);window.dispatchEvent(new CustomEvent("anvera:fitment-selected",{detail:{record,fitment:item,vehicle:{...values}}}));};
+    const select=()=>{document.querySelectorAll(".vf-fitment-row").forEach((node)=>{node.setAttribute("aria-selected","false");const button=node.querySelector(".vf-choose-fitment");if(button)button.textContent="Select";});row.setAttribute("aria-selected","true");choose.textContent="Selected";if(!compactMode)renderProducts(item,record);window.dispatchEvent(new CustomEvent("anvera:fitment-selected",{detail:{record,fitment:item,vehicle:{...values}}}));};
     row.addEventListener("click",select);choose.addEventListener("click",(event)=>{event.stopPropagation();select();});return row;
   };
   const productValues = (product, keys) => {
@@ -544,4 +544,39 @@ const safeProducts = products.map((product) => ({
 .vf-mini-trigger .vf-mini-value{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vf-mini-trigger .vf-select-chevron{flex:0 0 auto;margin-left:auto}
 @media(max-width:480px){.vf-products{padding-left:0;padding-right:0}}
+
+/* Configure-only compact presentation: dark Carbon surfaces, no white controls. */
+.vehicle-finder-section--compact{padding:0;background:transparent;color:#f4f4f4}
+.vehicle-finder-section--compact .vehicle-finder-inner{width:100%;max-width:none}
+.vehicle-finder-section--compact .vehicle-finder-form{padding:20px;background:#17191c}
+.vehicle-finder-section--compact .vehicle-finder-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.vehicle-finder-section--compact .vehicle-finder-field{color:#a7adb4}
+.vehicle-finder-section--compact .vf-select-trigger{min-height:48px;background:#202328;color:#f4f4f4;border-bottom:1px solid #69717a}
+.vehicle-finder-section--compact .vf-select-trigger:hover,.vehicle-finder-section--compact .vf-select-trigger[aria-expanded=true]{background:#2a3037}
+.vehicle-finder-section--compact .vf-select-chevron{color:#a7adb4}
+.vehicle-finder-section--compact .vf-select-menu{background:#262a30;border:1px solid #414851;box-shadow:0 12px 28px #0009}
+.vehicle-finder-section--compact .vf-select-option{background:#262a30;color:#f4f4f4}
+.vehicle-finder-section--compact .vf-select-option:hover,.vehicle-finder-section--compact .vf-select-option[aria-selected=true]{background:#343b45;color:#fff}
+.vehicle-finder-section--compact .vf-select-empty{color:#a7adb4}
+.vehicle-finder-section--compact .vehicle-finder-actions{margin-top:14px}
+.vehicle-finder-section--compact .vehicle-finder-actions p{color:#a7adb4}
+.vehicle-finder-section--compact .vehicle-finder-results{margin-top:22px;padding:20px;background:#17191c;color:#f4f4f4}
+.vehicle-finder-section--compact .vf-results-heading h3{font-size:22px;color:#f4f4f4}
+.vehicle-finder-section--compact .vf-fitment-group-heading h4{color:#f4f4f4}
+.vehicle-finder-section--compact .vf-fitment-group-heading p{color:#9da5ad}
+.vehicle-finder-section--compact .vf-result-count{background:#343b45;color:#f4f4f4}
+.vehicle-finder-section--compact .vf-table-scroll{background:#17191c}
+.vehicle-finder-section--compact .vf-fitment-table{background:#17191c;color:#f4f4f4}
+.vehicle-finder-section--compact .vf-fitment-table thead{background:#262a30}
+.vehicle-finder-section--compact .vf-fitment-table th{color:#c4c9ce}
+.vehicle-finder-section--compact .vf-fitment-table td{background:#17191c;color:#f4f4f4;border-bottom:1px solid #343a40}
+.vehicle-finder-section--compact .vf-fitment-table tbody tr:hover td,.vehicle-finder-section--compact .vf-fitment-table tbody tr[aria-selected=true] td{background:#202833}
+.vehicle-finder-section--compact .vf-fitment-badge--oem{background:#183b27;color:#a7f0ba}
+.vehicle-finder-section--compact .vf-fitment-badge--aftermarket{background:#2d2440;color:#d8b9ff}
+.vehicle-finder-section--compact .vf-fitment-badge--other{background:#343b45;color:#c6c6c6}
+.vehicle-finder-section--compact .vf-choose-fitment{background:#393939;color:#fff;border:0}
+.vehicle-finder-section--compact .vf-products{display:none!important}
+.vehicle-finder-section--compact .vf-model-image-frame,.vehicle-finder-section--compact .vf-model-image{display:none!important}
+@media(max-width:760px){.vehicle-finder-section--compact .vehicle-finder-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.vehicle-finder-section--compact .vehicle-finder-grid{grid-template-columns:1fr}.vehicle-finder-section--compact .vehicle-finder-form,.vehicle-finder-section--compact .vehicle-finder-results{padding:14px}}
 </style>
