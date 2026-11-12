@@ -1,0 +1,43 @@
+name: Anvera migration diagnostics
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  migration-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Anvera
+        run: pnpm build
+
+      - name: Inspect EmDash migration CLI
+        run: pnpm exec emdash migrate --help
+
+      - name: Check migration status (read-only)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: pnpm exec emdash migrate --status --json --wrangler-config wrangler.jsonc
+
+      - name: Deployment intentionally skipped
+        run: echo "Diagnostics only. No Worker deployment and no database migration execution.";
