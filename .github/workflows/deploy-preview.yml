@@ -36,7 +36,7 @@ jobs:
           node-version: 24
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --no-frozen-lockfile --config.node-linker=hoisted
 
       - name: Verify
         run: |
@@ -44,14 +44,20 @@ jobs:
           pnpm typecheck
           pnpm build
 
-      - name: Inspect generated Worker and adapter entrypoints
+      - name: Inspect Astro Worker output and adapter resolution
         run: |
-          echo "=== Astro dist ==="
-          find dist -maxdepth 5 -print | sort | head -200
-          echo "=== Cloudflare adapter package ==="
-          find node_modules/@astrojs/cloudflare -maxdepth 5 -type f -print | sort | head -200
-          echo "=== Adapter exports ==="
-          node -e "console.log(JSON.stringify(require('./node_modules/@astrojs/cloudflare/package.json').exports, null, 2))"
+          echo "=== Astro server output ==="
+          find dist/server -maxdepth 3 -type f -print | sort | head -100
+          echo "=== Adapter package path ==="
+          node -e "const fs=require('node:fs'); const p=require.resolve('@astrojs/cloudflare/entrypoints/server'); console.log('entrypoint:',p); console.log('exists:',fs.existsSync(p)); console.log('realpath:',fs.realpathSync(p)); console.log('package:',require.resolve('@astrojs/cloudflare/package.json'));"
+          echo "=== pnpm linker ==="
+          pnpm config get node-linker
+
+      - name: Validate Wrangler bundle without deploying
+        run: pnpm exec wrangler deploy --dry-run --config wrangler.preview.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Deploy isolated preview Worker
         run: pnpm exec wrangler deploy --config wrangler.preview.jsonc
