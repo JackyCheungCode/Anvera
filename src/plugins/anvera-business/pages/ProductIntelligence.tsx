@@ -1,14 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
+import { MaterialProcessLibrary } from "./MaterialProcessLibrary";
+import { LibraryReviewQueue } from "./LibraryReviewQueue";
+import { FinishLibrary, ProductFinishMapping } from "./FinishLibrary";
+import { ConstructionCapabilityMatrix } from "./ConstructionCapabilityMatrix";
 
 type FieldType = "text" | "number" | "textarea" | "select";
+type SelectOption = { value: string; label: string };
 type FieldDefinition = {
   key: string;
   label: string;
   type?: FieldType;
   required?: boolean;
   placeholder?: string;
-  options?: string[];
+  options?: Array<string | SelectOption>;
   help?: string;
 };
 type StepDefinition = {
@@ -21,8 +26,8 @@ type StepDefinition = {
   optional?: boolean;
 };
 
-type SpecificationRow = { id: string; role: string; diameter: string; width: string; boltCount: string; pcd: string; offset: string; centerBore: string; loadRating: string; status: string };
-type ProductProfile = { [key: string]: string | SpecificationRow[] | undefined; specifications?: SpecificationRow[] };
+type SpecificationRow = { id: string; role: string; diameter: string; width: string; boltCount: string; pcd: string; offset: string; centerBore: string; loadRating: string; evidenceRef: string; status: string };
+type ProductProfile = { [key: string]: string | string[] | SpecificationRow[] | undefined; specifications?: SpecificationRow[]; finishProfiles?: string[] };
 
 type SetupDocument = {
   factory: Record<string, string>;
@@ -44,9 +49,10 @@ type SetupResponse = {
   stepState?: Record<string, string>;
   events?: Array<{ id: string; event_type: string; revision: number; summary: string | null; created_at: string }>;
   versions?: Array<{ id: string; revision: number; version_type: string; note: string | null; created_at: string }>;
+  specificationStatuses?: Record<string, string>;
 };
 
-type SaveResponse = { saved: boolean; sessionId?: string; revision?: number; status?: string; reason?: string };
+type SaveResponse = { saved: boolean; sessionId?: string; revision?: number; status?: string; reason?: string; mappingWarning?: string | null };
 
 const emptyDocument = (): SetupDocument => ({
   factory: {}, material: {}, construction: {}, specification: {}, finish: {},
@@ -85,7 +91,7 @@ const steps: StepDefinition[] = [
   {
     id: "construction", number: "03", title: "Construction & Engineering", subtitle: "Wheel architecture and engineering requirements", eyebrow: "ENGINEERING",
     fields: [
-      { key: "constructionTypes", label: "Supported constructions", required: true, type: "textarea", placeholder: "One construction per line: Monoblock, Two-piece, Three-piece. Include only approved factory capabilities." },
+      { key: "constructionTypes", label: "Legacy construction list (fallback only)", type: "textarea", placeholder: "Used only if the structured Construction Capability Matrix is not installed." , help: "The approved Construction Capability Matrix below is authoritative when available." },
       { key: "constructionNotes", label: "Construction capability details", type: "textarea", placeholder: "Document supported structures, process ownership and limitations." },
       { key: "assemblyMethod", label: "Assembly method", placeholder: "Required for multi-piece products where applicable" },
       { key: "fastenerRequirements", label: "Fastener requirements", placeholder: "Material, grade, size and torque evidence where applicable" },
@@ -203,7 +209,7 @@ function addSpecification(document: SetupDocument, productIndex: number) {
   const product = { ...(products[productIndex] ?? { specifications: [] }) };
   const specifications = [...(product.specifications ?? []), {
     id: crypto.randomUUID(), role: "Front", diameter: "", width: "", boltCount: "", pcd: "",
-    offset: "", centerBore: "", loadRating: "", status: "Draft"
+    offset: "", centerBore: "", loadRating: "", evidenceRef: "", status: "Draft"
   }];
   products[productIndex] = { ...product, specifications };
   return { ...document, products };
@@ -241,15 +247,21 @@ function stepHasAnyValue(step: StepDefinition, document: SetupDocument, productI
   return fieldsHaveValues;
 }
 
-function CustomSelect({ value, options, onChange, label }: { value: string; options: string[]; onChange: (value: string) => void; label: string }) {
+function CustomSelect({ value, options, onChange, label }: { value: string; options: Array<string | SelectOption>; onChange: (value: string) => void; label: string }) {
   const [open, setOpen] = useState(false);
+  const selected = options.find((option) => (typeof option === "string" ? option : option.value) === value);
+  const selectedLabel = selected ? (typeof selected === "string" ? selected : selected.label) : value;
   return (
     <div className="api-select">
       <button className="api-select-trigger" type="button" aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen(!open)}>
-        <span>{value || `Select ${label.toLowerCase()}`}</span><span className="api-select-chevron">⌄</span>
+        <span>{selectedLabel || `Select ${label.toLowerCase()}`}</span><span className="api-select-chevron">⌄</span>
       </button>
       {open ? <div className="api-select-menu" role="listbox" aria-label={label}>
-        {options.map((option) => <button key={option} type="button" role="option" aria-selected={value === option} className={value === option ? "is-selected" : ""} onClick={() => { onChange(option); setOpen(false); }}>{option}</button>)}
+        {options.map((option) => {
+          const optionValue = typeof option === "string" ? option : option.value;
+          const optionLabel = typeof option === "string" ? option : option.label;
+          return <button key={optionValue} type="button" role="option" aria-selected={value === optionValue} className={value === optionValue ? "is-selected" : ""} onClick={() => { onChange(optionValue); setOpen(false); }}>{optionLabel}</button>;
+        })}
       </div> : null}
     </div>
   );
@@ -283,6 +295,10 @@ export function ProductIntelligence() {
   const [available, setAvailable] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [approvedMaterials, setApprovedMaterials] = useState<Array<{ id: string; code: string; name: string; grade: string; family: string }> | null>(null);
+  const [approvedProcesses, setApprovedProcesses] = useState<Array<{ id: string; code: string; name: string; process_type: string }> | null>(null);
+  const [approvedFinishes, setApprovedFinishes] = useState<Array<{ id: string; code: string; name: string; finish_type: string; supported_constructions: string[] }> | null | undefined>(undefined);
+  const [approvedConstructions, setApprovedConstructions] = useState<string[] | null | undefined>(undefined);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -297,7 +313,16 @@ export function ProductIntelligence() {
           : "The Product Intelligence workspace is unavailable.");
         return;
       }
-      setDocument({ ...emptyDocument(), ...(result.document ?? {}) });
+      const loadedDocument = { ...emptyDocument(), ...(result.document ?? {}) };
+      const statusLabels: Record<string, string> = { draft: "Draft", factory_supported: "Factory Supported", pending_review: "Engineering Review", approved: "Engineering Approved", restricted: "Restricted" };
+      loadedDocument.products = (loadedDocument.products ?? []).map((product) => ({
+        ...product,
+        specifications: (product.specifications ?? []).map((row) => ({
+          ...row,
+          status: statusLabels[result.specificationStatuses?.[row.id] ?? ""] ?? row.status ?? "Draft"
+        }))
+      }));
+      setDocument(loadedDocument);
       setRevision(result.session?.revision ?? 0);
       setSessionId(result.session?.id ?? "");
       setStatus(result.session?.status ?? "draft");
@@ -315,7 +340,46 @@ export function ProductIntelligence() {
 
   const active = steps[activeStep];
   const missing = useMemo(() => validateStep(active, document, productIndex), [active, document, productIndex]);
-  const completeCount = steps.filter((step) => step.id !== "review" && (step.optional ? stepHasAnyValue(step, document, productIndex) && isStepComplete(step, document, productIndex) : isStepComplete(step, document, productIndex))).length;
+  const completeCount = steps.filter((step) => step.id !== "review" && (step.optional ? stepHasAnyValue(step, document, productIndex) && isStepComplete(step, document, productIndex) : isStepComplete(step, document, productIndex)) && (step.id !== "construction" || approvedConstructions == null || approvedConstructions.length > 0)).length;
+
+  const syncLibraryCatalog = useCallback((
+    materials: Array<{ id: string; code: string; name: string; grade: string; family: string }> | null,
+    processes: Array<{ id: string; code: string; name: string; process_type: string }> | null
+  ) => {
+    setApprovedMaterials(materials);
+    setApprovedProcesses(processes);
+    if (materials?.length || processes?.length) {
+      setDocument((current) => ({
+        ...current,
+        material: {
+          ...current.material,
+          ...(materials?.length ? { materialGrade: [...new Set(materials.map((item) => item.grade.trim()).filter(Boolean))].join("\n") } : {}),
+          ...(processes?.length ? { forgingMethod: [...new Set(processes.map((item) => item.process_type.trim()).filter(Boolean))].join("\n") } : {})
+        }
+      }));
+    }
+  }, []);
+
+  const syncFinishCatalog = useCallback((finishes: Array<{ id: string; code: string; name: string; finish_type: string; supported_constructions: string[] }> | null) => {
+    setApprovedFinishes(finishes);
+  }, []);
+
+  const syncConstructionCatalog = useCallback((constructions: string[] | null) => {
+    setApprovedConstructions(constructions);
+    if (constructions?.length) {
+      setDocument((current) => ({
+        ...current,
+        construction: { ...current.construction, constructionTypes: constructions.join("\n") }
+      }));
+    }
+  }, []);
+
+  const updateFinishMappings = (next: string[]) => {
+    setDocument((current) => ({
+      ...current,
+      products: (current.products ?? []).map((product, index) => index === productIndex ? { ...product, finishProfiles: next } : product)
+    }));
+  };
 
   const updateField = (key: string, value: string) => {
     setDocument((current) => setValue(current, active.id, key, value, productIndex));
@@ -345,7 +409,7 @@ export function ProductIntelligence() {
       if (result.sessionId) setSessionId(result.sessionId);
       setRevision(result.revision ?? revision + 1);
       setStatus(result.status ?? (action === "submit" ? "in_review" : "draft"));
-      setNotice(action === "submit" ? "Submitted for internal review. A version snapshot has been recorded." : "Draft saved. Your changes are stored.");
+      setNotice([action === "submit" ? "Submitted for internal review. A version snapshot has been recorded." : "Draft saved. Your changes are stored.", result.mappingWarning].filter(Boolean).join(" "));
       if (action === "submit") await load();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to save Product Intelligence setup.");
@@ -355,6 +419,14 @@ export function ProductIntelligence() {
   };
 
   const goNext = () => {
+    if (active.id === "construction" && approvedConstructions === undefined) {
+      setError("Wait for the Construction Capability Matrix to finish loading before continuing.");
+      return;
+    }
+    if (active.id === "construction" && Array.isArray(approvedConstructions) && !approvedConstructions.length) {
+      setError("At least one construction capability must be approved before products can use it.");
+      return;
+    }
     if (missing.length && !active.optional) {
       setError(`Complete the required fields: ${missing.map((field) => field.label).join(", ")}.`);
       return;
@@ -369,7 +441,7 @@ export function ProductIntelligence() {
     setProductIndex(document.products?.length ?? 0);
   };
 
-  const finalReady = steps.filter((step) => !step.optional && step.id !== "review" && step.id !== "products").every((step) => isStepComplete(step, document, productIndex)) && (document.products ?? []).length > 0 && (document.products ?? []).every((product) => Boolean(typeof product.productCode === "string" && product.productCode.trim() && typeof product.productName === "string" && product.productName.trim() && typeof product.construction === "string" && product.construction.trim() && product.specifications?.length && product.specifications.every(specificationIsComplete)));
+  const finalReady = steps.filter((step) => !step.optional && step.id !== "review" && step.id !== "products").every((step) => isStepComplete(step, document, productIndex)) && (approvedConstructions == null || approvedConstructions.length > 0) && (document.products ?? []).length > 0 && (document.products ?? []).every((product) => Boolean(typeof product.productCode === "string" && product.productCode.trim() && typeof product.productName === "string" && product.productName.trim() && typeof product.construction === "string" && product.construction.trim() && product.specifications?.length && product.specifications.every(specificationIsComplete)));
 
   return (
     <main className="anvera-workspace api-workspace">
@@ -424,23 +496,44 @@ export function ProductIntelligence() {
                 {active.fields.map((field) => {
                   let resolvedField = field;
                   if (active.id === "products" && field.key === "construction") {
-                    const supported = (document.construction.constructionTypes ?? "").split(/[\n,;]+/).map((value) => value.trim()).filter((value) => ["Monoblock", "Two-piece", "Three-piece"].includes(value));
-                    resolvedField = { ...field, options: supported };
+                    const legacy = (document.construction.constructionTypes ?? "").split(/[\n,;]+/).map((value) => value.trim()).filter((value) => ["Monoblock", "Two-piece", "Three-piece"].includes(value));
+                    resolvedField = { ...field, options: approvedConstructions == null ? legacy : approvedConstructions };
                   }
                   if (active.id === "products" && field.key === "materialProfile") {
-                    resolvedField = { ...field, options: (document.material.materialGrade ?? "").split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean) };
+                    const legacy = (document.material.materialGrade ?? "").split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean);
+                    const options: Array<string | SelectOption> = approvedMaterials === null
+                      ? legacy
+                      : approvedMaterials.map((item) => ({ value: item.id, label: `${item.code} · ${item.grade}` }));
+                    resolvedField = { ...field, options };
                   }
                   if (active.id === "products" && field.key === "forgingProfile") {
-                    resolvedField = { ...field, options: (document.material.forgingMethod ?? "").split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean) };
+                    const legacy = (document.material.forgingMethod ?? "").split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean);
+                    const options: Array<string | SelectOption> = approvedProcesses === null
+                      ? legacy
+                      : approvedProcesses.map((item) => ({ value: item.id, label: `${item.code} · ${item.name}` }));
+                    resolvedField = { ...field, options };
                   }
                   return <Field key={field.key} field={resolvedField} value={getPath(document, active.id, field.key, productIndex)} onChange={(value) => updateField(field.key, value)} error={missing.some((item) => item.key === field.key)} />;
                 })}
               </div>
 
+              {active.id === "construction" ? <ConstructionCapabilityMatrix onCatalogChange={syncConstructionCatalog} /> : null}
+
+              {active.id === "material" ? <MaterialProcessLibrary onCatalogChange={syncLibraryCatalog} /> : null}
+
+              {active.id === "finish" ? <FinishLibrary onCatalogChange={syncFinishCatalog} /> : null}
+
+              {active.id === "products" ? <ProductFinishMapping
+                finishes={approvedFinishes}
+                construction={typeof document.products?.[productIndex]?.construction === "string" ? document.products[productIndex].construction as string : ""}
+                selected={Array.isArray(document.products?.[productIndex]?.finishProfiles) ? document.products[productIndex].finishProfiles as string[] : []}
+                onChange={updateFinishMappings}
+              /> : null}
+
               {active.id === "products" ? <section className="api-spec-editor">
                 <div className="api-spec-heading"><div><p className="anvera-eyebrow">PRODUCT SPECIFICATIONS</p><h3>Specification Matrix</h3><p>Each row is a specific, reviewable wheel specification. Do not enter a range in place of a confirmed combination.</p></div><button className="api-add-product" type="button" onClick={() => setDocument((current) => addSpecification(current, productIndex))}>＋ Add specification</button></div>
                 <div className="api-spec-table-wrap"><table className="api-spec-table">
-                  <thead><tr><th>POSITION</th><th>DIAMETER</th><th>WIDTH</th><th>BOLT COUNT</th><th>PCD (MM)</th><th>OFFSET (MM)</th><th>CENTER BORE (MM)</th><th>LOAD (KG)</th><th>STATUS</th><th></th></tr></thead>
+                  <thead><tr><th>POSITION</th><th>DIAMETER</th><th>WIDTH</th><th>BOLT COUNT</th><th>PCD (MM)</th><th>OFFSET (MM)</th><th>CENTER BORE (MM)</th><th>LOAD (KG)</th><th>EVIDENCE REFERENCE</th><th>ENGINEERING STATUS</th><th></th></tr></thead>
                   <tbody>{(document.products?.[productIndex]?.specifications ?? []).map((row) => <tr key={row.id}>
                     <td><CustomSelect label="Position" value={row.role} options={["Front", "Rear", "Front & Rear"]} onChange={(value) => setDocument((current) => updateSpecification(current, productIndex, row.id, "role", value))} /></td>
                     <td><input aria-label="Diameter in inches" type="number" min="1" step="0.5" value={row.diameter} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "diameter", event.target.value))} /></td>
@@ -450,12 +543,15 @@ export function ProductIntelligence() {
                     <td><input aria-label="Offset in millimeters" type="number" step="0.5" value={row.offset} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "offset", event.target.value))} /></td>
                     <td><input aria-label="Center bore in millimeters" type="number" min="1" step="0.1" value={row.centerBore} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "centerBore", event.target.value))} /></td>
                     <td><input aria-label="Load rating in kilograms" type="number" min="1" step="1" value={row.loadRating} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "loadRating", event.target.value))} /></td>
-                    <td><CustomSelect label="Specification status" value={row.status} options={["Draft", "Factory Supported", "Engineering Review", "Engineering Approved", "Restricted"]} onChange={(value) => setDocument((current) => updateSpecification(current, productIndex, row.id, "status", value))} /></td>
+                    <td><input aria-label="Specification evidence reference" type="text" value={row.evidenceRef ?? ""} placeholder="Drawing / test report ID" onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "evidenceRef", event.target.value))} /></td>
+                    <td>{["Engineering Approved", "Restricted"].includes(row.status) ?
+                      <span className={`api-library-status api-library-status--${row.status === "Engineering Approved" ? "approved" : "restricted"}`}>{row.status}</span> :
+                      <CustomSelect label="Specification status" value={row.status || "Draft"} options={["Draft", "Factory Supported", "Engineering Review"]} onChange={(value) => setDocument((current) => updateSpecification(current, productIndex, row.id, "status", value))} />}</td>
                     <td><button className="api-remove-spec" type="button" aria-label="Remove specification row" onClick={() => setDocument((current) => removeSpecification(current, productIndex, row.id))}>×</button></td>
                   </tr>)}</tbody>
                 </table></div>
                 {missing.some((field) => field.key === "specifications") ? <p className="api-field-error">Add at least one complete specification row before continuing.</p> : null}
-                <p className="anvera-muted">A factory-supported specification is not automatically engineering-approved or vehicle-verified. Load rating is optional during drafting but must be supported before a product claim is published.</p>
+                <p className="anvera-muted">A specification status is controlled by engineering review, not by the product editor. Only approved specifications may be used as candidates for vehicle-fitment validation; approval requires a load rating and evidence reference.</p>
               </section> : null}
 
               {active.id === "review" ? <div className="api-review-summary">
@@ -472,6 +568,8 @@ export function ProductIntelligence() {
                   {versions?.length ? versions.map((version) => <div key={version.id}><strong>Revision {version.revision} · {version.version_type}</strong><time>{new Date(version.created_at).toLocaleString()}</time></div>) : <p className="anvera-muted">No submitted snapshots yet.</p>}
                 </div>
               </div> : null}
+
+              {active.id === "review" ? <LibraryReviewQueue /> : null}
 
               <div className="api-step-footer">
                 <button className="anvera-action-button anvera-action-button--quiet" type="button" onClick={() => void save("draft")} disabled={saving || !available}>{saving ? "Saving…" : "Save draft"}</button>
