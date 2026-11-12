@@ -322,6 +322,120 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
   const loadLockedHubDimensions=async()=>{try{const body={make:state.vehicle.make,model:state.vehicle.model,region:state.vehicle.region};if(state.vehicle.year)body.year=state.vehicle.year;if(state.vehicle.generation)body.generation=state.vehicle.generation;if(state.vehicle.trim)body.modification=state.vehicle.trim;const response=await fetch("/vehicle-fitment/search",{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(body)});const payload=await response.json();if(!response.ok)throw new Error("fitment_lookup_failed");const source=payload?.result?.data??payload?.result?.results??payload?.result,records=Array.isArray(source)?source:[];let base=null;for(const record of records){const wheels=record?.wheels??record?.fitments??record?.wheel??[];for(const wheel of (Array.isArray(wheels)?wheels:wheels&&typeof wheels==="object"?[wheels]:[])){const type=String(wheel?.type??wheel?.fitment_type??wheel?.kind??"");if(wheel?.is_stock===true||wheel?.is_oem===true||/^(oe|oem|stock|original)$/i.test(type)){base={record,front:wheelSide(wheel,"front"),rear:wheelSide(wheel,"rear")};break;}}if(base)break;}if(!base)return;const technical=base.record?.technical??{},pcd=valueAt(technical,["bolt_pattern","pcd"]),bore=valueAt(technical,["centre_bore","center_bore","centre_bore_diameter"]);["front","rear"].forEach(side=>{const spec=base[side];for(const key of ["pcd","bore"]){const field=root.querySelector("#custom-"+side+"-"+key);if(field&&!field.value)field.value=spec[key]??(key==="pcd"?pcd:bore)??"";}});root.querySelector("#fitment-status").textContent="Vehicle hub pattern and centre bore loaded from the OEM fitment reference. Any requested override requires engineering approval.";}catch{root.querySelector("#fitment-status").textContent="Vehicle PCD / centre bore could not be retrieved automatically. These safety-critical dimensions remain locked until engineering review.";}};
   ["custom-front-diameter","custom-front-width","custom-rear-diameter","custom-rear-width"].forEach(id=>root.querySelector("#"+id).addEventListener("input",updateProgress));
   const submitCustomBrief=()=>{const dimension=side=>["diameter","width","pcd","offset","bore"].map(key=>{const value=root.querySelector("#custom-"+side+"-"+key)?.value.trim();return value?({pcd:"PCD ",offset:"ET ",bore:"CB "}[key]??"")+value:"";}).filter(Boolean).join(" / ");const front=dimension("front"),rear=dimension("rear");if(!root.querySelector("#custom-front-diameter").value.trim()||!root.querySelector("#custom-front-width").value.trim()||!root.querySelector("#custom-rear-diameter").value.trim()||!root.querySelector("#custom-rear-width").value.trim()){hint.textContent="Enter front and rear diameter and width before submitting.";return;}root.querySelector("#custom-front").value=front;root.querySelector("#custom-rear").value=rear;state.customSubmitted=true;root.querySelector("#spec-detail-title").textContent="Custom specification ready for review";root.querySelector("#spec-detail-kicker").textContent="CUSTOM SPECIFICATION / REVIEW";root.querySelector("#spec-reference").hidden=false;const fields=root.querySelector("#custom-spec-fields");if(!fields.querySelector(".custom-response")){const message=document.createElement("p");message.className="custom-response";message.textContent="Thank you. Your custom specifications are ready for engineering review. ANVERA will respond within 1 business day after the brief is submitted to our team.";fields.append(message);}next.disabled=false;next.textContent="Continue to manufacturing →";hint.textContent="Custom brief prepared. Continue to review manufacturing and delivery.";saveDraft();};
+  // Shared Carbon dropdown controller. The trigger and option handlers are delegated
+  // from the configuration root so both authored and dynamically-created options work.
+  const isoCountryCodes = "AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS YE YT ZA ZM ZW".split(" ");
+  const countryNames = new Intl.DisplayNames(["en"], {type:"region"});
+  const countryRows = isoCountryCodes.map(code=>({value:code,label:countryNames.of(code)||code})).sort((a,b)=>a.label.localeCompare(b.label));
+  const dropdownControl = id => {
+    const input=root.querySelector("#"+id), dropdown=input?.closest("[data-carbon-dropdown]");
+    return input&&dropdown?{input,dropdown,trigger:dropdown.querySelector(".carbon-dropdown-trigger"),label:dropdown.querySelector("[data-dropdown-label]"),menu:dropdown.querySelector(".carbon-dropdown-menu")}:null;
+  };
+  const countryControl=dropdownControl("delivery-country"), regionControl=dropdownControl("delivery-region"), cityControl=dropdownControl("delivery-city");
+  const setDropdownLabel=(control,label)=>{if(control?.label)control.label.textContent=label;};
+  const renderDropdownOptions=(control,rows)=>{
+    if(!control?.menu)return;
+    control.menu.replaceChildren();
+    rows.forEach(row=>{
+      const option=document.createElement("button");option.type="button";option.role="option";
+      option.dataset.dropdownOption="true";option.dataset.value=String(row.value);
+      option.textContent=row.label;option.setAttribute("aria-selected",String(control.input.value===String(row.value)));
+      control.menu.append(option);
+    });
+  };
+  const setDropdownValue=(control,value,label)=>{
+    if(!control)return;
+    control.input.value=value;setDropdownLabel(control,label);
+    control.menu?.querySelectorAll("[data-dropdown-option]").forEach(option=>option.setAttribute("aria-selected",String(option.dataset.value===value)));
+    control.input.dispatchEvent(new Event("change",{bubbles:true}));
+  };
+  const closeDropdowns=except=>{
+    root.querySelectorAll("[data-carbon-dropdown].is-open").forEach(dropdown=>{
+      if(dropdown===except)return;
+      dropdown.classList.remove("is-open");
+      dropdown.querySelector(".carbon-dropdown-menu")?.setAttribute("hidden","");
+      dropdown.querySelector(".carbon-dropdown-trigger")?.setAttribute("aria-expanded","false");
+    });
+  };
+  root.addEventListener("click",async event=>{
+    const trigger=event.target.closest?.(".carbon-dropdown-trigger");
+    if(trigger&&root.contains(trigger)){
+      const dropdown=trigger.closest("[data-carbon-dropdown]");
+      if(trigger.disabled)return;
+      const opening=!dropdown.classList.contains("is-open");
+      closeDropdowns(dropdown);
+      dropdown.classList.toggle("is-open",opening);
+      const menu=dropdown.querySelector(".carbon-dropdown-menu");
+      if(menu)menu.hidden=!opening;
+      trigger.setAttribute("aria-expanded",String(opening));
+      event.preventDefault();return;
+    }
+    const option=event.target.closest?.("[data-dropdown-option]");
+    if(option&&root.contains(option)){
+      const dropdown=option.closest("[data-carbon-dropdown]"), control=dropdownControl(dropdown.querySelector("input[type=hidden]")?.id);
+      if(!control)return;
+      const value=option.dataset.value,label=option.textContent.trim();
+      setDropdownValue(control,value,label);closeDropdowns();
+      if(control===countryControl){
+        setDropdownValue(regionControl,"","Select state / province");
+        setDropdownValue(cityControl,"","Select state / province first");
+        root.querySelector("#delivery-region-other").hidden=true;root.querySelector("#delivery-city-other").hidden=true;
+        await loadDeliveryRegions(label);
+      }else if(control===regionControl){
+        root.querySelector("#delivery-region-other").hidden=value!=="__none__";
+        setDropdownValue(cityControl,"","Select city");
+        root.querySelector("#delivery-city-other").hidden=true;
+        await loadDeliveryCities(countryControl.input.value,value==="__none__"?"":label);
+      }else if(control===cityControl){
+        root.querySelector("#delivery-city-other").hidden=value!=="__other__";
+      }
+      event.preventDefault();
+    }
+  });
+  document.addEventListener("click",event=>{
+    if(!root.contains(event.target))closeDropdowns();
+  });
+  const loadDeliveryRegions=async country=>{
+    const regionRows=[];
+    try{
+      const response=await fetch("https://countriesnow.space/api/v0.1/countries/states",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({country})});
+      const payload=await response.json();
+      (payload?.data?.states||[]).forEach(item=>{if(item?.name)regionRows.push({value:item.name,label:item.name});});
+    }catch{}
+    regionRows.push({value:"__none__",label:regionRows.length?"Other / enter manually":"Enter state / province manually"});
+    renderDropdownOptions(regionControl,regionRows);
+    setDropdownLabel(regionControl,"Select state / province");
+    regionControl.trigger.disabled=false;
+  };
+  const loadDeliveryCities=async(countryCode,stateName)=>{
+    const country=countryRows.find(row=>row.value===countryCode)?.label||countryCode;
+    let cityRows=[];
+    try{
+      const response=await fetch("https://countriesnow.space/api/v0.1/countries/state/cities",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({country,state:stateName})});
+      const payload=await response.json();
+      cityRows=(payload?.data||[]).filter(Boolean).map(name=>({value:String(name),label:String(name)}));
+    }catch{}
+    if(!cityRows.length){
+      try{
+        const response=await fetch("https://countriesnow.space/api/v0.1/countries/cities",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({country})});
+        const payload=await response.json();
+        cityRows=(payload?.data||[]).filter(Boolean).map(name=>({value:String(name),label:String(name)}));
+      }catch{}
+    }
+    cityRows.push({value:"__other__",label:"Other / enter city manually"});
+    renderDropdownOptions(cityControl,cityRows);
+    setDropdownLabel(cityControl,"Select city");
+    cityControl.trigger.disabled=false;
+  };
+  const loadDeliveryCountries=async()=>{
+    // Keep a complete ISO-3166 fallback so the destination selector remains usable
+    // even when the optional country metadata service is unavailable.
+    renderDropdownOptions(countryControl,countryRows);
+    setDropdownLabel(countryControl,"Select country or territory");
+    countryControl.trigger.disabled=false;
+    regionControl.trigger.disabled=true;cityControl.trigger.disabled=true;
+  };
+  loadDeliveryCountries();
   const deliveryIds=["delivery-term","shipping-method","delivery-postal","delivery-address","contact-name","contact-email","contact-phone"];
   deliveryIds.forEach(id=>root.querySelector("#"+id).addEventListener("input",()=>{state.delivery[id]=root.querySelector("#"+id).value;updateArrivalEstimate();updateProgress();}));
   ["delivery-country","delivery-region","delivery-city","delivery-term","shipping-method"].forEach(id=>root.querySelector("#"+id).addEventListener("change",()=>{state.delivery[id]=root.querySelector("#"+id).value;updateArrivalEstimate();updateProgress();}));
@@ -357,7 +471,6 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
   if(state.product){const selected=root.querySelector(`[data-product="${CSS.escape(state.product.slug)}"]`);selected?.setAttribute("aria-pressed","true");}
   updateProgress();
   createServerDraft();
-  loadMakes();
 </script>
 
 <style is:global>
