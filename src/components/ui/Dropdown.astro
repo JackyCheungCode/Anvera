@@ -64,7 +64,7 @@ const selected = options.find((option) => option.value === value);
       root.classList.add("is-open");
       if (focusFirst) options[0]?.focus();
     };
-    const choose = (option) => {
+    const choose = (option: HTMLButtonElement) => {
       hiddenInput.value = option.dataset.value || "";
       label.textContent = option.textContent?.trim() || "";
       options.forEach((item) => item.setAttribute("aria-selected", item === option ? "true" : "false"));
