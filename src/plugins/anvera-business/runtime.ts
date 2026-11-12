@@ -388,7 +388,6 @@ async function getProductSetupDatabase(ctx: AdminContext) {
 function setupDocumentIsSubmittable(document: Record<string, unknown>) {
   const factory = inputRecord(document.factory) ?? {};
   const material = inputRecord(document.material) ?? {};
-  const construction = inputRecord(document.construction) ?? {};
   const specification = inputRecord(document.specification) ?? {};
   const products = Array.isArray(document.products) ? document.products.map(inputRecord).filter(Boolean) : [];
   const required = [
