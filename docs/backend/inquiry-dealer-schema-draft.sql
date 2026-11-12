@@ -101,6 +101,22 @@ CREATE INDEX IF NOT EXISTS anvera_dealer_applications_status_created
 CREATE INDEX IF NOT EXISTS anvera_dealer_applications_email_created
   ON anvera_dealer_applications(email, created_at DESC);
 
+CREATE TABLE IF NOT EXISTS anvera_dealer_application_events (
+  id TEXT PRIMARY KEY NOT NULL,
+  application_id TEXT NOT NULL,
+  event_type TEXT NOT NULL
+    CHECK (event_type IN ('status_changed', 'note_added')),
+  actor_user_id TEXT NOT NULL,
+  previous_value TEXT,
+  new_value TEXT,
+  note TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (application_id) REFERENCES anvera_dealer_applications(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS anvera_dealer_application_events_timeline
+  ON anvera_dealer_application_events(application_id, created_at ASC);
+
 CREATE TABLE IF NOT EXISTS anvera_dealers (
   id TEXT PRIMARY KEY NOT NULL,
   emdash_user_id TEXT NOT NULL UNIQUE,
