@@ -7,7 +7,7 @@ type BusinessEnv = {
       httpMetadata?: { contentType?: string; contentDisposition?: string };
       customMetadata?: Record<string, string>;
     }): Promise<{ size: number } | null>;
-    delete(key: string): Promise<void>;
+    delete(key: string | string[]): Promise<void>;
   };
 };
 
