@@ -1,6 +1,6 @@
 # ANVERA Inquiry & Dealer Backend — API Contract
 
-Status: **private EmDash admin route handlers and workbench interactions are implemented on the development branch; public intake endpoints are not implemented. No production database changes have been made.**
+Status: **private EmDash admin routes, workbench interactions, and public intake routes are implemented on the development branch. Public intake remains fail-closed until the D1 schema is approved/applied and Turnstile plus edge rate limiting are configured. No production database changes have been made.**
 
 ## Scope
 
@@ -50,7 +50,7 @@ Required:
 Optional:
 - `tradingName`, `website`, `city`, `yearsInBusiness`
 - `representedBrands`, `contactRole`, `phone`, `notes`
-- `website` is also the honeypot field only if a separate hidden field is used; do not reuse the visible company website field as a honeypot.
+- The visible company website is submitted as `companyWebsite`; the separate hidden `website` field is the honeypot.
 
 Success: `201 { ok: true, referenceCode }`. New applications always enter `pending`; public callers cannot approve, reject or activate an application.
 
@@ -124,7 +124,7 @@ additional table in the draft only; it has not been applied to production.
 
 - Server-side schema validation and strict request-body size limits.
 - Honeypot plus Cloudflare Turnstile Siteverify before accepting public submissions.
-- Rate limiting by privacy-preserving IP digest and normalized email; do not store raw IP addresses.
+- Cloudflare edge rate limiting must be configured for both public POST routes before enabling submissions. Application-level per-IP/email throttling is not yet implemented; do not claim this control is active.
 - Same-origin checks for browser form posts; CORS disabled unless a documented integration requires it.
 - No public read endpoint for inquiries, applications, dealer records or event logs.
 - Store uploads in R2 under generated opaque object keys; never accept caller-selected object keys.
@@ -141,13 +141,14 @@ The companion `inquiry-dealer-schema-draft.sql` proposes namespaced `anvera_*` t
 Before enabling the endpoints:
 1. Review and approve the exact D1 schema and migration plan.
 2. Configure Turnstile site/secret keys as Worker secrets.
-3. Confirm the exact EmDash server-side session and role-verification API for the installed 1.5.0 version.
+3. Configure Cloudflare edge rate limiting for both public POST routes and test the thresholds.
+4. Confirm the exact EmDash server-side session and role-verification API for the installed 1.5.0 version.
 4. Select an email provider for acknowledgement and internal notifications.
 5. Add integration tests against a disposable D1 database and R2 test bucket.
 6. Only after those checks, enable the API feature flag and deploy to a non-production preview first.
 
 ## Current UI behavior
 
-The public inquiry and dealer application forms remain local-copy previews. Their public POST endpoints, Turnstile verification, abuse controls and acknowledgement notifications are not implemented. Do not display a success state implying a submission was stored or received.
+The public inquiry and dealer application forms POST to the new server endpoints and show a reference code only after a successful database write. Turnstile Siteverify is implemented server-side. The endpoints remain unavailable while the feature flag is unset. Edge rate limiting, email notifications and attachment upload are not yet implemented.
 
 The private administrator workbench is wired to the plugin route contracts in source, but D1-backed operations are feature-flagged off by default. A successful CI build does not mean these routes have been exercised against a migrated database.
