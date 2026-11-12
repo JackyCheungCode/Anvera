@@ -28,11 +28,7 @@ img, video { display: block; max-width: 100%; }
   padding: 0 var(--page-gutter); display: flex; align-items: center; gap: 36px;
 }
 .brand-mark { display: inline-flex; align-items: center; gap: 12px; flex: 0 0 auto; }
-.brand-wordmark { font-size: 22px; font-weight: 800; letter-spacing: .24em; }
-.brand-symbol {
-  width: 27px; height: 27px; border: 2px solid currentColor; border-radius: 50%;
-  display: inline-grid; place-items: center; font-size: 10px; font-weight: 800;
-}
+.brand-logo { display: block; width: 160px; height: auto; }
 .primary-nav { display: flex; align-items: center; gap: clamp(16px, 2.2vw, 34px); margin-left: auto; }
 .primary-nav a, .header-utility {
   color: rgba(255,255,255,.82); font-size: 11px; font-weight: 700;
@@ -188,7 +184,7 @@ img, video { display: block; max-width: 100%; }
   .split-visual { min-height: 360px; }
 }
 @media (max-width: 560px) {
-  .brand-wordmark { font-size: 18px; }
+  .brand-logo { width: 144px; }
   .hero { min-height: 720px; }
   .hero h1 { font-size: clamp(48px, 15vw, 72px); }
   .hero-copy { font-size: 14px; }
