@@ -4,16 +4,28 @@ import VehicleFitmentFinder from "../components/VehicleFitmentFinder.astro";
 import { getEmDashCollection } from "emdash";
 const { entries: wheelEntries = [], cacheHint } = await getEmDashCollection("wheel_products", { status: "published", limit: 100, orderBy: { display_order: "asc" } }).catch(() => ({ entries: [], cacheHint: null }));
 if (cacheHint && Astro.cache?.enabled) Astro.cache.set(cacheHint);
+const { entries: fitmentIndex = [] } = await getEmDashCollection("wheel_fitments", { status: "published", limit: 100 }).catch(() => ({ entries: [] }));
+const fitmentResults = await Promise.all(fitmentIndex.map((fitment: any) => getEmDashEntry("wheel_fitments", fitment.id, { references: { products: true } }).catch(() => ({ entry: null }))));
+const verifiedFitments = fitmentResults.map((result: any) => result.entry).filter((fitment: any) => fitment?.data?.verification_status === "verified");
 const products = wheelEntries.map((entry: any) => {
   const data = entry.data ?? {};
   const specs = data.fitment_specs ?? data.wheel_specs ?? data.specifications ?? {};
+  const linkedFitments = verifiedFitments.filter((fitment: any) => (fitment.references?.products?.entries ?? []).some((linked: any) => linked.id === entry.id)).map((fitment: any) => ({
+    front: fitment.data?.front_spec ?? {},
+    rear: fitment.data?.rear_spec ?? {},
+    vehicleMake: String(fitment.data?.vehicle_make ?? ""),
+    vehicleModel: String(fitment.data?.vehicle_model ?? ""),
+    modelYearFrom: fitment.data?.model_year_from ?? null,
+    modelYearTo: fitment.data?.model_year_to ?? null
+  }));
   return {
     id: entry.id,
     title: String(data.title ?? "ANVERA forged wheel"),
     modelCode: String(data.model_code ?? ""),
     construction: String(data.construction_type ?? ""),
     finish: String(data.finish_name ?? data.finish ?? ""),
-    specs
+    specs,
+    verifiedFitments: linkedFitments
   };
 });
 ---
