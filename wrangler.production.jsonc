@@ -3,35 +3,51 @@
   "name": "anvera",
   "main": "./dist/_worker.js/index.js",
   "compatibility_date": "2026-11-12",
-  "compatibility_flags": ["nodejs_compat"],
-  "d1_databases": [{
-    "binding": "DB",
-    "database_name": "anvera",
-    "database_id": "311616cb-e9fb-4dfd-a8cf-c4df68d45e36"
-  }],
-  "r2_buckets": [{
-    "binding": "MEDIA",
-    "bucket_name": "anvera-media"
-  }],
-  "kv_namespaces": [{
-    "binding": "SESSION",
-    "id": "5dce726cc2a0426fb362cb9394161bd0"
-  }],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "anvera",
+      "database_id": "311616cb-e9fb-4dfd-a8cf-c4df68d45e36"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "anvera-media"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "SESSION",
+      "id": "5dce726cc2a0426fb362cb9394161bd0"
+    }
+  ],
   "images": {
     "binding": "IMAGES"
   },
-  "ratelimits": [{
-    "name": "PUBLIC_INTAKE_LIMITER",
-    "namespace_id": "7311202601",
-    "simple": { "limit": 5, "period": 60 }
-  }],
+  "ratelimits": [
+    {
+      "name": "PUBLIC_INTAKE_LIMITER",
+      "namespace_id": "7311202601",
+      "simple": {
+        "limit": 5,
+        "period": 60
+      }
+    }
+  ],
   "vars": {
     "ANVERA_BUSINESS_API_ENABLED": "false",
-    "ANVERA_PRODUCT_INTELLIGENCE_ENABLED": "false",
-    "EMDASH_MIGRATIONS_MODE": "check"
+    "ANVERA_PRODUCT_INTELLIGENCE_ENABLED": "true",
+    "EMDASH_MIGRATIONS_MODE": "check",
+    "ANVERA_CONFIGURATION_API_ENABLED": "true"
   },
   "triggers": {
-    "crons": ["* * * * *"]
+    "crons": [
+      "* * * * *"
+    ]
   },
   "assets": {
     "binding": "ASSETS",

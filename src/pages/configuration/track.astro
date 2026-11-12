@@ -1,0 +1,72 @@
+---
+import Base from "../../layouts/Base.astro";
+---
+<Base title="Track Your ANVERA Configuration" description="Privately review the status and history of your ANVERA wheel configuration.">
+  <section class="tracking-shell">
+    <header class="tracking-heading">
+      <p class="tracking-eyebrow">ANVERA / CUSTOMER PROJECT PORTAL</p>
+      <h1>Your configuration.<br /><span>Every milestone.</span></h1>
+      <p>Use the private order access stored in the browser where you submitted your configuration, or enter your reference and access token.</p>
+    </header>
+    <form id="tracking-form" class="tracking-form">
+      <label>Configuration reference<input id="tracking-reference" autocomplete="off" placeholder="ANV-261112-ABC123" required /></label>
+      <label>Private access token<input id="tracking-token" type="password" autocomplete="off" placeholder="64-character access token" required /></label>
+      <button type="submit" class="tracking-button">Load order status ↗</button>
+    </form>
+    <p id="tracking-status" class="tracking-message" role="status">Looking for a saved configuration on this device…</p>
+    <section id="tracking-result" class="tracking-result" hidden>
+      <div class="tracking-result-head"><div><span>CONFIGURATION REFERENCE</span><strong id="tracking-result-reference">—</strong></div><b id="tracking-result-state">—</b></div>
+      <div class="tracking-timeline" id="tracking-timeline"></div>
+      <p class="tracking-disclaimer">Status updates are provided by ANVERA. Production and shipping estimates are planning information until confirmed by the factory and carrier.</p>
+    </section>
+  </section>
+  <style>
+    .tracking-shell{max-width:1120px;margin:0 auto;padding:clamp(48px,8vw,100px) 24px 90px;background:#f4f4f4;color:#161616;min-height:70vh}
+    .tracking-heading{max-width:720px}.tracking-eyebrow{font-size:10px;letter-spacing:.16em;font-weight:700;color:#525252}.tracking-heading h1{font-size:clamp(42px,7vw,76px);line-height:.98;letter-spacing:-.055em;margin:18px 0}.tracking-heading h1 span{color:#0f62fe}.tracking-heading>p:last-child{font-size:14px;line-height:1.7;color:#525252;max-width:600px}
+    .tracking-form{display:grid;grid-template-columns:1fr 1.3fr auto;gap:12px;align-items:end;margin-top:36px;padding:20px;background:#e8e8e8}
+    .tracking-form label{display:grid;gap:8px;font-size:10px;font-weight:600;color:#393939}
+    .tracking-form input{height:46px;padding:0 12px;border:0;border-bottom:1px solid #8d8d8d;background:#fff;color:#161616;font:inherit;font-size:12px;min-width:0}
+    .tracking-form input:focus{outline:2px solid #0f62fe;outline-offset:-2px}
+    .tracking-button{height:46px;padding:0 18px;border:0;background:#161616;color:#fff;font:inherit;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap}
+    .tracking-message{font-size:11px;color:#525252;margin:14px 0}
+    .tracking-result{margin-top:28px;padding:clamp(18px,4vw,34px);background:#fff;box-shadow:0 10px 36px #16161612}
+    .tracking-result-head{display:flex;justify-content:space-between;gap:20px;align-items:center;padding-bottom:20px;border-bottom:1px solid #e0e0e0}
+    .tracking-result-head div{display:grid;gap:8px}.tracking-result-head span{font-size:8px;letter-spacing:.14em;color:#6f6f6f;font-weight:700}.tracking-result-head strong{font-size:18px;letter-spacing:.04em}.tracking-result-head>b{font-size:10px;background:#d0e2ff;color:#0043ce;padding:9px 12px;text-transform:uppercase}
+    .tracking-timeline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;margin-top:20px;background:#c6c6c6}
+    .tracking-event{display:grid;gap:8px;align-content:start;min-height:100px;padding:14px;background:#f4f4f4}.tracking-event b{font-size:10px}.tracking-event small{font-size:9px;color:#6f6f6f;line-height:1.5}
+    .tracking-disclaimer{font-size:10px;line-height:1.6;color:#6f6f6f;margin:20px 0 0}
+    @media(max-width:760px){.tracking-form{grid-template-columns:1fr}.tracking-button{width:100%}.tracking-timeline{grid-template-columns:repeat(2,minmax(0,1fr))}.tracking-result-head{align-items:flex-start;flex-direction:column}}
+  </style>
+  <script>
+    // @ts-nocheck
+    const form=document.querySelector("#tracking-form");
+    const reference=document.querySelector("#tracking-reference");
+    const token=document.querySelector("#tracking-token");
+    const status=document.querySelector("#tracking-status");
+    const result=document.querySelector("#tracking-result");
+    const saved=(()=>{try{return JSON.parse(localStorage.getItem("anvera.configuration.draft.v1")||"null")}catch{return null}})();
+    if(saved?.reference&&saved?.accessToken){reference.value=saved.reference;token.value=saved.accessToken;status.textContent="A private configuration was found on this device. Load it to view its latest status.";}
+    const labels={draft:"Draft",submitted:"Submitted",custom_review:"Engineering review",needs_information:"Needs information",quoted:"Quoted",confirmed:"Confirmed",in_production:"In production",quality_inspection:"Quality inspection",dispatched:"Dispatched",in_transit:"In transit",customs_clearance:"Customs clearance",out_for_delivery:"Out for delivery",completed:"Completed",cancelled:"Cancelled",created:"Configuration created",draft_saved:"Draft updated",custom_review_requested:"Custom specification review requested",status_changed:"Progress updated"};
+    form.addEventListener("submit",async event=>{
+      event.preventDefault();result.hidden=true;status.textContent="Loading your private order record…";
+      try{
+        const response=await fetch("/api/configuration-orders/"+encodeURIComponent(reference.value.trim()),{headers:{Authorization:"Bearer "+token.value.trim(),Accept:"application/json"}});
+        const payload=await response.json();if(!response.ok)throw new Error(payload.error||"Unable to load this order.");
+        document.querySelector("#tracking-result-reference").textContent=payload.order.referenceCode;
+        document.querySelector("#tracking-result-state").textContent=labels[payload.order.status]||payload.order.status;
+        const timeline=document.querySelector("#tracking-timeline");timeline.replaceChildren();
+        (payload.order.events||[]).forEach(item=>{
+          let detail={};try{detail=JSON.parse(item.event_json||"{}")}catch{}
+          const article=document.createElement("article");article.className="tracking-event";
+          const title=document.createElement("b");title.textContent=labels[item.event_type]||labels[detail.to]||item.event_type.replaceAll("_"," ");
+          const time=document.createElement("small");time.textContent=new Date(item.created_at).toLocaleString();
+          article.append(title,time);
+          if(detail.note){const note=document.createElement("small");note.textContent=detail.note;article.append(note)}
+          timeline.append(article);
+        });
+        result.hidden=false;status.textContent="Order status loaded.";
+      }catch(error){status.textContent=error instanceof Error?error.message:"Unable to load order status.";}
+    });
+    if(saved?.reference&&saved?.accessToken)form.requestSubmit();
+  </script>
+</Base>
