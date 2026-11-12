@@ -161,7 +161,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
           <section class="document-section"><span>06 / CUSTOMER CONTACT</span><div class="document-value"><b id="document-contact">—</b><small id="document-email">—</small><small id="document-phone">—</small></div></section>
           <footer class="document-footer"><b>ANVERA</b><span>CONFIGURATION RECORD · NO PRICING · SUBJECT TO REVIEW</span></footer>
         </article>
-        {import.meta.env.PUBLIC_TURNSTILE_SITE_KEY && <div class="cf-turnstile" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY}></div>}
+        {<div class="cf-turnstile" data-sitekey={turnstileSiteKey}></div>}
         <div class="confirmation-actions"><button class="carbon-button carbon-button--secondary" id="download-pdf" type="button">Export PDF ↓</button><button class="carbon-button carbon-button--primary" id="submit-configuration" type="button">Submit configuration ↗</button></div>
         <p class="studio-note" id="submit-status" role="status">Submitting creates a review request. ANVERA will confirm fitment, quotation and final delivery schedule separately.</p>
       </section>
