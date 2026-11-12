@@ -35,8 +35,12 @@ type ApplicationRow = {
   country: string;
   city: string | null;
   contact_name: string;
+  contact_role: string | null;
   email: string;
   phone: string | null;
+  years_in_business: number | null;
+  represented_brands: string | null;
+  notes: string | null;
   created_at: string;
 };
 
@@ -180,7 +184,7 @@ async function listDealerApplications(ctx: AdminContext) {
   }
   const where = clauses.length ? ` WHERE ${clauses.join(" AND ")}` : "";
   const [rows, count] = await Promise.all([
-    access.db.prepare(`SELECT id, reference_code, status, legal_company_name, trading_name, business_type, country, city, contact_name, email, phone, created_at FROM anvera_dealer_applications${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`)
+    access.db.prepare(`SELECT id, reference_code, status, legal_company_name, trading_name, business_type, country, city, years_in_business, represented_brands, contact_name, contact_role, email, phone, notes, created_at FROM anvera_dealer_applications${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`)
       .bind(...values, limit, offset).all<ApplicationRow>(),
     access.db.prepare(`SELECT COUNT(*) AS total FROM anvera_dealer_applications${where}`)
       .bind(...values).first<{ total: number }>()
