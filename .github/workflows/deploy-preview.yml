@@ -9,6 +9,7 @@ on:
       - feat/vehicle-fitment-oem-aftermarket-products
       - fix/vehicle-fitment-carbon-ui
       - feat/vehicle-picker-brand-and-model-imagery
+      - feat/wheels-catalog-and-product-data
     paths-ignore:
       - "docs/**"
       - "*.md"
