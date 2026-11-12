@@ -1,9 +1,8 @@
-import astroWorker from "../dist/_worker.js/index.js";
-import { createScheduledHandler, PluginBridge } from "@emdash-cms/cloudflare/worker";
+import handler, { createScheduledHandler, PluginBridge } from "@emdash-cms/cloudflare/worker";
 
 export { PluginBridge };
 
 export default {
-  ...astroWorker,
+  ...handler,
   scheduled: createScheduledHandler()
 } satisfies ExportedHandler;
