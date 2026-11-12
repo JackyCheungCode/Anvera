@@ -21,7 +21,7 @@ export default {
       return handleConfigurationOrdersRequest(request, env as ConfigurationOrderEnv);
     }
 
-    const orderMatch = pathname.match(/^\\/api\\/configuration-orders\\/([^/]+)$/);
+    const orderMatch = pathname.match(/^\/api\/configuration-orders\/([^/]+)$/);
     if (orderMatch) {
       if (request.method !== "GET") return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), {
         status: 405,
