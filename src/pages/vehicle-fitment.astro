@@ -7,8 +7,11 @@ if (cacheHint && Astro.cache?.enabled) Astro.cache.set(cacheHint);
 const { entries: fitmentIndex = [] } = await getEmDashCollection("wheel_fitments", { status: "published", limit: 100 }).catch(() => ({ entries: [] }));
 const fitmentResults = await Promise.all(fitmentIndex.map((fitment: any) => getEmDashEntry("wheel_fitments", fitment.id, { references: { products: true } }).catch(() => ({ entry: null }))));
 const verifiedFitments = fitmentResults.map((result: any) => result.entry).filter((fitment: any) => fitment?.data?.verification_status === "verified");
+const productDetails = await Promise.all(wheelEntries.map((entry: any) => getEmDashEntry("wheel_products", entry.id, { references: { available_finishes: true } }).catch(() => ({ entry: null }))));
 const products = wheelEntries.map((entry: any) => {
   const data = entry.data ?? {};
+  const detail = productDetails.find((result: any) => result.entry?.id === entry.id)?.entry;
+  const availableFinishes = (detail?.references?.available_finishes?.entries ?? []).filter((finish: any) => finish.data?.active !== false).map((finish: any) => String(finish.data?.title ?? finish.data?.finish_code ?? "")).filter(Boolean);
   const specs = data.fitment_specs ?? data.wheel_specs ?? data.specifications ?? {};
   const linkedFitments = verifiedFitments.filter((fitment: any) => (fitment.references?.products?.entries ?? []).some((linked: any) => linked.id === entry.id)).map((fitment: any) => ({
     front: fitment.data?.front_spec ?? {},
@@ -23,7 +26,8 @@ const products = wheelEntries.map((entry: any) => {
     title: String(data.title ?? "ANVERA forged wheel"),
     modelCode: String(data.model_code ?? ""),
     construction: String(data.construction_type ?? ""),
-    finish: String(data.finish_name ?? data.finish ?? ""),
+    finish: String(data.finish_name ?? data.finish ?? availableFinishes[0] ?? ""),
+    finishes: availableFinishes,
     specs,
     verifiedFitments: linkedFitments
   };
