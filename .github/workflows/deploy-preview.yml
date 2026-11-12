@@ -5,6 +5,7 @@ on:
     branches:
       - feat/bmw-carbon-design-system
       - feature/wheel-size-fitment
+      - fix/vehicle-fitment-worker-dispatch
     paths-ignore:
       - "docs/**"
       - "*.md"
