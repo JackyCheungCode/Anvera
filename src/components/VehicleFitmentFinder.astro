@@ -51,6 +51,8 @@ const safeProducts = products.map((product) => ({
   const values = { region: "sam", make: "", model: "", year: "", generation: "", modification: "" };
   const dropdowns = {};
   let selectedMakeLabel = "";
+  let selectedModelLabel = "";
+  const notifyVehicleChange = () => window.dispatchEvent(new CustomEvent("anvera:vehicle-change", { detail: { ...values, makeLabel: selectedMakeLabel, modelLabel: selectedModelLabel } }));
   const vehicleImageCache = new Map();
   const makeLogoSlugs = {
     bmw:"bmw", mercedes:"mercedesbenz", "mercedes-benz":"mercedesbenz", audi:"audi", porsche:"porsche",
@@ -206,14 +208,14 @@ const safeProducts = products.map((product) => ({
     try { const rows = await catalog("makes", { region: values.region }); dropdowns.make.setOptions(rows, "Select manufacturer"); status.textContent = rows.length ? "Select a manufacturer to begin." : "No manufacturers are available for this market."; }
     catch { status.textContent = "Could not load the vehicle catalogue. Please try again."; dropdowns.make.reset("Catalogue unavailable", true); }
   };
-  document.querySelector('[data-dropdown="region"]').addEventListener("vf-change", (event) => { values.region = event.detail.value; resetAfter("make"); loadMakes(); });
+  document.querySelector('[data-dropdown="region"]').addEventListener("vf-change", (event) => { values.region = event.detail.value; selectedMakeLabel = ""; selectedModelLabel = ""; resetAfter("make"); notifyVehicleChange(); loadMakes(); });
   document.querySelector('[data-dropdown="make"]').addEventListener("vf-change", async (event) => {
-    values.make = event.detail.value; selectedMakeLabel = event.detail.item?.label ?? event.detail.value; resetAfter("model"); dropdowns.model.reset("Loading models", true);
+    values.make = event.detail.value; selectedMakeLabel = event.detail.item?.label ?? event.detail.value; selectedModelLabel = ""; resetAfter("model"); notifyVehicleChange(); dropdowns.model.reset("Loading models", true);
     try { const rows = await catalog("models", { region: values.region, make: values.make }); dropdowns.model.setOptions(rows, "Select model"); status.textContent = "Choose a model, then select its year or generation."; }
     catch { dropdowns.model.reset("Models unavailable", true); status.textContent = "Could not load models for this manufacturer."; }
   });
   document.querySelector('[data-dropdown="model"]').addEventListener("vf-change", async (event) => {
-    values.model = event.detail.value; resetAfter("year");
+    values.model = event.detail.value; selectedModelLabel = event.detail.item?.label ?? event.detail.value; resetAfter("year"); notifyVehicleChange();
     for (const key of ["year","generation"]) dropdowns[key].reset("Loading…", true);
     const params = { region: values.region, make: values.make, model: values.model };
     try {
@@ -233,9 +235,9 @@ const safeProducts = products.map((product) => ({
   };
   for (const key of ["year","generation"]) document.querySelector('[data-dropdown="' + key + '"]').addEventListener("vf-change", (event) => {
     values[key] = event.detail.value;
-    resetAfter(key); loadModifications();
+    resetAfter(key); notifyVehicleChange(); loadModifications();
   });
-  document.querySelector('[data-dropdown="modification"]').addEventListener("vf-change", (event) => { values.modification = event.detail.value; });
+  document.querySelector('[data-dropdown="modification"]').addEventListener("vf-change", (event) => { values.modification = event.detail.value; notifyVehicleChange(); });
   document.querySelector('[data-dropdown="region"]').dispatchEvent(new CustomEvent("vf-initialize"));
   dropdowns.region.setOptions(regionOptions, "Southeast Asia");
   loadMakes();
@@ -277,7 +279,7 @@ const safeProducts = products.map((product) => ({
     ];
     cells.forEach(([label,value],index) => { const cell=document.createElement("td"); if(index===0){const title=document.createElement("strong");title.textContent=value;const badge=document.createElement("span");badge.className="vf-fitment-badge vf-fitment-badge--"+item.classification;badge.textContent=item.classification==="oem"?"OEM":item.classification==="aftermarket"?"AFTERMARKET":"UNCLASSIFIED";cell.append(title,badge);}else{const span=document.createElement("span");span.className="vf-table-cell-label";span.textContent=label;const text=document.createElement("strong");text.textContent=display(value);cell.append(span,text);} row.append(cell);});
     const actionCell=document.createElement("td");actionCell.className="vf-fitment-action-cell";const choose=document.createElement("button");choose.type="button";choose.className="cds-btn cds-btn--secondary vf-choose-fitment";choose.textContent=id===selectedId?"Selected":"Select";choose.setAttribute("aria-label","Select "+cells[0][1]);actionCell.append(choose);row.append(actionCell);
-    const select=()=>{document.querySelectorAll(".vf-fitment-row").forEach((node)=>{node.setAttribute("aria-selected","false");const button=node.querySelector(".vf-choose-fitment");if(button)button.textContent="Select";});row.setAttribute("aria-selected","true");choose.textContent="Selected";renderProducts(item,record);};
+    const select=()=>{document.querySelectorAll(".vf-fitment-row").forEach((node)=>{node.setAttribute("aria-selected","false");const button=node.querySelector(".vf-choose-fitment");if(button)button.textContent="Select";});row.setAttribute("aria-selected","true");choose.textContent="Selected";renderProducts(item,record);window.dispatchEvent(new CustomEvent("anvera:fitment-selected",{detail:{record,fitment:item,vehicle:{...values}}}));};
     row.addEventListener("click",select);choose.addEventListener("click",(event)=>{event.stopPropagation();select();});return row;
   };
   const productValues = (product, keys) => {
