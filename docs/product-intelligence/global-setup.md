@@ -44,7 +44,8 @@ The aggregate document has these top-level objects:
 - `construction`: supported construction types, structural notes, assembly, fasteners, quality and test requirements.
 - `specification`: diameter and width ranges, PCD patterns, offset, center bore, load basis, disc profiles, brake clearance and restrictions.
 - `finish`: standard finishes, surface processes, customization options, restrictions and approval rules.
-- `products[]`: product code, name, series, construction, design style, spoke count, face profile, material/process references, intended use, description and design revision.
+- `products[]`: product code, name, series, construction, design style, spoke count, face profile, material/process references, intended use, description, design revision and `specifications[]`.
+- Each product specification row records position (Front / Rear / Front & Rear), diameter (inch), width (inch), bolt count, PCD (mm), offset (mm), center bore (mm), optional load rating (kg), and a controlled review status.
 - `fitment`: vehicle identity, variant, fitment status, evidence and engineering notes.
 - `media`: hero and gallery references, rights, product story, public technical content and verified installation references.
 - `review`: review notes and change summary.
@@ -70,6 +71,8 @@ Submission requires:
 - Diameter range, width range and PCD patterns.
 - At least one product profile.
 - Every product has a code, name and construction.
+- Every product explicitly maps to a configured material and forging process.
+- Every product has at least one complete specification row; numeric values are checked server-side and offset may be negative but cannot be blank.
 - Every product construction is included in the configured factory construction capabilities.
 - Any selected material reference matches the configured material grade list.
 
