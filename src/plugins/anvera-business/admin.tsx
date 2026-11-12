@@ -3,9 +3,11 @@ import "./admin.css";
 import { InquiryInbox } from "./pages/InquiryInbox";
 import { DealerApplications } from "./pages/DealerApplications";
 import { DealerAccounts } from "./pages/DealerAccounts";
+import { ProductIntelligence } from "./pages/ProductIntelligence";
 
 export const pages: PluginAdminExports["pages"] = {
   "/inquiries": <InquiryInbox />,
   "/dealer-applications": <DealerApplications />,
-  "/dealers": <DealerAccounts />
+  "/dealers": <DealerAccounts />,
+  "/product-intelligence": <ProductIntelligence />
 };

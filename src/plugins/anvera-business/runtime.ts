@@ -366,6 +366,170 @@ async function suspendDealer(ctx: AdminContext) {
   return { suspended: (batch[0]?.meta?.changes ?? 0) > 0 };
 }
 
+
+type ProductSetupRow = {
+  id: string;
+  status: string;
+  revision: number;
+  document_json: string;
+  step_state_json: string;
+  updated_at: string;
+};
+
+async function getProductSetupDatabase(ctx: AdminContext) {
+  if (ctx.user?.role !== 50) return { error: { available: false, reason: "forbidden" } as const };
+  const { env } = await import("cloudflare:workers");
+  if (env.ANVERA_PRODUCT_INTELLIGENCE_ENABLED !== "true") {
+    return { error: { available: false, reason: "migration_pending" } as const };
+  }
+  return { db: env.DB };
+}
+
+function setupDocumentIsSubmittable(document: Record<string, unknown>) {
+  const factory = inputRecord(document.factory) ?? {};
+  const material = inputRecord(document.material) ?? {};
+  const construction = inputRecord(document.construction) ?? {};
+  const specification = inputRecord(document.specification) ?? {};
+  const products = Array.isArray(document.products) ? document.products.map(inputRecord).filter(Boolean) : [];
+  const required = [
+    factory.factoryName, factory.factoryCode, factory.country,
+    material.materialGrade, material.forgingMethod,
+    construction.constructionTypes,
+    specification.diameterRange, specification.widthRange, specification.boltPatterns
+  ];
+  const supportedConstructions = inputString(construction.constructionTypes, 1000).split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean);
+  const materialGrades = inputString(material.materialGrade, 2000).split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean);
+  const validProducts = products.length > 0 && products.every((product) => {
+    const selectedConstruction = inputString(product?.construction, 40);
+    const selectedMaterial = inputString(product?.materialProfile, 200);
+    const selectedForging = inputString(product?.forgingProfile, 200);
+    const specifications = Array.isArray(product?.specifications) ? product.specifications.map(inputRecord).filter(Boolean) : [];
+    const validSpecifications = specifications.length > 0 && specifications.every((row) => {
+      const diameter = Number(row?.diameter);
+      const width = Number(row?.width);
+      const boltCount = Number(row?.boltCount);
+      const pcd = Number(row?.pcd);
+      const offset = Number(row?.offset);
+      const centerBore = Number(row?.centerBore);
+      const loadRating = row?.loadRating === undefined || row?.loadRating === "" ? null : Number(row.loadRating);
+      return ["Front", "Rear", "Front & Rear"].includes(inputString(row?.role, 24)) &&
+        Number.isFinite(diameter) && diameter > 0 &&
+        Number.isFinite(width) && width > 0 &&
+        Number.isInteger(boltCount) && boltCount > 0 &&
+        Number.isFinite(pcd) && pcd > 0 &&
+        Boolean(inputString(row?.offset, 32)) && Number.isFinite(offset) &&
+        Number.isFinite(centerBore) && centerBore > 0 &&
+        (loadRating === null || (Number.isFinite(loadRating) && loadRating > 0)) &&
+        ["Draft", "Factory Supported", "Engineering Review", "Engineering Approved", "Restricted"].includes(inputString(row?.status, 32));
+    });
+    const forgingMethods = inputString(material.forgingMethod, 500).split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean);
+    return Boolean(inputString(product?.productCode, 80)) &&
+      Boolean(inputString(product?.productName, 120)) &&
+      Boolean(selectedConstruction) &&
+      supportedConstructions.includes(selectedConstruction) &&
+      Boolean(selectedMaterial) && materialGrades.includes(selectedMaterial) &&
+      Boolean(selectedForging) && forgingMethods.includes(selectedForging) &&
+      validSpecifications;
+  });
+  return required.every((value) => typeof value === "string" && value.trim().length > 0) && validProducts;
+}
+
+async function loadProductSetup(ctx: AdminContext) {
+  if (ctx.request.method !== "GET") return { available: false, reason: "method_not_allowed" };
+  const access = await getProductSetupDatabase(ctx);
+  if ("error" in access) return access.error;
+  const session = await access.db.prepare(
+    "SELECT id, status, revision, document_json, step_state_json, updated_at FROM anvera_product_setup_sessions WHERE setup_key = 'global' LIMIT 1"
+  ).first<ProductSetupRow>();
+  if (!session) {
+    return { available: true, session: null, document: {}, stepState: {}, events: [], versions: [] };
+  }
+  const [events, versions] = await Promise.all([
+    access.db.prepare("SELECT id, event_type, revision, summary, created_at FROM anvera_product_setup_events WHERE session_id = ? ORDER BY created_at DESC LIMIT 20")
+      .bind(session.id).all(),
+    access.db.prepare("SELECT id, revision, version_type, note, created_at FROM anvera_product_setup_versions WHERE session_id = ? ORDER BY revision DESC LIMIT 20")
+      .bind(session.id).all()
+  ]);
+  let document: Record<string, unknown> = {};
+  let stepState: Record<string, unknown> = {};
+  try { document = JSON.parse(session.document_json) as Record<string, unknown>; } catch { document = {}; }
+  try { stepState = JSON.parse(session.step_state_json) as Record<string, unknown>; } catch { stepState = {}; }
+  return {
+    available: true,
+    session: { id: session.id, status: session.status, revision: session.revision, updated_at: session.updated_at },
+    document, stepState, events: events.results, versions: versions.results
+  };
+}
+
+async function saveProductSetup(ctx: AdminContext) {
+  if (ctx.request.method !== "POST") return { saved: false, reason: "method_not_allowed" };
+  const access = await getProductSetupDatabase(ctx);
+  if ("error" in access) return access.error;
+  const body = inputRecord(ctx.input);
+  const document = inputRecord(body?.document);
+  const stepState = inputRecord(body?.stepState) ?? {};
+  const sessionId = inputString(body?.sessionId, 128);
+  const action = inputString(body?.action, 16) || "draft";
+  const revision = Math.max(0, Math.floor(Number(body?.revision) || 0));
+  if (!document || !["draft", "submit"].includes(action)) return { saved: false, reason: "invalid_input" };
+
+  const documentJson = JSON.stringify(document);
+  const stepStateJson = JSON.stringify(stepState);
+  if (new TextEncoder().encode(documentJson).byteLength > 64 * 1024 || new TextEncoder().encode(stepStateJson).byteLength > 8 * 1024) {
+    return { saved: false, reason: "payload_too_large" };
+  }
+  if (action === "submit" && !setupDocumentIsSubmittable(document)) {
+    return { saved: false, reason: "validation_failed" };
+  }
+
+  const existing = await access.db.prepare(
+    "SELECT id, status, revision FROM anvera_product_setup_sessions WHERE setup_key = 'global' LIMIT 1"
+  ).first<{ id: string; status: string; revision: number }>();
+  const nowRevision = existing?.revision ?? 0;
+  if ((existing?.id ?? "") !== sessionId || nowRevision !== revision) {
+    if (existing || sessionId) return { saved: false, reason: "revision_conflict", revision: nowRevision };
+  }
+  if (existing && !["draft", "rejected"].includes(existing.status)) {
+    return { saved: false, reason: "setup_locked", status: existing.status };
+  }
+
+  const nextRevision = nowRevision + 1;
+  const eventId = crypto.randomUUID();
+  const versionId = crypto.randomUUID();
+  const actorId = ctx.user!.id;
+  const nextStatus = action === "submit" ? "in_review" : "draft";
+
+  if (!existing) {
+    const id = crypto.randomUUID();
+    const statements = [
+      access.db.prepare("INSERT INTO anvera_product_setup_sessions (id, setup_key, status, revision, document_json, step_state_json, created_by_user_id, updated_by_user_id, submitted_at) VALUES (?, 'global', ?, ?, ?, ?, ?, ?, CASE WHEN ? = 'submit' THEN CURRENT_TIMESTAMP ELSE NULL END)")
+        .bind(id, nextStatus, nextRevision, documentJson, stepStateJson, actorId, actorId, action),
+      access.db.prepare("INSERT INTO anvera_product_setup_events (id, session_id, event_type, actor_user_id, revision, summary) VALUES (?, ?, ?, ?, ?, ?)")
+        .bind(eventId, id, action === "submit" ? "submitted" : "created", actorId, nextRevision, action === "submit" ? "Global setup submitted for review" : "Initial global setup draft created")
+    ];
+    if (action === "submit") {
+      statements.push(access.db.prepare("INSERT INTO anvera_product_setup_versions (id, session_id, revision, version_type, document_json, step_state_json, actor_user_id, note) VALUES (?, ?, ?, 'submitted', ?, ?, ?, ?)")
+        .bind(versionId, id, nextRevision, documentJson, stepStateJson, actorId, "Initial submission"));
+    }
+    await access.db.batch(statements);
+    return { saved: true, sessionId: id, revision: nextRevision, status: nextStatus };
+  }
+
+  const statements = [
+    access.db.prepare("UPDATE anvera_product_setup_sessions SET status = ?, revision = ?, document_json = ?, step_state_json = ?, updated_by_user_id = ?, updated_at = CURRENT_TIMESTAMP, submitted_at = CASE WHEN ? = 'submit' THEN CURRENT_TIMESTAMP ELSE submitted_at END WHERE id = ? AND revision = ? AND status IN ('draft', 'rejected')")
+      .bind(nextStatus, nextRevision, documentJson, stepStateJson, actorId, action, existing.id, revision),
+    access.db.prepare("INSERT INTO anvera_product_setup_events (id, session_id, event_type, actor_user_id, revision, summary) SELECT ?, ?, ?, ?, ?, ? WHERE changes() > 0")
+      .bind(eventId, existing.id, action === "submit" ? "submitted" : "draft_saved", actorId, nextRevision, action === "submit" ? "Global setup submitted for review" : "Global setup draft saved")
+  ];
+  if (action === "submit") {
+    statements.push(access.db.prepare("INSERT INTO anvera_product_setup_versions (id, session_id, revision, version_type, document_json, step_state_json, actor_user_id, note) SELECT ?, ?, ?, 'submitted', ?, ?, ?, 'Submitted for internal review' WHERE EXISTS (SELECT 1 FROM anvera_product_setup_sessions WHERE id = ? AND revision = ?)")
+      .bind(versionId, existing.id, nextRevision, documentJson, stepStateJson, actorId, existing.id, nextRevision));
+  }
+  const result = await access.db.batch(statements);
+  if ((result[0]?.meta?.changes ?? 0) === 0) return { saved: false, reason: "revision_conflict", revision: nowRevision };
+  return { saved: true, sessionId: existing.id, revision: nextRevision, status: nextStatus };
+}
+
 const jsonPost: { methods: ("GET" | "POST" | "HEAD" | "PUT" | "PATCH" | "DELETE")[]; request: { body: "json"; maxBytes: number } } = { methods: ["POST"], request: { body: "json", maxBytes: 16 * 1024 } };
 
 export function createPlugin() {
@@ -376,6 +540,17 @@ export function createPlugin() {
     version: "0.1.0",
     capabilities: ["users:read"],
     routes: {
+      "product-setup/load": {
+        methods: ["GET"],
+        permission: "plugins:manage",
+        handler: loadProductSetup
+      },
+      "product-setup/save": {
+        methods: ["POST"],
+        request: { body: "json", maxBytes: 80 * 1024 },
+        permission: "plugins:manage",
+        handler: saveProductSetup
+      },
       "inquiries/list": {
         methods: ["GET"],
         permission: "plugins:manage",
