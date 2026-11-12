@@ -13,5 +13,10 @@
     "binding": "MEDIA",
     "bucket_name": "anvera-media"
   }],
+  "ratelimits": [{
+    "name": "PUBLIC_INTAKE_LIMITER",
+    "namespace_id": "7311202601",
+    "simple": { "limit": 5, "period": 60 }
+  }],
   "triggers": { "crons": ["* * * * *"] }
 }
