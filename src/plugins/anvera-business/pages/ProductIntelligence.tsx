@@ -22,7 +22,7 @@ type StepDefinition = {
 };
 
 type SpecificationRow = { id: string; role: string; diameter: string; width: string; boltCount: string; pcd: string; offset: string; centerBore: string; loadRating: string; status: string };
-type ProductProfile = Record<string, string> & { specifications?: SpecificationRow[] };
+type ProductProfile = { [key: string]: string | SpecificationRow[] | undefined; specifications?: SpecificationRow[] };
 
 type SetupDocument = {
   factory: Record<string, string>;
@@ -171,14 +171,17 @@ const steps: StepDefinition[] = [
 ];
 
 function getPath(document: SetupDocument, stepId: string, key: string, productIndex: number) {
-  if (stepId === "products") return document.products?.[productIndex]?.[key] ?? "";
+  if (stepId === "products") {
+    const value = document.products?.[productIndex]?.[key];
+    return typeof value === "string" ? value : "";
+  }
   return (document[stepId as keyof SetupDocument] as Record<string, string> | undefined)?.[key] ?? "";
 }
 
 function setValue(document: SetupDocument, stepId: string, key: string, value: string, productIndex: number): SetupDocument {
   if (stepId === "products") {
-    const products = [...(document.products ?? [{}])];
-    products[productIndex] = { ...(products[productIndex] ?? {}), [key]: value };
+    const products = [...(document.products ?? [{ specifications: [] }])];
+    products[productIndex] = { ...(products[productIndex] ?? { specifications: [] }), [key]: value };
     return { ...document, products };
   }
   return { ...document, [stepId]: { ...(document[stepId as keyof SetupDocument] as Record<string, string> ?? {}), [key]: value } };
@@ -366,7 +369,7 @@ export function ProductIntelligence() {
     setProductIndex(document.products?.length ?? 0);
   };
 
-  const finalReady = steps.filter((step) => !step.optional && step.id !== "review" && step.id !== "products").every((step) => isStepComplete(step, document, productIndex)) && (document.products ?? []).length > 0 && (document.products ?? []).every((product) => Boolean(product.productCode?.trim() && product.productName?.trim() && product.construction?.trim()));
+  const finalReady = steps.filter((step) => !step.optional && step.id !== "review" && step.id !== "products").every((step) => isStepComplete(step, document, productIndex)) && (document.products ?? []).length > 0 && (document.products ?? []).every((product) => Boolean(typeof product.productCode === "string" && product.productCode.trim() && typeof product.productName === "string" && product.productName.trim() && typeof product.construction === "string" && product.construction.trim() && product.specifications?.length && product.specifications.every(specificationIsComplete)));
 
   return (
     <main className="anvera-workspace api-workspace">
@@ -433,6 +436,27 @@ export function ProductIntelligence() {
                   return <Field key={field.key} field={resolvedField} value={getPath(document, active.id, field.key, productIndex)} onChange={(value) => updateField(field.key, value)} error={missing.some((item) => item.key === field.key)} />;
                 })}
               </div>
+
+              {active.id === "products" ? <section className="api-spec-editor">
+                <div className="api-spec-heading"><div><p className="anvera-eyebrow">PRODUCT SPECIFICATIONS</p><h3>Specification Matrix</h3><p>Each row is a specific, reviewable wheel specification. Do not enter a range in place of a confirmed combination.</p></div><button className="api-add-product" type="button" onClick={() => setDocument((current) => addSpecification(current, productIndex))}>＋ Add specification</button></div>
+                <div className="api-spec-table-wrap"><table className="api-spec-table">
+                  <thead><tr><th>POSITION</th><th>DIAMETER</th><th>WIDTH</th><th>BOLT COUNT</th><th>PCD (MM)</th><th>OFFSET (MM)</th><th>CENTER BORE (MM)</th><th>LOAD (KG)</th><th>STATUS</th><th></th></tr></thead>
+                  <tbody>{(document.products?.[productIndex]?.specifications ?? []).map((row) => <tr key={row.id}>
+                    <td><CustomSelect label="Position" value={row.role} options={["Front", "Rear", "Front & Rear"]} onChange={(value) => setDocument((current) => updateSpecification(current, productIndex, row.id, "role", value))} /></td>
+                    <td><input aria-label="Diameter in inches" type="number" min="1" step="0.5" value={row.diameter} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "diameter", event.target.value))} /></td>
+                    <td><input aria-label="Width in inches" type="number" min="1" step="0.5" value={row.width} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "width", event.target.value))} /></td>
+                    <td><input aria-label="Bolt count" type="number" min="1" step="1" value={row.boltCount} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "boltCount", event.target.value))} /></td>
+                    <td><input aria-label="PCD in millimeters" type="number" min="1" step="0.1" value={row.pcd} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "pcd", event.target.value))} /></td>
+                    <td><input aria-label="Offset in millimeters" type="number" step="0.5" value={row.offset} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "offset", event.target.value))} /></td>
+                    <td><input aria-label="Center bore in millimeters" type="number" min="1" step="0.1" value={row.centerBore} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "centerBore", event.target.value))} /></td>
+                    <td><input aria-label="Load rating in kilograms" type="number" min="1" step="1" value={row.loadRating} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "loadRating", event.target.value))} /></td>
+                    <td><CustomSelect label="Specification status" value={row.status} options={["Draft", "Factory Supported", "Engineering Review", "Engineering Approved", "Restricted"]} onChange={(value) => setDocument((current) => updateSpecification(current, productIndex, row.id, "status", value))} /></td>
+                    <td><button className="api-remove-spec" type="button" aria-label="Remove specification row" onClick={() => setDocument((current) => removeSpecification(current, productIndex, row.id))}>×</button></td>
+                  </tr>)}</tbody>
+                </table></div>
+                {missing.some((field) => field.key === "specifications") ? <p className="api-field-error">Add at least one complete specification row before continuing.</p> : null}
+                <p className="anvera-muted">A factory-supported specification is not automatically engineering-approved or vehicle-verified. Load rating is optional during drafting but must be supported before a product claim is published.</p>
+              </section> : null}
 
               {active.id === "review" ? <div className="api-review-summary">
                 <h3>Global validation summary</h3>
