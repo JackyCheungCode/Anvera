@@ -10,7 +10,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "deploy": "astro build && wrangler deploy --config wrangler.production.jsonc",
+    "deploy": "astro build && wrangler deploy --config dist/server/wrangler.json",
     "typecheck": "astro check",
     "test": "node --test tests/*.test.mjs"
   },
