@@ -600,12 +600,13 @@ async function listProductLibrary(ctx: AdminContext) {
   const access = await getProductLibraryDatabase(ctx);
   if ("error" in access) return access.error;
   try {
-    const [materials, forgingProcesses, finishes] = await Promise.all([
+    const [materials, forgingProcesses, finishes, constructions] = await Promise.all([
       access.db.prepare("SELECT id, code, name, family, grade, standard, supplier, certificate_ref, evidence_note, status, revision, created_at, updated_at FROM anvera_pi_material_profiles ORDER BY code COLLATE NOCASE").all(),
       access.db.prepare("SELECT id, code, name, process_type, equipment, capacity_notes, heat_treatment, cnc_capability, evidence_ref, status, revision, created_at, updated_at FROM anvera_pi_forging_processes ORDER BY code COLLATE NOCASE").all(),
-      access.db.prepare("SELECT id, code, name, finish_type, process_description, appearance_reference, supported_constructions_json, restrictions, evidence_ref, status, revision, created_at, updated_at FROM anvera_pi_finish_profiles ORDER BY code COLLATE NOCASE").all()
+      access.db.prepare("SELECT id, code, name, finish_type, process_description, appearance_reference, supported_constructions_json, restrictions, evidence_ref, status, revision, created_at, updated_at FROM anvera_pi_finish_profiles ORDER BY code COLLATE NOCASE").all(),
+      access.db.prepare("SELECT id, construction_type, capability_scope, assembly_method, fastener_requirements, quality_processes, structural_limitations, evidence_ref, status, revision, created_at, updated_at FROM anvera_pi_construction_capabilities ORDER BY construction_type").all()
     ]);
-    return { available: true, materials: materials.results, forgingProcesses: forgingProcesses.results, finishes: finishes.results };
+    return { available: true, materials: materials.results, forgingProcesses: forgingProcesses.results, finishes: finishes.results, constructions: constructions.results };
   } catch (cause) {
     if (String(cause).toLowerCase().includes("no such table")) return { available: false, reason: "migration_pending" };
     throw cause;
@@ -855,6 +856,57 @@ async function trySyncProductFinishMappings(db: D1Database, sessionId: string, d
     return "The setup draft was saved, but one or more finish mappings could not be synchronized. Check finish approval and construction compatibility.";
   }
 }
+
+async function saveConstructionCapability(ctx: AdminContext) {
+  if (ctx.request.method !== "POST") return { saved: false, reason: "method_not_allowed" };
+  const access = await getProductLibraryDatabase(ctx);
+  if ("error" in access) return access.error;
+  const body = inputRecord(ctx.input);
+  const id = inputString(body?.id, 128);
+  const revision = Math.max(0, Math.floor(Number(body?.revision) || 0));
+  const constructionType = inputString(body?.constructionType, 32);
+  const status = libraryStatus(body?.status);
+  const value = {
+    constructionType,
+    capabilityScope: inputString(body?.capabilityScope, 2000),
+    assemblyMethod: inputString(body?.assemblyMethod, 1000),
+    fastenerRequirements: inputString(body?.fastenerRequirements, 1000),
+    qualityProcesses: inputString(body?.qualityProcesses, 2000),
+    structuralLimitations: inputString(body?.structuralLimitations, 2000),
+    evidenceRef: inputString(body?.evidenceRef, 200),
+    status
+  };
+  if (!["Monoblock", "Two-piece", "Three-piece"].includes(value.constructionType) || !value.status) {
+    return { saved: false, reason: "invalid_input" };
+  }
+  const actorId = ctx.user!.id;
+  const nextRevision = revision + 1;
+  try {
+    if (!id) {
+      const newId = crypto.randomUUID();
+      await access.db.batch([
+        access.db.prepare("INSERT INTO anvera_pi_construction_capabilities (id, construction_type, capability_scope, assembly_method, fastener_requirements, quality_processes, structural_limitations, evidence_ref, status, revision, created_by_user_id, updated_by_user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)")
+          .bind(newId, value.constructionType, value.capabilityScope || null, value.assemblyMethod || null, value.fastenerRequirements || null, value.qualityProcesses || null, value.structuralLimitations || null, value.evidenceRef || null, value.status, actorId, actorId),
+        access.db.prepare("INSERT INTO anvera_pi_construction_events (id, construction_capability_id, event_type, actor_user_id, revision, summary) VALUES (?, ?, ?, ?, 1, ?)")
+          .bind(crypto.randomUUID(), newId, value.status === "pending_review" ? "submitted_for_review" : "created", actorId, `${value.constructionType} capability created`)
+      ]);
+      return { saved: true, id: newId, revision: 1 };
+    }
+    const result = await access.db.batch([
+      access.db.prepare("UPDATE anvera_pi_construction_capabilities SET construction_type = ?, capability_scope = ?, assembly_method = ?, fastener_requirements = ?, quality_processes = ?, structural_limitations = ?, evidence_ref = ?, status = ?, revision = ?, updated_by_user_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND revision = ? AND status IN ('draft', 'pending_review')")
+        .bind(value.constructionType, value.capabilityScope || null, value.assemblyMethod || null, value.fastenerRequirements || null, value.qualityProcesses || null, value.structuralLimitations || null, value.evidenceRef || null, value.status, nextRevision, actorId, id, revision),
+      access.db.prepare("INSERT INTO anvera_pi_construction_events (id, construction_capability_id, event_type, actor_user_id, revision, summary) SELECT ?, ?, ?, ?, ?, ? WHERE changes() > 0")
+        .bind(crypto.randomUUID(), id, value.status === "pending_review" ? "submitted_for_review" : "updated", actorId, nextRevision, `${value.constructionType} capability updated`)
+    ]);
+    if ((result[0]?.meta?.changes ?? 0) === 0) return { saved: false, reason: "revision_conflict_or_locked" };
+    return { saved: true, id, revision: nextRevision };
+  } catch (cause) {
+    if (String(cause).toLowerCase().includes("unique")) return { saved: false, reason: "construction_already_exists" };
+    if (String(cause).toLowerCase().includes("no such table")) return { saved: false, reason: "migration_pending" };
+    throw cause;
+  }
+}
+
 
 async function listProductLibraryReviewQueue(ctx: AdminContext) {
   if (ctx.request.method !== "GET") return { available: false, reason: "method_not_allowed" };
