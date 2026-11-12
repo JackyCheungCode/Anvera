@@ -343,8 +343,8 @@ export function ProductIntelligence() {
         ...current,
         material: {
           ...current.material,
-          ...(materials?.length ? { materialGrade: [...new Set(materials.map((item) => item.grade.trim()).filter(Boolean))].join("\\n") } : {}),
-          ...(processes?.length ? { forgingMethod: [...new Set(processes.map((item) => item.process_type.trim()).filter(Boolean))].join("\\n") } : {})
+          ...(materials?.length ? { materialGrade: [...new Set(materials.map((item) => item.grade.trim()).filter(Boolean))].join("\n") } : {}),
+          ...(processes?.length ? { forgingMethod: [...new Set(processes.map((item) => item.process_type.trim()).filter(Boolean))].join("\n") } : {})
         }
       }));
     }
@@ -359,7 +359,7 @@ export function ProductIntelligence() {
     if (constructions?.length) {
       setDocument((current) => ({
         ...current,
-        construction: { ...current.construction, constructionTypes: constructions.join("\\n") }
+        construction: { ...current.construction, constructionTypes: constructions.join("\n") }
       }));
     }
   }, []);
@@ -482,14 +482,14 @@ export function ProductIntelligence() {
                     resolvedField = { ...field, options: approvedConstructions == null ? legacy : approvedConstructions };
                   }
                   if (active.id === "products" && field.key === "materialProfile") {
-                    const legacy = (document.material.materialGrade ?? "").split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean);
+                    const legacy = (document.material.materialGrade ?? "").split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean);
                     const options: Array<string | SelectOption> = approvedMaterials === null
                       ? legacy
                       : approvedMaterials.map((item) => ({ value: item.id, label: `${item.code} · ${item.grade}` }));
                     resolvedField = { ...field, options };
                   }
                   if (active.id === "products" && field.key === "forgingProfile") {
-                    const legacy = (document.material.forgingMethod ?? "").split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean);
+                    const legacy = (document.material.forgingMethod ?? "").split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean);
                     const options: Array<string | SelectOption> = approvedProcesses === null
                       ? legacy
                       : approvedProcesses.map((item) => ({ value: item.id, label: `${item.code} · ${item.name}` }));
