@@ -2,10 +2,36 @@
 import Base from "../../../layouts/Base.astro";
 import { getEmDashCollection, getEmDashEntry } from "emdash";
 import { Image, PortableText } from "emdash/ui";
+import { getWheelDevelopmentProduct } from "../../../data/wheel-products";
 
-const { entry: product, error, cacheHint } = await getEmDashEntry("wheel_products", Astro.params.slug ?? "", { references: { available_finishes: true } });
-if (error) throw error;
-if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+const slug = Astro.params.slug ?? "";
+const cmsResult = await getEmDashEntry("wheel_products", slug, { references: { available_finishes: true } }).catch(() => ({ entry: null, error: null, cacheHint: null }));
+const cmsProduct = cmsResult.entry ?? null;
+if (cmsResult.cacheHint && Astro.cache?.enabled) Astro.cache.set(cmsResult.cacheHint);
+const sample = cmsProduct ? null : getWheelDevelopmentProduct(slug);
+const samplePortableText = sample ? [{ _type: "block", style: "normal", children: [{ _type: "span", text: sample.designStory, _key: "sample-story-span" }], _key: "sample-story-block" }] : null;
+const product: any = cmsProduct ?? (sample ? {
+  id: sample.slug,
+  data: {
+    title: sample.title,
+    model_code: sample.modelCode,
+    construction_type: sample.constructionType,
+    short_description: sample.shortDescription,
+    design_story: samplePortableText,
+    material: sample.material,
+    manufacturing_process: sample.manufacturingProcess,
+    design_style: sample.designStyle,
+    diameter_options: sample.diameterOptions,
+    width_options: sample.widthOptions,
+    pcd_options: sample.pcdOptions,
+    offset_range: sample.offsetRange,
+    centre_bore_options: sample.centreBoreOptions,
+    finish_options: sample.finishOptions,
+    intended_use: sample.intendedUse,
+    technical_disclaimer: sample.specificationStatus
+  },
+  references: {}
+} : null);
 const galleryImages = Array.isArray(product?.data?.gallery_images) ? product.data.gallery_images : [];
 const finishes = (product?.references?.available_finishes?.entries ?? []).filter((finish: any) => finish.data?.active !== false);
 const { entries: fitmentIndex = [] } = await getEmDashCollection("wheel_fitments", { status: "published", limit: 100 }).catch(() => ({ entries: [] }));
@@ -25,26 +51,37 @@ const heroImage = data.hero_image ?? null;
 const construction = String(data.construction_type ?? "").replaceAll("_", " ");
 const description = String(data.short_description ?? "");
 const modelCode = String(data.model_code ?? "");
+const isDevelopmentSample = Boolean(sample);
+const specificationRows = [
+  ["Construction", construction || "Project-specific"],
+  ["Material", String(data.material ?? "Discuss with ANVERA engineering")],
+  ["Diameter", Array.isArray(data.diameter_options) ? data.diameter_options.join(" / ") : "Vehicle-specific"],
+  ["Width", Array.isArray(data.width_options) ? data.width_options.join(" / ") : "Vehicle-specific"],
+  ["PCD", Array.isArray(data.pcd_options) ? data.pcd_options.join(" / ") : "Vehicle-specific"],
+  ["Offset", String(data.offset_range ?? "Vehicle-specific engineering review")],
+  ["Centre bore", Array.isArray(data.centre_bore_options) ? data.centre_bore_options.join(" / ") : "Vehicle-specific"]
+];
 ---
 <Base title={product ? title : "Wheel design unavailable"} description={description || "Explore an ANVERA forged wheel design and discuss a vehicle-specific configuration."}>
   {product ? <>
     <section class="wheel-product-hero">
-      <div class="wheel-product-visual">{heroImage ? <Image image={heroImage as any} width={1600} height={1200} priority /> : <div class="wheel-product-visual-placeholder"><span>ANVERA / FORGED</span></div>}</div>
+      <div class="wheel-product-visual">{heroImage ? <Image image={heroImage as any} width={1600} height={1200} priority /> : <div class="wheel-product-visual-placeholder"><div class="wheel-render"></div><span>ANVERA / FORGED</span></div>}</div>
       <div class="wheel-product-intro">
         <p class="eyebrow">ANVERA / WHEEL DESIGN</p>
         <p class="wheel-product-code">{modelCode || "BESPOKE DESIGN"}{construction ? ` / ${construction.toUpperCase()}` : ""}</p>
         <h1>{title}</h1>
         {description && <p class="wheel-product-description">{description}</p>}
+        {isDevelopmentSample && <span class="wheel-demo-label wheel-demo-label--detail">DEVELOPMENT SAMPLE / NOT FOR PRODUCTION</span>}
         <a class="cds-btn cds-btn--primary" href={`/custom-inquiry?model=${encodeURIComponent(modelCode || title)}`}>Discuss this design <span aria-hidden="true">↗</span></a>
       </div>
     </section>
-    {galleryImages.length > 0 && <section class="wheel-product-gallery"><div class="wheel-product-gallery-heading"><p class="section-kicker">Details / 01</p><h2>Considered<br />from every angle.</h2></div><div class="wheel-product-gallery-grid">{galleryImages.map((item: any) => item.image && <figure><Image image={item.image} alt={String(item.alt_text ?? item.image.alt ?? title)} width={1000} height={750} /><figcaption>{String(item.caption ?? item.alt_text ?? "")}</figcaption></figure>)}</div></section>}
+    {data.design_style && <section class="wheel-product-design"><div><p class="section-kicker">Design language</p><h2>{String(data.design_style)}</h2></div><div><p>{String(data.manufacturing_process ?? "")}</p><p class="wheel-design-family">{String(sample?.family ?? "ANVERA / FORGED COLLECTION")}</p></div></section>}
+    {specificationRows.length > 0 && <section class="wheel-product-specs"><div class="wheel-product-specs-heading"><p class="section-kicker">Technical overview / 01</p><h2>Specification<br />framework.</h2><p>Final dimensions and engineering values are defined for the vehicle and project. A displayed range is not a fitment approval.</p></div><dl class="wheel-product-spec-list">{specificationRows.map(([label, value]) => <div><dt>{label}</dt><dd>{value}</dd></div>)}</dl></section>}
+    {Array.isArray(data.finish_options) && data.finish_options.length > 0 && <section class="wheel-product-finishes"><p class="section-kicker">Finish directions</p><h2>Make it<br />your own.</h2><div class="wheel-finish-grid">{data.finish_options.map((finish: string) => <article><h3>{finish}</h3><p>Finish availability and sample approval are confirmed for each project.</p></article>)}</div></section>}
+    {galleryImages.length > 0 && <section class="wheel-product-gallery"><div class="wheel-product-gallery-heading"><p class="section-kicker">Details / 02</p><h2>Considered<br />from every angle.</h2></div><div class="wheel-product-gallery-grid">{galleryImages.map((item: any) => item.image && <figure><Image image={item.image} alt={String(item.alt_text ?? item.image.alt ?? title)} width={1000} height={750} /><figcaption>{String(item.caption ?? item.alt_text ?? "")}</figcaption></figure>)}</div></section>}
     {finishes.length > 0 && <section class="wheel-product-finishes"><p class="section-kicker">Finish library</p><h2>Make it<br />your own.</h2><div class="wheel-finish-grid">{finishes.map((finish: any) => <article>{finish.data?.sample_image && <div class="wheel-finish-image"><Image image={finish.data.sample_image as any} width={720} height={480} /></div>}{typeof finish.data?.swatch_hex === "string" && /^#[0-9a-fA-F]{6}$/.test(finish.data.swatch_hex) && <span class="wheel-finish-swatch" style={`--finish-swatch:${finish.data.swatch_hex}`} aria-label={`${String(finish.data?.title ?? "Finish")} colour sample`}></span>}<h3>{String(finish.data?.title ?? "Finish")}</h3><p>{String(finish.data?.finish_description ?? "")}</p>{finish.data?.finish_code && <span class="wheel-finish-code">{String(finish.data.finish_code)}</span>}</article>)}</div></section>}
     {verifiedFitments.length > 0 && <section class="wheel-fitments"><div class="wheel-fitments-heading"><div><p class="section-kicker">Engineering / Verified fitment</p><h2>Specified for<br />your vehicle.</h2></div><p>Only fitments reviewed and marked verified by the ANVERA team are shown here. Always confirm final brake clearance and vehicle configuration before production.</p></div><div class="wheel-fitment-list">{verifiedFitments.map((fitment: any) => { const d = fitment.data ?? {}; const years = [d.model_year_from, d.model_year_to].filter(Boolean); return <article class="wheel-fitment-row"><div><h3>{String(d.vehicle_make ?? "")} {String(d.vehicle_model ?? "")}</h3><p>{years.length ? years.join("–") : "Model year varies"}</p></div><div><span>FRONT</span><strong>{formatSpec(d.front_spec) || "Specification on request"}</strong></div><div><span>REAR</span><strong>{formatSpec(d.rear_spec) || "Specification on request"}</strong></div><div class="wheel-fitment-status"><span aria-label="Verified fitment">VERIFIED</span>{d.verified_at && <small>{new Date(d.verified_at).toLocaleDateString("en-GB", {year:"numeric",month:"short"})}</small>}</div></article>; })}</div></section>}
-    {data.design_story && <section class="wheel-product-story">
-      <p class="section-kicker">Design perspective</p>
-      <div class="wheel-product-richtext"><PortableText value={data.design_story as any} /></div>
-    </section>}
+    {data.design_story && <section class="wheel-product-story"><p class="section-kicker">Design perspective</p><div class="wheel-product-richtext"><PortableText value={data.design_story as any} /></div></section>}
     {data.technical_disclaimer && <p class="wheel-product-disclaimer">{String(data.technical_disclaimer)}</p>}
     <section class="wheel-product-end"><p class="section-kicker">Configure around your vehicle</p><h2>The right specification<br />starts with your brief.</h2><a class="cds-btn cds-btn--primary" href={`/custom-inquiry?model=${encodeURIComponent(modelCode || title)}`}>Start a project <span aria-hidden="true">↗</span></a></section>
   </> : <section class="wheel-product-missing"><p class="eyebrow">ANVERA / CATALOGUE</p><h1>Design not<br /><span>available.</span></h1><p>This wheel design may be unpublished or no longer available. Browse the collection or contact our team for assistance.</p><a class="cds-btn cds-btn--primary" href="/wheels">Back to wheels <span aria-hidden="true">↗</span></a></section>}
