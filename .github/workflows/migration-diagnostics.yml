@@ -35,6 +35,12 @@ jobs:
       - name: Inspect EmDash migration CLI
         run: pnpm exec emdash migrate --help
 
+      - name: Check pending migrations (read-only)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: pnpm exec emdash migrate --check --json --wrangler-config wrangler.jsonc
+
       - name: Check migration status (read-only)
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
