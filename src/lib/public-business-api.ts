@@ -2,6 +2,7 @@ type BusinessEnv = {
   DB: D1Database;
   ANVERA_BUSINESS_API_ENABLED?: string;
   TURNSTILE_SECRET_KEY?: string;
+  PUBLIC_INTAKE_LIMITER?: { limit(input: { key: string }): Promise<{ success: boolean }> };
   MEDIA?: {
     put(key: string, value: ArrayBuffer | ArrayBufferView | Blob | string | null, options?: {
       httpMetadata?: { contentType?: string; contentDisposition?: string };
@@ -60,6 +61,32 @@ export async function acceptPublicSubmission(ctx: RequestContext, required: stri
   if (!origin || origin !== url.origin) {
     return { ok: false, response: json({ ok: false, error: "origin_not_allowed" }, 403) };
   }
+  const locals = ctx.locals as { runtime?: { env?: BusinessEnv } };
+  const env = locals.runtime?.env;
+  if (!env?.DB || env.ANVERA_BUSINESS_API_ENABLED !== "true") {
+    return { ok: false, response: json({ ok: false, error: "submission_temporarily_unavailable" }, 503) };
+  }
+  if (!env.TURNSTILE_SECRET_KEY) {
+    return { ok: false, response: json({ ok: false, error: "verification_not_configured" }, 503) };
+  }
+  if (!env.PUBLIC_INTAKE_LIMITER) {
+    return { ok: false, response: json({ ok: false, error: "rate_limiting_not_configured" }, 503) };
+  }
+  const remoteIp = request.headers.get("CF-Connecting-IP");
+  if (!remoteIp) return { ok: false, response: json({ ok: false, error: "client_identity_unavailable" }, 403) };
+  try {
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(remoteIp));
+    const ipKey = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+    const decision = await env.PUBLIC_INTAKE_LIMITER.limit({ key: url.pathname + ":" + ipKey });
+    if (!decision.success) {
+      return { ok: false, response: new Response(JSON.stringify({ ok: false, error: "rate_limit_exceeded" }), {
+        status: 429,
+        headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", "Retry-After": "60", "X-Content-Type-Options": "nosniff" }
+      }) };
+    }
+  } catch {
+    return { ok: false, response: json({ ok: false, error: "rate_limiting_unavailable" }, 503) };
+  }
   const contentType = request.headers.get("content-type")?.toLowerCase() || "";
   const isJson = contentType.includes("application/json");
   const isMultipart = contentType.includes("multipart/form-data");
@@ -104,16 +131,8 @@ export async function acceptPublicSubmission(ctx: RequestContext, required: stri
   const email = clean(data.email, 254).toLowerCase();
   if (!EMAIL_PATTERN.test(email)) return { ok: false, response: json({ ok: false, error: "invalid_email" }, 422) };
 
-  const locals = ctx.locals as { runtime?: { env?: BusinessEnv } };
-  const env = locals.runtime?.env;
-  if (!env?.DB || env.ANVERA_BUSINESS_API_ENABLED !== "true") {
-    return { ok: false, response: json({ ok: false, error: "submission_temporarily_unavailable" }, 503) };
-  }
-  if (!env.TURNSTILE_SECRET_KEY) {
-    return { ok: false, response: json({ ok: false, error: "verification_not_configured" }, 503) };
-  }
   const token = clean(data.turnstileToken, 2048);
-  const verified = await verifyTurnstile(token, env.TURNSTILE_SECRET_KEY, request.headers.get("CF-Connecting-IP"), url.hostname);
+  const verified = await verifyTurnstile(token, env.TURNSTILE_SECRET_KEY!, remoteIp, url.hostname);
   if (!verified) return { ok: false, response: json({ ok: false, error: "verification_failed" }, 403) };
   if (files.length && !env.MEDIA) {
     return { ok: false, response: json({ ok: false, error: "attachment_storage_not_configured" }, 503) };
