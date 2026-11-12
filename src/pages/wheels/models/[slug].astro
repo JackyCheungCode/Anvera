@@ -1,0 +1,35 @@
+---
+import Base from "../../../layouts/Base.astro";
+import { getEmDashEntry } from "emdash";
+import { PortableText } from "emdash/ui";
+
+const result = await getEmDashEntry("wheel_products", Astro.params.slug ?? "").catch(() => ({ entry: null }));
+const product = result.entry as any;
+const data = product?.data ?? {};
+const title = String(data.title ?? "Wheel design");
+const heroImage = typeof data.hero_image?.src === "string" ? data.hero_image.src : null;
+const heroAlt = String(data.hero_image?.alt ?? title);
+const construction = String(data.construction_type ?? "").replaceAll("_", " ");
+const description = String(data.short_description ?? "");
+const modelCode = String(data.model_code ?? "");
+---
+<Base title={product ? title : "Wheel design unavailable"} description={description || "Explore an ANVERA forged wheel design and discuss a vehicle-specific configuration."}>
+  {product ? <>
+    <section class="wheel-product-hero">
+      <div class="wheel-product-visual">{heroImage ? <img src={heroImage} alt={heroAlt} /> : <div class="wheel-product-visual-placeholder"><span>ANVERA / FORGED</span></div>}</div>
+      <div class="wheel-product-intro">
+        <p class="eyebrow">ANVERA / WHEEL DESIGN</p>
+        <p class="wheel-product-code">{modelCode || "BESPOKE DESIGN"}{construction ? ` / ${construction.toUpperCase()}` : ""}</p>
+        <h1>{title}</h1>
+        {description && <p class="wheel-product-description">{description}</p>}
+        <a class="cds-btn cds-btn--primary" href={`/custom-inquiry?model=${encodeURIComponent(modelCode || title)}`}>Discuss this design <span aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+    {data.design_story && <section class="wheel-product-story">
+      <p class="section-kicker">Design perspective</p>
+      <div class="wheel-product-richtext"><PortableText value={data.design_story} /></div>
+    </section>}
+    {data.technical_disclaimer && <p class="wheel-product-disclaimer">{String(data.technical_disclaimer)}</p>}
+    <section class="wheel-product-end"><p class="section-kicker">Configure around your vehicle</p><h2>The right specification<br />starts with your brief.</h2><a class="cds-btn cds-btn--primary" href={`/custom-inquiry?model=${encodeURIComponent(modelCode || title)}`}>Start a project <span aria-hidden="true">↗</span></a></section>
+  </> : <section class="wheel-product-missing"><p class="eyebrow">ANVERA / CATALOGUE</p><h1>Design not<br /><span>available.</span></h1><p>This wheel design may be unpublished or no longer available. Browse the collection or contact our team for assistance.</p><a class="cds-btn cds-btn--primary" href="/wheels">Back to wheels <span aria-hidden="true">↗</span></a></section>}
+</Base>
