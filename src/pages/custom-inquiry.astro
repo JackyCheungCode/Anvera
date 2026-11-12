@@ -25,7 +25,15 @@ const fallbackFinishOptions = [{value:"gloss-black",label:"Gloss black"},{value:
       <div class="inquiry-note"><strong>Technical note</strong><span>Fitment values are preliminary until reviewed and confirmed by our team.</span></div>
     </div>
     <form class="project-brief-form" id="project-brief-form">
-      <div class="brief-form-heading"><span>01 — VEHICLE INFORMATION</span><span>REQUIRED WHERE KNOWN</span></div>
+      <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="form-honeypot" />
+      <div class="brief-form-heading"><span>01 — CONTACT INFORMATION</span><span>REQUIRED</span></div>
+      <div class="brief-grid">
+        <TextInput id="customer-name" name="customerName" label="Your name" required />
+        <TextInput id="customer-email" name="email" label="Email address" type="email" required />
+        <TextInput id="customer-phone" name="phone" label="Telephone / WhatsApp" type="tel" />
+        <TextInput id="customer-country" name="country" label="Country / region" />
+      </div>
+      <div class="brief-form-heading"><span>02 — VEHICLE INFORMATION</span><span>REQUIRED</span></div>
       <div class="brief-grid">
         <TextInput id="vehicle-make" name="vehicleMake" label="Vehicle make" placeholder="e.g. Porsche" required />
         <TextInput id="vehicle-model" name="vehicleModel" label="Vehicle model" placeholder="e.g. 911 Carrera" required />
@@ -52,17 +60,31 @@ const fallbackFinishOptions = [{value:"gloss-black",label:"Gloss black"},{value:
         <textarea class="cds-textarea" id="project-notes" name="projectNotes" rows="5" placeholder="Tell us about the look, intended use, brake package, references or any details that matter."></textarea>
       </div>
       <div class="brief-actions">
-        <button class="cds-btn cds-btn--carbon" type="button" id="copy-project-brief">Copy project brief <span aria-hidden="true">↗</span></button>
+        <button class="cds-btn cds-btn--carbon" type="submit" id="submit-project-brief">Send project inquiry <span aria-hidden="true">↗</span></button>
+        <button class="brief-reset" type="button" id="copy-project-brief">Copy project brief</button>
         <button class="brief-reset" type="reset">Clear all fields</button>
       </div>
-      <p class="brief-feedback" id="brief-feedback" role="status" aria-live="polite">This worksheet prepares a project summary on your device. Online inquiry delivery will be connected in the next development phase.</p>
+      <div class="cf-turnstile" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || ""}></div>
+      <p class="brief-feedback" id="brief-feedback" role="status" aria-live="polite">Complete the verification and submit your project brief securely. Required verification and database services must be configured before submissions can be accepted.</p>
     </form>
   </section>
+  <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </Base>
 <script>
   const form = document.querySelector<HTMLFormElement>("#project-brief-form");
   const copyButton = document.querySelector<HTMLButtonElement>("#copy-project-brief");
   const feedback = document.querySelector<HTMLElement>("#brief-feedback");
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+    const data = new FormData(form);
+    const payload = Object.fromEntries(data.entries());
+    payload.customerName = String(data.get("customerName") || "");
+    payload.turnstileToken = String(data.get("cf-turnstile-response") || "");
+    const response = await fetch("/api/inquiries", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    const result = await response.json().catch(() => ({}));
+    if (feedback) feedback.textContent = response.ok ? "Thank you. Your inquiry reference is " + result.referenceCode + ". Our team will review your project." : "We could not submit your inquiry (" + (result.error || response.status) + "). Please try again later.";
+  });
   copyButton?.addEventListener("click", async () => {
     if (!form) return;
     const values = new FormData(form);
