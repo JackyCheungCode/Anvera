@@ -36,7 +36,7 @@ const safeProducts = products.map((product) => ({
         <div class="vehicle-finder-field"><span>Generation</span><div data-dropdown="generation" data-placeholder="Any generation"></div></div>
         <div class="vehicle-finder-field"><span>Modification / trim</span><div data-dropdown="modification" data-placeholder="All available trims"></div></div>
       </div>
-      <div class="vehicle-finder-actions"><p id="vf-status" role="status" aria-live="polite">Loading vehicle catalogue…</p>{!compact && <button class="cds-btn cds-btn--primary" type="submit" id="vf-submit" disabled>Find fitment <span aria-hidden="true">↗</span></button>}</div>
+      <div class="vehicle-finder-actions"><p id="vf-status" role="status" aria-live="polite">Loading vehicle catalogue…</p><button class="cds-btn cds-btn--primary" type="submit" id="vf-submit" disabled>Find fitment <span aria-hidden="true">↗</span></button></div>
     </form>
     <div class="vehicle-finder-results" id="vf-results" hidden aria-live="polite"></div>
     {!compact && <p class="vehicle-finder-disclaimer">Fitment information is supplied by Wheel-Size as a reference. ANVERA will verify load rating, brake clearance, hub fit, offsets and vehicle-specific requirements before confirming any production specification.</p>}
@@ -559,6 +559,7 @@ const safeProducts = products.map((product) => ({
 .vehicle-finder-section--compact .vf-select-option:hover,.vehicle-finder-section--compact .vf-select-option[aria-selected=true]{background:#343b45;color:#fff}
 .vehicle-finder-section--compact .vf-select-empty{color:#a7adb4}
 .vehicle-finder-section--compact .vehicle-finder-actions{margin-top:14px}
+.vehicle-finder-section--compact #vf-submit{display:none!important}
 .vehicle-finder-section--compact .vehicle-finder-actions p{color:#a7adb4}
 .vehicle-finder-section--compact .vehicle-finder-results{margin-top:22px;padding:20px;background:#17191c;color:#f4f4f4}
 .vehicle-finder-section--compact .vf-results-heading h3{font-size:22px;color:#f4f4f4}
