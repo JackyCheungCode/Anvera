@@ -1,0 +1,18 @@
+---
+import Base from "../layouts/Base.astro";
+import VehicleFitmentFinder from "../components/VehicleFitmentFinder.astro";
+---
+<Base title="Find Wheels for Your Vehicle" description="Find factory wheel fitment specifications by vehicle make, model, year and trim, then discuss a bespoke ANVERA forged wheel configuration.">
+  <section class="vehicle-finder-hero">
+    <div class="vehicle-finder-hero-inner">
+      <p class="eyebrow">ANVERA / ENGINEERED AROUND YOUR VEHICLE</p>
+      <h1>Precision begins<br /><span>with fitment.</span></h1>
+      <p>Start with your vehicle. Explore factory specifications, then work with ANVERA to define a forged wheel configuration around your driving needs and design direction.</p>
+    </div>
+  </section>
+  <VehicleFitmentFinder />
+  <section class="vehicle-finder-next">
+    <div><p class="section-kicker">Beyond factory fitment</p><h2>Made to fit.<br />Made to be yours.</h2><p>Factory specifications are the starting point. Our team will review the complete vehicle configuration before confirming a bespoke wheel specification.</p></div>
+    <a class="cds-btn cds-btn--primary" href="/custom-inquiry">Discuss your configuration <span aria-hidden="true">↗</span></a>
+  </section>
+</Base>
