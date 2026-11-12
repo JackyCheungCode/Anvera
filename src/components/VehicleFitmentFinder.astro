@@ -344,10 +344,13 @@ const safeProducts = products.map((product) => ({
     const productRows = anveraProducts.map((product) => ({...product, specs: product.specs || {}}));
     const createFilter = (key, label, options) => {
       const wrap = document.createElement("label"); wrap.className = "vf-product-filter"; const caption = document.createElement("span"); caption.textContent = label; const host = document.createElement("div"); host.className = "vf-mini-select";
-      const button = document.createElement("button"); button.type = "button"; button.className = "vf-mini-trigger"; button.textContent = "All " + label.toLowerCase() + "s  ⌄";
+      const button = document.createElement("button"); button.type = "button"; button.className = "vf-mini-trigger";
+      const value = document.createElement("span"); value.className = "vf-mini-value"; value.textContent = "All " + label.toLowerCase() + "s";
+      const chevron = document.createElement("span"); chevron.className = "vf-select-chevron"; chevron.setAttribute("aria-hidden", "true"); chevron.textContent = "⌄";
+      button.append(value, chevron);
       const menu = document.createElement("div"); menu.className = "vf-mini-menu"; menu.hidden = true;
       const choices = ["All",...options.filter(Boolean)];
-      choices.forEach((choice) => { const option = document.createElement("button"); option.type = "button"; option.textContent = choice; option.addEventListener("click", () => { filtered[key] = choice === "All" ? "" : choice; button.textContent = (choice === "All" ? "All " + label.toLowerCase() + "s" : choice) + "  ⌄"; menu.hidden = true; button.setAttribute("aria-expanded","false"); paint(); }); menu.append(option); });
+      choices.forEach((choice) => { const option = document.createElement("button"); option.type = "button"; option.textContent = choice; option.addEventListener("click", () => { filtered[key] = choice === "All" ? "" : choice; value.textContent = choice === "All" ? "All " + label.toLowerCase() + "s" : choice; menu.hidden = true; button.setAttribute("aria-expanded","false"); paint(); }); menu.append(option); });
       button.setAttribute("aria-haspopup","listbox"); button.setAttribute("aria-expanded","false"); menu.setAttribute("role","listbox"); button.addEventListener("click", () => { menu.hidden = !menu.hidden; button.setAttribute("aria-expanded",String(!menu.hidden)); }); host.append(button,menu); wrap.append(caption,host); controls.append(wrap);
     };
     const unique = (key) => [...new Set(productRows.flatMap((product) => productValues(product,key)))].sort();
@@ -533,4 +536,10 @@ const safeProducts = products.map((product) => ({
 .vf-product-card a{color:#0f62fe;border-color:#0f62fe}
 @media(max-width:760px){.vf-fitment-table{min-width:1100px}.vf-product-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){.vf-product-filters{grid-template-columns:1fr}}
+
+/* Keep recommendations aligned with the fitment result content and pin filter chevrons to the right. */
+.vf-products{padding-left:0;padding-right:0}
+.vf-mini-trigger .vf-mini-value{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vf-mini-trigger .vf-select-chevron{flex:0 0 auto;margin-left:auto}
+@media(max-width:480px){.vf-products{padding-left:0;padding-right:0}}
 </style>
