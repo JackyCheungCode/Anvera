@@ -1161,7 +1161,7 @@ async function configurationOrderDetail(ctx: AdminContext) {
 async function updateConfigurationOrder(ctx: AdminContext) {
   if (ctx.request.method !== "POST") return { updated: false, reason: "method_not_allowed" };
   const access = await getConfigurationAdminDatabase(ctx);
-  if ("error" in access) return { updated: false, reason: access.error.reason };
+  if ("error" in access) return { updated: false, reason: access.error?.reason ?? "unavailable" };
   const input = inputRecord(ctx.input);
   if (!input) return { updated: false, reason: "invalid_input" };
   const id = inputString(input.id, 128);
