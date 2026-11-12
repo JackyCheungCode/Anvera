@@ -7,7 +7,7 @@ const { entry: product, error, cacheHint } = await getEmDashEntry("wheel_product
 if (error) throw error;
 if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
 const galleryImages = Array.isArray(product?.data?.gallery_images) ? product.data.gallery_images : [];
-const finishes = product?.references?.available_finishes?.entries ?? [];
+const finishes = (product?.references?.available_finishes?.entries ?? []).filter((finish: any) => finish.data?.active !== false);
 const { entries: fitmentEntries = [] } = await getEmDashCollection("wheel_fitments", { status: "published", limit: 100, references: { products: true } }).catch(() => ({ entries: [] }));
 const verifiedFitments = fitmentEntries.filter((fitment: any) => {
   if (fitment.data?.verification_status !== "verified") return false;
