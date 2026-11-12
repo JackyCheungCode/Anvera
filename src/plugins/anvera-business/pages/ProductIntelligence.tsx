@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 import { MaterialProcessLibrary } from "./MaterialProcessLibrary";
+import { LibraryReviewQueue } from "./LibraryReviewQueue";
 
 type FieldType = "text" | "number" | "textarea" | "select";
 type FieldDefinition = {
@@ -486,6 +487,8 @@ export function ProductIntelligence() {
                   {versions?.length ? versions.map((version) => <div key={version.id}><strong>Revision {version.revision} · {version.version_type}</strong><time>{new Date(version.created_at).toLocaleString()}</time></div>) : <p className="anvera-muted">No submitted snapshots yet.</p>}
                 </div>
               </div> : null}
+
+              {active.id === "review" ? <LibraryReviewQueue /> : null}
 
               <div className="api-step-footer">
                 <button className="anvera-action-button anvera-action-button--quiet" type="button" onClick={() => void save("draft")} disabled={saving || !available}>{saving ? "Saving…" : "Save draft"}</button>
