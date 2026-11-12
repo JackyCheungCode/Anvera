@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS anvera_configuration_orders (
   id TEXT PRIMARY KEY NOT NULL,
   reference_code TEXT NOT NULL UNIQUE,
   status TEXT NOT NULL DEFAULT 'draft'
-    CHECK (status IN ('draft', 'submitted', 'custom_review', 'needs_information', 'quoted', 'confirmed', 'in_production', 'completed', 'cancelled')),
+    CHECK (status IN ('draft', 'submitted', 'custom_review', 'needs_information', 'quoted', 'confirmed', 'in_production', 'quality_inspection', 'dispatched', 'in_transit', 'customs_clearance', 'out_for_delivery', 'completed', 'cancelled')),
   customer_name TEXT,
   email TEXT,
   phone TEXT,
