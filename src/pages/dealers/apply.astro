@@ -46,6 +46,7 @@ import TextInput from "../../components/ui/TextInput.astro";
     if (!form.reportValidity()) return;
     const data = new FormData(form);
     const payload = Object.fromEntries(data.entries());
+    payload.yearsInBusiness = String(data.get("years") || "");
     payload.turnstileToken = String(data.get("cf-turnstile-response") || "");
     const response = await fetch("/api/dealer-applications", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     const result = await response.json().catch(() => ({}));
