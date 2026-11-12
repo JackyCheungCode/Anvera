@@ -22,7 +22,7 @@ function json(body: Record<string, unknown>, status: number): Response {
   });
 }
 
-async function verifyTurnstile(token: string, secret: string, remoteIp: string | null): Promise<boolean> {
+async function verifyTurnstile(token: string, secret: string, remoteIp: string | null, expectedHostname: string): Promise<boolean> {
   if (!token || !secret) return false;
   const body = new URLSearchParams({ secret, response: token });
   if (remoteIp) body.set("remoteip", remoteIp);
@@ -34,7 +34,7 @@ async function verifyTurnstile(token: string, secret: string, remoteIp: string |
     });
     if (!response.ok) return false;
     const result = await response.json() as { success?: boolean; hostname?: string };
-    return result.success === true;
+    return result.success === true && result.hostname?.toLowerCase() === expectedHostname.toLowerCase();
   } catch {
     return false;
   }
@@ -87,7 +87,7 @@ export async function acceptPublicSubmission(ctx: RequestContext, required: stri
     return { ok: false, response: json({ ok: false, error: "verification_not_configured" }, 503) };
   }
   const token = clean(data.turnstileToken, 2048);
-  const verified = await verifyTurnstile(token, env.TURNSTILE_SECRET_KEY, request.headers.get("CF-Connecting-IP"));
+  const verified = await verifyTurnstile(token, env.TURNSTILE_SECRET_KEY, request.headers.get("CF-Connecting-IP"), url.hostname);
   if (!verified) return { ok: false, response: json({ ok: false, error: "verification_failed" }, 403) };
   return { ok: true, env, data: { ...data, email } };
 }
