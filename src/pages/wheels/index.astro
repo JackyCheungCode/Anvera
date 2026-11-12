@@ -7,11 +7,10 @@ const families = [
   { slug: "two-piece", number: "02", name: "Two-piece", descriptor: "Precision, with room for expression.", copy: "A multi-component approach that opens up more possibilities for proportion, finish and detail.", tag: "MODULAR CONSTRUCTION", visual: "two" },
   { slug: "three-piece", number: "03", name: "Three-piece", descriptor: "A composition built around your vision.", copy: "A configurable multi-piece architecture for highly individual wheel projects.", tag: "MULTI-PIECE CONSTRUCTION", visual: "three" }
 ];
-const { entries: wheelEntries, error: wheelError, cacheHint } = await getEmDashCollection("wheel_products", { status: "published", limit: 24, orderBy: { display_order: "asc" } });
-if (wheelError) throw wheelError;
-if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+const { entries: wheelEntries = [], cacheHint } = await getEmDashCollection("wheel_products", { status: "published", limit: 24, orderBy: { display_order: "asc" } }).catch(() => ({ entries: [], cacheHint: null }));
+if (cacheHint && Astro.cache?.enabled) Astro.cache.set(cacheHint);
 const productCards = wheelEntries.map((entry: any) => ({
-  slug: entry.id,
+  slug: entry.slug,
   title: String(entry.data?.title ?? "Untitled wheel"),
   modelCode: String(entry.data?.model_code ?? ""),
   construction: String(entry.data?.construction_type ?? "").replaceAll("_", "-"),
