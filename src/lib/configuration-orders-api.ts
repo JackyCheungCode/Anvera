@@ -2,7 +2,7 @@ export type ConfigurationOrderEnv = {
   DB?: D1Database;
   ANVERA_CONFIGURATION_API_ENABLED?: string;
   TURNSTILE_SECRET_KEY?: string;
-  PUBLIC_INTAKE_LIMITER?: { limit(input: { key: string }): Promise<{ success: boolean }> }
+  PUBLIC_INTAKE_LIMITER?: { limit(input: { key: string }): Promise<{ success: boolean }> };
 };
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -88,7 +88,7 @@ async function findOwnedOrder(env: ConfigurationOrderEnv, reference: string, req
     .bind(reference, tokenHash).first<{ id: string; status: string }>();
 }
 
-export async function handleConfigurationOrdersRequest(request: Request, env: Env): Promise<Response> {
+export async function handleConfigurationOrdersRequest(request: Request, env: ConfigurationOrderEnv): Promise<Response> {
   const url = new URL(request.url);
   if (request.headers.get("Origin") !== url.origin) return json({ ok: false, error: "origin_not_allowed" }, 403);
   if (!env?.DB || env.ANVERA_CONFIGURATION_API_ENABLED !== "true") return json({ ok: false, error: "configuration_service_unavailable" }, 503);
@@ -105,10 +105,10 @@ export async function handleConfigurationOrdersRequest(request: Request, env: En
     const token = newToken();
     const tokenHash = await sha256(token);
     try {
-      await env.DB!.batch([
-        env.DB!.prepare("INSERT INTO anvera_configuration_orders (id, reference_code, status, configuration_json, access_token_hash) VALUES (?, ?, 'draft', '{}', ?)")
+      await env.DB.batch([
+        env.DB.prepare("INSERT INTO anvera_configuration_orders (id, reference_code, status, configuration_json, access_token_hash) VALUES (?, ?, 'draft', '{}', ?)")
           .bind(id, code, tokenHash),
-        env.DB!.prepare("INSERT INTO anvera_configuration_order_events (id, order_id, event_type, event_json) VALUES (?, ?, 'created', '{}')")
+        env.DB.prepare("INSERT INTO anvera_configuration_order_events (id, order_id, event_type, event_json) VALUES (?, ?, 'created', '{}')")
           .bind(crypto.randomUUID(), id)
       ]);
       return json({ ok: true, referenceCode: code, accessToken: token }, 201);
@@ -131,10 +131,10 @@ export async function handleConfigurationOrdersRequest(request: Request, env: En
   if (action === "save") {
     if (!await rateLimit(env, request, "save")) return json({ ok: false, error: "rate_limit_or_identity_unavailable" }, 429);
     try {
-      await env.DB!.batch([
-        env.DB!.prepare("UPDATE anvera_configuration_orders SET configuration_json = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'draft'")
+      await env.DB.batch([
+        env.DB.prepare("UPDATE anvera_configuration_orders SET configuration_json = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'draft'")
           .bind(configJson, owned.id),
-        env.DB!.prepare("INSERT INTO anvera_configuration_order_events (id, order_id, event_type, event_json) VALUES (?, ?, 'draft_saved', ?)")
+        env.DB.prepare("INSERT INTO anvera_configuration_order_events (id, order_id, event_type, event_json) VALUES (?, ?, 'draft_saved', ?)")
           .bind(crypto.randomUUID(), owned.id, JSON.stringify({ step: clean((config as Record<string, unknown>).step, 16) }))
       ]);
       return json({ ok: true, referenceCode: reference, status: "draft" });
@@ -155,18 +155,19 @@ export async function handleConfigurationOrdersRequest(request: Request, env: En
   const verified = await verifyTurnstile(turnstileToken, env.TURNSTILE_SECRET_KEY, request.headers.get("CF-Connecting-IP"), url.hostname);
   if (!verified) return json({ ok: false, error: "verification_failed" }, 403);
 
-  const vehicle = (config as Record<string, any>).vehicle ?? {};
-  const product = (config as Record<string, any>).product ?? {};
-  const delivery = (config as Record<string, any>).delivery ?? {};
-  const specPath = clean((config as Record<string, any>).specPath, 16);
+  const configRecord = config as Record<string, any>;
+  const vehicle = configRecord.vehicle ?? {};
+  const product = configRecord.product ?? {};
+  const delivery = configRecord.delivery ?? {};
+  const specPath = clean(configRecord.specPath, 16);
   if (!["oem", "upgrade", "custom"].includes(specPath)) return json({ ok: false, error: "invalid_specification_path" }, 422);
   const yearText = clean(vehicle.year, 4);
   const year = yearText ? Number(yearText) : null;
   if (year !== null && (!Number.isInteger(year) || year < 1886 || year > new Date().getUTCFullYear() + 2)) return json({ ok: false, error: "invalid_vehicle_year" }, 422);
   const status = specPath === "custom" ? "custom_review" : "submitted";
   try {
-    await env.DB!.batch([
-      env.DB!.prepare(`UPDATE anvera_configuration_orders SET status = ?, customer_name = ?, email = ?, phone = ?, country = ?,
+    await env.DB.batch([
+      env.DB.prepare(`UPDATE anvera_configuration_orders SET status = ?, customer_name = ?, email = ?, phone = ?, country = ?,
         vehicle_make = ?, vehicle_model = ?, vehicle_year = ?, selected_model = ?, specification_path = ?,
         delivery_term = ?, shipping_method = ?, configuration_json = ?, submitted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
         WHERE id = ? AND status = 'draft'`)
@@ -177,31 +178,13 @@ export async function handleConfigurationOrdersRequest(request: Request, env: En
           specPath, clean(delivery.term, 12) || null, clean(delivery.method, 12) || null,
           configJson, owned.id
         ),
-      env.DB!.prepare("INSERT INTO anvera_configuration_order_events (id, order_id, event_type, event_json) VALUES (?, ?, ?, ?)")
+      env.DB.prepare("INSERT INTO anvera_configuration_order_events (id, order_id, event_type, event_json) VALUES (?, ?, ?, ?)")
         .bind(crypto.randomUUID(), owned.id, specPath === "custom" ? "custom_review_requested" : "submitted", JSON.stringify({ customerName, email }))
     ]);
     return json({ ok: true, referenceCode: reference, status, responseSla: specPath === "custom" ? "1 business day" : null });
   } catch {
     return json({ ok: false, error: "submission_failed" }, 500);
   }
-};
-
-
-  DB?: D1Database;
-  ANVERA_CONFIGURATION_API_ENABLED?: string;
-  PUBLIC_INTAKE_LIMITER?: { limit(input: { key: string }): Promise<{ success: boolean }> }
-};
-
-function json(body: Record<string, unknown>, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer" }
-  });
-}
-
-async function sha256(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
-  return Array.from(new Uint8Array(digest), value => value.toString(16).padStart(2, "0")).join("");
 }
 
 export async function handleConfigurationOrderGetRequest(request: Request, env: ConfigurationOrderEnv, reference: string): Promise<Response> {
@@ -217,4 +200,4 @@ export async function handleConfigurationOrderGetRequest(request: Request, env: 
   const events = await env.DB.prepare("SELECT event_type, event_json, created_at FROM anvera_configuration_order_events WHERE order_id = (SELECT id FROM anvera_configuration_orders WHERE reference_code = ?) ORDER BY created_at ASC LIMIT 100")
     .bind(reference).all();
   return json({ ok: true, order: { referenceCode: order.reference_code, status: order.status, configuration, createdAt: order.created_at, updatedAt: order.updated_at, submittedAt: order.submitted_at, events: events.results } });
-};
+}
