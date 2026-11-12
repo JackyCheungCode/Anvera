@@ -644,3 +644,21 @@ img, video { display: block; max-width: 100%; }
   .wheel-filter { text-align:left; }
   .wheel-product-spec-list > div { grid-template-columns:1fr; gap:6px; }
 }
+
+
+/* Construction family product index */
+.family-products { background:#e8e8e8; }
+.family-products .section-title { margin:16px 0 38px; }
+.family-products-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1px; background:#c2c5c9; }
+.family-product-card { display:block; min-width:0; padding:14px 14px 24px; color:#171b20; background:#f2f2f2; }
+.family-product-card:nth-child(3n+2) { background:#e7e8e9; }
+.family-product-media { display:grid; place-items:center; aspect-ratio:4/3; overflow:hidden; background:radial-gradient(ellipse at center,#555e68,#20262d 58%,#0b0d10); }
+.family-product-media img { width:100%; height:100%; object-fit:cover; }
+.family-product-media .demo-wheel-art { min-height:0; }
+.family-product-card > span { display:block; margin-top:20px; color:var(--anvera-red); font-size:9px; font-weight:800; letter-spacing:.14em; }
+.family-product-card h3 { margin:9px 0; font-family:var(--font-display); font-size:28px; text-transform:uppercase; }
+.family-product-card p { min-height:42px; color:#555b62; font-size:12px; line-height:1.7; }
+.family-product-card b { display:inline-block; margin-top:8px; font-size:10px; letter-spacing:.1em; text-transform:uppercase; }
+.family-product-card small { display:block; margin-top:10px; color:#8a292d; font-size:9px; font-weight:800; letter-spacing:.12em; }
+@media(max-width:800px) { .family-products-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:560px) { .family-products-grid { grid-template-columns:1fr; } }
