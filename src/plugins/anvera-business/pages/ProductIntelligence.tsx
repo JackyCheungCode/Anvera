@@ -416,7 +416,7 @@ export function ProductIntelligence() {
               </div>
 
               {active.id === "products" ? <div className="api-product-switcher">
-                <div className="api-product-list">{(document.products ?? []).map((product, index) => <button key={index} type="button" className={productIndex === index ? "is-active" : ""} onClick={() => setProductIndex(index)}><span>{String(index + 1).padStart(2, "0")}</span>{product.productCode || product.productName || "Untitled product"}</button>)}</div>
+                <div className="api-product-list">{(document.products ?? []).map((product, index) => <button key={index} type="button" className={productIndex === index ? "is-active" : ""} onClick={() => setProductIndex(index)}><span>{String(index + 1).padStart(2, "0")}</span>{typeof product.productCode === "string" && product.productCode ? product.productCode : typeof product.productName === "string" && product.productName ? product.productName : "Untitled product"}</button>)}</div>
                 <button className="api-add-product" type="button" onClick={addProduct}>＋ Add product profile</button>
               </div> : null}
 
