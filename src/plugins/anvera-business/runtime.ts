@@ -1083,6 +1083,105 @@ async function reviewProductLibraryRecord(ctx: AdminContext) {
   return { reviewed: true, status: nextStatus, revision: nextRevision };
 }
 
+
+type ConfigurationOrderRow = {
+  id: string; reference_code: string; status: string; customer_name: string | null; email: string | null;
+  phone: string | null; country: string | null; vehicle_make: string | null; vehicle_model: string | null;
+  vehicle_year: number | null; selected_model: string | null; specification_path: string | null;
+  delivery_term: string | null; shipping_method: string | null; created_at: string; updated_at: string; submitted_at: string | null;
+};
+
+const CONFIGURATION_TRANSITIONS: Record<string, readonly string[]> = {
+  draft: [],
+  submitted: ["needs_information", "quoted", "confirmed", "cancelled"],
+  custom_review: ["needs_information", "submitted", "quoted", "confirmed", "cancelled"],
+  needs_information: ["submitted", "custom_review", "cancelled"],
+  quoted: ["needs_information", "confirmed", "cancelled"],
+  confirmed: ["in_production", "cancelled"],
+  in_production: ["quality_inspection", "cancelled"],
+  quality_inspection: ["in_production", "dispatched"],
+  dispatched: ["in_transit"],
+  in_transit: ["customs_clearance", "out_for_delivery"],
+  customs_clearance: ["out_for_delivery", "in_transit"],
+  out_for_delivery: ["completed"],
+  completed: [],
+  cancelled: []
+};
+
+async function getConfigurationAdminDatabase(ctx: AdminContext) {
+  if (ctx.user?.role !== 50) return { error: { available: false, reason: "forbidden" } as const };
+  const { env } = await import("cloudflare:workers");
+  if ((env as typeof env & { ANVERA_CONFIGURATION_API_ENABLED?: string }).ANVERA_CONFIGURATION_API_ENABLED !== "true") {
+    return { error: { available: false, reason: "migration_pending" } as const };
+  }
+  return { db: env.DB };
+}
+
+async function listConfigurationOrders(ctx: AdminContext) {
+  if (ctx.request.method !== "GET") return { available: false, reason: "method_not_allowed" };
+  const access = await getConfigurationAdminDatabase(ctx);
+  if ("error" in access) return access.error;
+  const url = new URL(ctx.request.url);
+  const { page, limit, offset } = pageParams(url);
+  const q = normalizedSearch(url);
+  const statuses = Object.keys(CONFIGURATION_TRANSITIONS);
+  const status = listFilter(url, statuses);
+  const clauses: string[] = [];
+  const values: string[] = [];
+  if (status) { clauses.push("status = ?"); values.push(status); }
+  if (q) {
+    clauses.push("(instr(lower(reference_code), lower(?)) > 0 OR instr(lower(customer_name), lower(?)) > 0 OR instr(lower(email), lower(?)) > 0 OR instr(lower(vehicle_make || ' ' || vehicle_model), lower(?)) > 0)");
+    values.push(q, q, q, q);
+  }
+  const where = clauses.length ? " WHERE " + clauses.join(" AND ") : "";
+  const [rows, count] = await Promise.all([
+    access.db.prepare(`SELECT id, reference_code, status, customer_name, email, phone, country, vehicle_make, vehicle_model, vehicle_year, selected_model, specification_path, delivery_term, shipping_method, created_at, updated_at, submitted_at FROM anvera_configuration_orders${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`)
+      .bind(...values, limit, offset).all<ConfigurationOrderRow>(),
+    access.db.prepare(`SELECT COUNT(*) AS total FROM anvera_configuration_orders${where}`).bind(...values).first<{ total: number }>()
+  ]);
+  return { available: true, items: rows.results, page, limit, total: count?.total ?? 0 };
+}
+
+async function configurationOrderDetail(ctx: AdminContext) {
+  if (ctx.request.method !== "GET") return { available: false, reason: "method_not_allowed" };
+  const access = await getConfigurationAdminDatabase(ctx);
+  if ("error" in access) return access.error;
+  const id = (new URL(ctx.request.url).searchParams.get("id") ?? "").trim().slice(0, 128);
+  if (!id) return { available: true, found: false, reason: "missing_id" };
+  const order = await access.db.prepare("SELECT * FROM anvera_configuration_orders WHERE id = ? LIMIT 1")
+    .bind(id).first<ConfigurationOrderRow & { configuration_json: string }>();
+  if (!order) return { available: true, found: false, reason: "not_found" };
+  let configuration: unknown = {};
+  try { configuration = JSON.parse(order.configuration_json); } catch {}
+  const events = await access.db.prepare("SELECT id, event_type, actor, event_json, created_at FROM anvera_configuration_order_events WHERE order_id = ? ORDER BY created_at ASC")
+    .bind(id).all();
+  return { available: true, found: true, order: { ...order, configuration_json: undefined, configuration }, events: events.results };
+}
+
+async function updateConfigurationOrder(ctx: AdminContext) {
+  if (ctx.request.method !== "POST") return { updated: false, reason: "method_not_allowed" };
+  const access = await getConfigurationAdminDatabase(ctx);
+  if ("error" in access) return { updated: false, reason: access.error.reason };
+  const input = inputRecord(ctx.input);
+  if (!input) return { updated: false, reason: "invalid_input" };
+  const id = inputString(input.id, 128);
+  const status = inputString(input.status, 32);
+  const note = inputString(input.note, 2000);
+  if (!id || !Object.hasOwn(CONFIGURATION_TRANSITIONS, status)) return { updated: false, reason: "invalid_input" };
+  const current = await access.db.prepare("SELECT status FROM anvera_configuration_orders WHERE id = ? LIMIT 1")
+    .bind(id).first<{ status: string }>();
+  if (!current) return { updated: false, reason: "not_found" };
+  if (!CONFIGURATION_TRANSITIONS[current.status]?.includes(status)) return { updated: false, reason: "invalid_transition", status: current.status };
+  const result = await access.db.batch([
+    access.db.prepare("UPDATE anvera_configuration_orders SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = ?")
+      .bind(status, id, current.status),
+    access.db.prepare("INSERT INTO anvera_configuration_order_events (id, order_id, event_type, actor, event_json) SELECT ?, ?, 'status_changed', ?, ? WHERE changes() > 0")
+      .bind(crypto.randomUUID(), id, ctx.user!.id, JSON.stringify({ from: current.status, to: status, note: note || null }))
+  ]);
+  if ((result[0]?.meta?.changes ?? 0) === 0) return { updated: false, reason: "revision_conflict" };
+  return { updated: true, status };
+}
+
 const jsonPost: { methods: ("GET" | "POST" | "HEAD" | "PUT" | "PATCH" | "DELETE")[]; request: { body: "json"; maxBytes: number } } = { methods: ["POST"], request: { body: "json", maxBytes: 16 * 1024 } };
 
 export function createPlugin() {
@@ -1169,6 +1268,21 @@ export function createPlugin() {
         permission: "plugins:manage",
         handler: addInquiryNote
       },
+      "configuration-orders/list": {
+        methods: ["GET"],
+        permission: "plugins:manage",
+        handler: listConfigurationOrders
+      },
+      "configuration-orders/detail": {
+        methods: ["GET"],
+        permission: "plugins:manage",
+        handler: configurationOrderDetail
+      },
+      "configuration-orders/update": {
+        ...jsonPost,
+        permission: "plugins:manage",
+        handler: updateConfigurationOrder
+      },
       "dealer-applications/list": {
         methods: ["GET"],
         permission: "plugins:manage",
@@ -1199,6 +1313,7 @@ export function createPlugin() {
       entry: "./src/plugins/anvera-business/admin.tsx",
       pages: [
         { path: "/inquiries", label: "Inquiry Inbox", icon: "inbox", group: "ANVERA Business" },
+        { path: "/configuration-orders", label: "Configuration Orders", icon: "clipboard-list", group: "ANVERA Business" },
         { path: "/dealer-applications", label: "Dealer Applications", icon: "building-2", group: "ANVERA Business" },
         { path: "/dealers", label: "Dealer Accounts", icon: "users", group: "ANVERA Business" },
         { path: "/product-intelligence", label: "Product Intelligence", icon: "database", group: "ANVERA Business" }
