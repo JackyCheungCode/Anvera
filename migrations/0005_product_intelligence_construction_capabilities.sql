@@ -24,3 +24,16 @@ CREATE TABLE IF NOT EXISTS anvera_pi_construction_capabilities (
 
 CREATE INDEX IF NOT EXISTS anvera_pi_construction_capabilities_status
   ON anvera_pi_construction_capabilities(status, construction_type);
+
+CREATE TABLE IF NOT EXISTS anvera_pi_construction_events (
+  id TEXT PRIMARY KEY NOT NULL,
+  construction_capability_id TEXT NOT NULL,
+  event_type TEXT NOT NULL CHECK (event_type IN ('created', 'updated', 'submitted_for_review')),
+  actor_user_id TEXT NOT NULL,
+  revision INTEGER NOT NULL,
+  summary TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS anvera_pi_construction_events_timeline
+  ON anvera_pi_construction_events(construction_capability_id, created_at DESC);
