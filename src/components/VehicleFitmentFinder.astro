@@ -201,25 +201,22 @@ const safeProducts = products.map((product) => ({
     }));
   };
   const renderSpecCell = (label, value) => { const cell = document.createElement("div"); cell.className = "vf-spec-cell"; const small = document.createElement("span"); small.textContent = label; const strong = document.createElement("strong"); strong.textContent = display(value); cell.append(small,strong); return cell; };
-  const makeFitmentCard = (record, item, id, selectedId) => {
-    const card = document.createElement("button"); card.type = "button"; card.className = "vf-fitment-card"; card.setAttribute("aria-pressed", String(id === selectedId));
-    const top = document.createElement("div"); top.className = "vf-fitment-card-top";
-    const title = document.createElement("strong"); title.textContent = "Configuration " + (item.index + 1);
-    const badge = document.createElement("span"); badge.className = "vf-fitment-badge vf-fitment-badge--" + item.classification; badge.textContent = item.classification === "oem" ? "OEM / ORIGINAL" : item.classification === "aftermarket" ? "AFTERMARKET" : "UNCLASSIFIED SOURCE";
-    top.append(title,badge); card.append(top);
-    const grid = document.createElement("div"); grid.className = "vf-fitment-spec-grid";
-    const technical = record?.technical ?? {};
-    grid.append(renderSpecCell("Front wheel", item.front.rim ?? [item.front.width,item.front.diameter ? "R"+item.front.diameter : null,item.front.offset ? "ET"+item.front.offset : null].filter(Boolean).join(" × ")));
-    grid.append(renderSpecCell("Rear wheel", item.rear.rim ?? [item.rear.width,item.rear.diameter ? "R"+item.rear.diameter : null,item.rear.offset ? "ET"+item.rear.offset : null].filter(Boolean).join(" × ")));
-    grid.append(renderSpecCell("Front tyre", item.front.tire)); grid.append(renderSpecCell("Rear tyre", item.rear.tire));
-    grid.append(renderSpecCell("PCD / Bolt pattern", valueAt(technical,["bolt_pattern","pcd"]) ?? item.front.pcd ?? item.rear.pcd));
-    grid.append(renderSpecCell("Centre bore", valueAt(technical,["centre_bore","center_bore","centre_bore_diameter"]) ?? item.front.centreBore ?? item.rear.centreBore));
-    grid.append(renderSpecCell("Thread / fastener", valueAt(technical,["thread_size","fastener_type","wheel_fasteners"])));
-    grid.append(renderSpecCell("Wheel torque", valueAt(technical,["wheel_torque","torque"])));
-    card.append(grid);
-    const details = document.createElement("p"); details.className = "vf-fitment-card-note"; details.textContent = "Select this configuration to see matching ANVERA wheel designs."; card.append(details);
-    card.addEventListener("click", () => { document.querySelectorAll(".vf-fitment-card").forEach((node) => { node.setAttribute("aria-pressed","false"); }); card.setAttribute("aria-pressed","true"); renderProducts(item, record); });
-    return card;
+  const makeFitmentRow = (record, item, id, selectedId) => {
+    const row = document.createElement("tr"); row.className = "vf-fitment-row"; row.dataset.fitmentId = id; row.setAttribute("aria-selected",String(id === selectedId));
+    const cells = [
+      ["Configuration", "Configuration " + (item.index + 1)],
+      ["Front wheel", item.front.rim ?? [item.front.width,item.front.diameter ? "R"+item.front.diameter : null,item.front.offset ? "ET"+item.front.offset : null].filter(Boolean).join(" × ")],
+      ["Rear wheel", item.rear.rim ?? [item.rear.width,item.rear.diameter ? "R"+item.rear.diameter : null,item.rear.offset ? "ET"+item.rear.offset : null].filter(Boolean).join(" × ")],
+      ["Front tyre", item.front.tire], ["Rear tyre", item.rear.tire],
+      ["PCD", valueAt(record?.technical ?? {},["bolt_pattern","pcd"]) ?? item.front.pcd ?? item.rear.pcd],
+      ["Centre bore", valueAt(record?.technical ?? {},["centre_bore","center_bore","centre_bore_diameter"]) ?? item.front.centreBore ?? item.rear.centreBore],
+      ["Fastener", valueAt(record?.technical ?? {},["thread_size","fastener_type","wheel_fasteners"])],
+      ["Torque", valueAt(record?.technical ?? {},["wheel_torque","torque"])]
+    ];
+    cells.forEach(([label,value],index) => { const cell=document.createElement("td"); if(index===0){const title=document.createElement("strong");title.textContent=value;const badge=document.createElement("span");badge.className="vf-fitment-badge vf-fitment-badge--"+item.classification;badge.textContent=item.classification==="oem"?"OEM":item.classification==="aftermarket"?"AFTERMARKET":"UNCLASSIFIED";cell.append(title,badge);}else{const span=document.createElement("span");span.className="vf-table-cell-label";span.textContent=label;const text=document.createElement("strong");text.textContent=display(value);cell.append(span,text);} row.append(cell);});
+    const actionCell=document.createElement("td");actionCell.className="vf-fitment-action-cell";const choose=document.createElement("button");choose.type="button";choose.className="cds-btn cds-btn--secondary vf-choose-fitment";choose.textContent=id===selectedId?"Selected":"Select";choose.setAttribute("aria-label","Select "+cells[0][1]);actionCell.append(choose);row.append(actionCell);
+    const select=()=>{document.querySelectorAll(".vf-fitment-row").forEach((node)=>{node.setAttribute("aria-selected","false");const button=node.querySelector(".vf-choose-fitment");if(button)button.textContent="Select";});row.setAttribute("aria-selected","true");choose.textContent="Selected";renderProducts(item,record);};
+    row.addEventListener("click",select);choose.addEventListener("click",(event)=>{event.stopPropagation();select();});return row;
   };
   const productValues = (product, keys) => {
     const found = [];
@@ -288,8 +285,8 @@ const safeProducts = products.map((product) => ({
       const button = document.createElement("button"); button.type = "button"; button.className = "vf-mini-trigger"; button.textContent = "All " + label.toLowerCase() + "s  ⌄";
       const menu = document.createElement("div"); menu.className = "vf-mini-menu"; menu.hidden = true;
       const choices = ["All",...options.filter(Boolean)];
-      choices.forEach((choice) => { const option = document.createElement("button"); option.type = "button"; option.textContent = choice; option.addEventListener("click", () => { filtered[key] = choice === "All" ? "" : choice; button.textContent = (choice === "All" ? "All " + label.toLowerCase() + "s" : choice) + "  ⌄"; menu.hidden = true; paint(); }); menu.append(option); });
-      button.addEventListener("click", () => { menu.hidden = !menu.hidden; }); host.append(button,menu); wrap.append(caption,host); controls.append(wrap);
+      choices.forEach((choice) => { const option = document.createElement("button"); option.type = "button"; option.textContent = choice; option.addEventListener("click", () => { filtered[key] = choice === "All" ? "" : choice; button.textContent = (choice === "All" ? "All " + label.toLowerCase() + "s" : choice) + "  ⌄"; menu.hidden = true; button.setAttribute("aria-expanded","false"); paint(); }); menu.append(option); });
+      button.setAttribute("aria-haspopup","listbox"); button.setAttribute("aria-expanded","false"); menu.setAttribute("role","listbox"); button.addEventListener("click", () => { menu.hidden = !menu.hidden; button.setAttribute("aria-expanded",String(!menu.hidden)); }); host.append(button,menu); wrap.append(caption,host); controls.append(wrap);
     };
     const unique = (key) => [...new Set(productRows.flatMap((product) => productValues(product,key)))].sort();
     createFilter("construction","Construction",unique(["construction","construction_type"]));
@@ -353,9 +350,11 @@ const safeProducts = products.map((product) => ({
         const entries = groups[key]; if (!entries.length) return;
         const group = document.createElement("section"); group.className = "vf-fitment-group";
         const head = document.createElement("div"); head.className = "vf-fitment-group-heading";
-        const h = document.createElement("h4"); h.textContent = label; const p = document.createElement("p"); p.textContent = description; head.append(h,p); group.append(head);
-        entries.forEach(({record,fitment}) => { const card = makeFitmentCard(record,fitment, key+":"+fitment.index, selected); group.append(card); });
-        results.append(group);
+        const h = document.createElement("h4"); h.textContent = label; const count=document.createElement("span");count.className="vf-result-count";count.textContent=String(entries.length);const p = document.createElement("p"); p.textContent = description; head.append(h,count,p); group.append(head);
+        const scroll=document.createElement("div");scroll.className="vf-table-scroll";const table=document.createElement("table");table.className="vf-fitment-table";
+        const thead=document.createElement("thead"),header=document.createElement("tr");
+        ["Configuration","Front wheel","Rear wheel","Front tyre","Rear tyre","PCD","Centre bore","Fastener","Torque",""].forEach((label)=>{const th=document.createElement("th");th.scope="col";th.textContent=label;header.append(th);});thead.append(header);table.append(thead);
+        const tbody=document.createElement("tbody");entries.forEach(({record,fitment})=>tbody.append(makeFitmentRow(record,fitment,key+":"+fitment.index,selected)));table.append(tbody);scroll.append(table);group.append(scroll);results.append(group);
       };
       renderGroup("oem","Original equipment (OEM)","Factory-fitted wheel and tyre configurations supplied for this vehicle.");
       renderGroup("aftermarket","Aftermarket & optional fitments","Alternative or manufacturer-optional configurations returned by the fitment source.");
@@ -366,7 +365,7 @@ const safeProducts = products.map((product) => ({
     finally { submit.disabled = false; }
   });
 </script>
-<style>
+<style is:global>
 .vehicle-finder-section{padding:clamp(64px,8vw,112px) var(--page-gutter);background:#f1f2f3}
 .vehicle-finder-inner{width:min(100%,var(--content-max));margin:auto}
 .vehicle-finder-heading{display:flex;justify-content:space-between;align-items:end;gap:48px;margin-bottom:44px}
@@ -431,4 +430,38 @@ const safeProducts = products.map((product) => ({
 .vf-product-empty{padding:20px;background:#f4f4f4;color:#6f6f6f;font-size:13px}
 @media(max-width:760px){.vehicle-finder-heading,.vf-results-heading,.vf-products-heading{display:block}.vehicle-finder-heading>p,.vf-results-heading p,.vf-products-heading p{margin-top:16px}.vehicle-finder-grid{grid-template-columns:1fr 1fr}.vf-spec-grid,.vf-fitment-spec-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.vf-product-grid{grid-template-columns:1fr 1fr}.vf-product-filters{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.vehicle-finder-form,.vf-products{padding:18px}.vehicle-finder-grid,.vf-product-grid,.vf-product-filters{grid-template-columns:1fr}.vehicle-finder-actions{align-items:flex-start;flex-direction:column}.vehicle-finder-actions .cds-btn{width:100%}.vf-fitment-group-heading{display:block}.vf-fitment-group-heading p{margin-top:6px}.vf-fitment-card{padding:14px}.vf-fitment-card-top{align-items:flex-start;flex-direction:column}.vf-fitment-spec-grid{grid-template-columns:1fr 1fr}}
+/* Carbon Design System v11 interaction and data table treatment */
+.vf-select-trigger,.vf-mini-trigger{min-height:48px;padding:0 16px;border:0;border-bottom:1px solid #8d8d8d;background:#f4f4f4;color:#161616;font-family:inherit;font-size:14px;font-weight:400;letter-spacing:0;text-transform:none;transition:background 120ms,border-color 120ms}
+.vf-select-trigger:hover,.vf-mini-trigger:hover{background:#e8e8e8}
+.vf-select-trigger:focus-visible,.vf-mini-trigger:focus-visible,.vf-select-option:focus-visible,.vf-mini-menu button:focus-visible,.vf-choose-fitment:focus-visible{outline:2px solid #0f62fe;outline-offset:-2px}
+.vf-select-trigger[aria-expanded=true],.vf-mini-trigger[aria-expanded=true]{border-bottom:2px solid #0f62fe;background:#e8e8e8}
+.vf-select-menu,.vf-mini-menu{z-index:1000;max-height:288px;padding:4px 0;border:0;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.vf-select-option,.vf-mini-menu button{min-height:40px;padding:8px 16px;background:#fff;color:#161616;font-size:14px;font-weight:400}
+.vf-select-option:hover,.vf-select-option[aria-selected=true],.vf-mini-menu button:hover{background:#e8e8e8}
+.vf-fitment-group-heading{align-items:center}
+.vf-result-count{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 7px;background:#e0e0e0;color:#393939;font-size:12px;font-weight:600}
+.vf-table-scroll{width:100%;overflow-x:auto;background:#fff}
+.vf-fitment-table{width:100%;min-width:1180px;border-collapse:collapse;border-spacing:0;background:#fff;text-align:left}
+.vf-fitment-table thead{background:#e0e0e0}
+.vf-fitment-table th{height:40px;padding:0 16px;color:#393939;font-size:12px;font-weight:600;white-space:nowrap}
+.vf-fitment-table td{height:64px;padding:10px 16px;border-bottom:1px solid #e0e0e0;color:#161616;font-size:13px;white-space:nowrap}
+.vf-fitment-table tbody tr{background:#fff;cursor:pointer;transition:background 120ms}
+.vf-fitment-table tbody tr:hover{background:#f4f4f4}
+.vf-fitment-table tbody tr[aria-selected=true]{background:#edf5ff;box-shadow:inset 3px 0 #0f62fe}
+.vf-fitment-table td:first-child{display:table-cell;min-width:160px}
+.vf-fitment-table td:first-child>strong{display:block;margin-bottom:7px}
+.vf-table-cell-label{display:none}
+.vf-fitment-badge{display:inline-flex;align-items:center;min-height:20px;padding:2px 6px;font-size:10px;font-weight:600;letter-spacing:.02em;text-transform:uppercase}
+.vf-fitment-badge--oem{background:#defbe6;color:#044317}
+.vf-fitment-badge--aftermarket{background:#e8daff;color:#491d8b}
+.vf-fitment-badge--other{background:#e0e0e0;color:#393939}
+.vf-choose-fitment{min-height:32px;padding:0 12px;font-size:12px}
+.vf-select-option .vf-make-logo{width:32px;height:24px;object-fit:contain}
+.vf-product-filter{gap:8px;color:#525252;font-size:12px;font-weight:400;letter-spacing:0;text-transform:none}
+.vf-product-filter>span{font-weight:600}
+.vf-product-grid{gap:1px;background:#e0e0e0}
+.vf-product-card{background:#f4f4f4}
+.vf-product-card a{color:#0f62fe;border-color:#0f62fe}
+@media(max-width:760px){.vf-fitment-table{min-width:1100px}.vf-product-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.vf-product-filters{grid-template-columns:1fr}}
 </style>
