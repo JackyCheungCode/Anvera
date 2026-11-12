@@ -1,20 +1,22 @@
 ---
 import Base from "../../layouts/Base.astro";
 import { getEmDashCollection } from "emdash";
+import { Image } from "emdash/ui";
 const families = [
   { slug: "monoblock", number: "01", name: "Monoblock", descriptor: "A singular form. A unified expression.", copy: "A one-piece forged construction for a clean, purposeful design language.", tag: "ONE-PIECE CONSTRUCTION", visual: "mono" },
   { slug: "two-piece", number: "02", name: "Two-piece", descriptor: "Precision, with room for expression.", copy: "A multi-component approach that opens up more possibilities for proportion, finish and detail.", tag: "MODULAR CONSTRUCTION", visual: "two" },
   { slug: "three-piece", number: "03", name: "Three-piece", descriptor: "A composition built around your vision.", copy: "A configurable multi-piece architecture for highly individual wheel projects.", tag: "MULTI-PIECE CONSTRUCTION", visual: "three" }
 ];
-const productResult = await getEmDashCollection("wheel_products", { status: "published" }).catch(() => ({ entries: [] }));
-const productCards = productResult.entries.map((entry: any) => ({
-  slug: entry.slug,
+const { entries: wheelEntries, error: wheelError, cacheHint } = await getEmDashCollection("wheel_products", { status: "published", limit: 24, orderBy: { display_order: "asc" } });
+if (wheelError) throw wheelError;
+if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+const productCards = wheelEntries.map((entry: any) => ({
+  slug: entry.id,
   title: String(entry.data?.title ?? "Untitled wheel"),
   modelCode: String(entry.data?.model_code ?? ""),
   construction: String(entry.data?.construction_type ?? "").replaceAll("_", "-"),
   description: String(entry.data?.short_description ?? ""),
-  image: typeof entry.data?.hero_image?.src === "string" ? entry.data.hero_image.src : null,
-  imageAlt: String(entry.data?.hero_image?.alt ?? entry.data?.title ?? "ANVERA forged wheel")
+  image: entry.data?.hero_image ?? null
 }));
 ---
 <Base title="Forged Wheel Collection" description="Explore ANVERA forged wheel construction families and begin a wheel project tailored to your vehicle.">
@@ -57,7 +59,7 @@ const productCards = productResult.entries.map((entry: any) => ({
       <h2 class="section-title" id="cms-products-title">Explore individual<br />wheel designs.</h2>
       <div class="cms-product-grid">
         {productCards.map((product: any) => <a class="cms-product-card" href={`/wheels/models/${product.slug}`}>
-          <div class="cms-product-media">{product.image ? <img src={product.image} alt={product.imageAlt} loading="lazy" /> : <div class="cms-product-placeholder" aria-hidden="true"><span>ANVERA / FORGED</span></div>}</div>
+          <div class="cms-product-media">{product.image ? <Image image={product.image} width={900} height={675} /> : <div class="cms-product-placeholder" aria-hidden="true"><span>ANVERA / FORGED</span></div>}</div>
           <div class="cms-product-meta"><span>{product.modelCode || "ANVERA DESIGN"}</span><span>{product.construction.replaceAll("-", " ").toUpperCase()}</span></div>
           <h3>{product.title}</h3><p>{product.description}</p><span class="cms-product-link">Explore design ↗</span>
         </a>)}
