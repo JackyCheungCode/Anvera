@@ -44,13 +44,13 @@ const selected = options.find((option) => option.value === value);
   <span class="cds-helper cds-dropdown-error" data-dropdown-error hidden>Please select an option.</span>
 </div>
 <script>
-  document.querySelectorAll("[data-cds-dropdown]").forEach((root) => {
-    const trigger = root.querySelector("[data-dropdown-trigger]");
-    const listbox = root.querySelector("[role=listbox]");
-    const hiddenInput = root.querySelector("[data-dropdown-value]");
-    const label = root.querySelector("[data-dropdown-label]");
-    const error = root.querySelector("[data-dropdown-error]");
-    const options = Array.from(root.querySelectorAll("[role=option]"));
+  document.querySelectorAll<HTMLElement>("[data-cds-dropdown]").forEach((root) => {
+    const trigger = root.querySelector<HTMLButtonElement>("[data-dropdown-trigger]");
+    const listbox = root.querySelector<HTMLDivElement>("[role=listbox]");
+    const hiddenInput = root.querySelector<HTMLInputElement>("[data-dropdown-value]");
+    const label = root.querySelector<HTMLSpanElement>("[data-dropdown-label]");
+    const error = root.querySelector<HTMLElement>("[data-dropdown-error]");
+    const options = Array.from(root.querySelectorAll<HTMLButtonElement>("[role=option]"));
     if (!trigger || !listbox || !hiddenInput || !label) return;
 
     const close = () => {
@@ -79,15 +79,15 @@ const selected = options.find((option) => option.value === value);
       if (trigger.getAttribute("aria-expanded") === "true") close();
       else open();
     });
-    trigger.addEventListener("keydown", (event) => {
+    trigger.addEventListener("keydown", (event: KeyboardEvent) => {
       if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         open(true);
       }
     });
-    options.forEach((option, index) => {
+    options.forEach((option: HTMLButtonElement, index: number) => {
       option.addEventListener("click", () => choose(option));
-      option.addEventListener("keydown", (event) => {
+      option.addEventListener("keydown", (event: KeyboardEvent) => {
         if (event.key === "ArrowDown") {
           event.preventDefault();
           options[(index + 1) % options.length]?.focus();
@@ -107,11 +107,11 @@ const selected = options.find((option) => option.value === value);
         }
       });
     });
-    document.addEventListener("click", (event) => {
-      if (!root.contains(event.target)) close();
+    document.addEventListener("click", (event: MouseEvent) => {
+      if (event.target instanceof Node && !root.contains(event.target)) close();
     });
-    const form = root.closest("form");
-    form?.addEventListener("submit", (event) => {
+    const form = root.closest<HTMLFormElement>("form");
+    form?.addEventListener("submit", (event: SubmitEvent) => {
       if (root.dataset.required === "true" && !hiddenInput.value) {
         event.preventDefault();
         root.classList.add("is-invalid");
