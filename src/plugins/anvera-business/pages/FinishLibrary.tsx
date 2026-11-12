@@ -38,7 +38,6 @@ export function FinishLibrary({ onCatalogChange }: {
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [available, setAvailable] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
@@ -47,7 +46,6 @@ export function FinishLibrary({ onCatalogChange }: {
     try {
       const response = await apiFetch("/_emdash/api/plugins/anvera-business/product-library/list");
       const result = await parseApiResponse<FinishCatalog>(response, "Unable to load finish profiles.");
-      setAvailable(result.available);
       if (!result.available) {
         setItems([]);
         onCatalogChange?.(null);
