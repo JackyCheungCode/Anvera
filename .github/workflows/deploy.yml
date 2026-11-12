@@ -35,22 +35,17 @@ jobs:
       - name: Build Anvera
         run: pnpm build
 
-      - name: Apply approved EmDash migrations and take over stale lock
+      - name: Verify EmDash migrations are complete (read-only)
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: >-
-          pnpm exec emdash migrate
-          --take-over-lock=1794444823197
-          --expected-target-fingerprint=dd5149caa29eb4ee22c463b7e94edfc8273097727caa13702b51a628c9a82c40
-          --json
-          --wrangler-config wrangler.jsonc
+        run: pnpm exec emdash migrate --check --json --wrangler-config wrangler.jsonc
 
-      - name: Deploy Worker
+      - name: Deploy Worker using the Astro-generated Wrangler configuration
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: pnpm exec wrangler deploy --config wrangler.jsonc
+        run: pnpm exec wrangler deploy
 
       - name: Verify production endpoint
         run: |
