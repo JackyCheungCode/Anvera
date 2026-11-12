@@ -913,11 +913,12 @@ async function listProductLibraryReviewQueue(ctx: AdminContext) {
   const access = await getProductLibraryDatabase(ctx);
   if ("error" in access) return access.error;
   try {
-    const [materials, forgingProcesses, finishes, finishMappings] = await Promise.all([
+    const [materials, forgingProcesses, finishes, finishMappings, constructions] = await Promise.all([
       access.db.prepare("SELECT id, code, name, grade AS detail, status, revision, updated_at FROM anvera_pi_material_profiles WHERE status = 'pending_review' ORDER BY updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>(),
       access.db.prepare("SELECT id, code, name, process_type AS detail, status, revision, updated_at FROM anvera_pi_forging_processes WHERE status = 'pending_review' ORDER BY updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>(),
       access.db.prepare("SELECT id, code, name, finish_type AS detail, status, revision, updated_at FROM anvera_pi_finish_profiles WHERE status = 'pending_review' ORDER BY updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>(),
-      access.db.prepare("SELECT m.id, m.product_code AS code, f.name, f.finish_type AS detail, m.mapping_status AS status, m.revision, m.updated_at FROM anvera_pi_product_finish_mappings m JOIN anvera_pi_finish_profiles f ON f.id = m.finish_profile_id WHERE m.mapping_status = 'pending_review' ORDER BY m.updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>()
+      access.db.prepare("SELECT m.id, m.product_code AS code, f.name, f.finish_type AS detail, m.mapping_status AS status, m.revision, m.updated_at FROM anvera_pi_product_finish_mappings m JOIN anvera_pi_finish_profiles f ON f.id = m.finish_profile_id WHERE m.mapping_status = 'pending_review' ORDER BY m.updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>(),
+      access.db.prepare("SELECT id, construction_type AS code, construction_type AS name, capability_scope AS detail, status, revision, updated_at FROM anvera_pi_construction_capabilities WHERE status = 'pending_review' ORDER BY updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>()
     ]);
     return {
       available: true,
@@ -925,7 +926,8 @@ async function listProductLibraryReviewQueue(ctx: AdminContext) {
         ...materials.results.map((item) => ({ ...item, entity_type: "material" })),
         ...forgingProcesses.results.map((item) => ({ ...item, entity_type: "forging_process" })),
         ...finishes.results.map((item) => ({ ...item, entity_type: "finish_profile" })),
-        ...finishMappings.results.map((item) => ({ ...item, entity_type: "product_finish_mapping" }))
+        ...finishMappings.results.map((item) => ({ ...item, entity_type: "product_finish_mapping" })),
+        ...constructions.results.map((item) => ({ ...item, entity_type: "construction_capability" }))
       ].sort((a, b) => String(a.updated_at).localeCompare(String(b.updated_at)))
     };
   } catch (cause) {
@@ -944,13 +946,13 @@ async function reviewProductLibraryRecord(ctx: AdminContext) {
   const revision = Math.max(0, Math.floor(Number(body?.revision) || 0));
   const decision = inputString(body?.decision, 32);
   const note = inputString(body?.note, 2000);
-  if (!id || revision < 1 || !["material", "forging_process", "finish_profile", "product_finish_mapping"].includes(entityType) || !["approved", "needs_revision", "restricted"].includes(decision)) {
+  if (!id || revision < 1 || !["material", "forging_process", "finish_profile", "product_finish_mapping", "construction_capability"].includes(entityType) || !["approved", "needs_revision", "restricted"].includes(decision)) {
     return { reviewed: false, reason: "invalid_input" };
   }
   const isMapping = entityType === "product_finish_mapping";
   const table = entityType === "material" ? "anvera_pi_material_profiles" :
     entityType === "forging_process" ? "anvera_pi_forging_processes" :
-    entityType === "finish_profile" ? "anvera_pi_finish_profiles" : "anvera_pi_product_finish_mappings";
+    entityType === "finish_profile" ? "anvera_pi_finish_profiles" : entityType === "product_finish_mapping" ? "anvera_pi_product_finish_mappings" : "anvera_pi_construction_capabilities";
   const statusColumn = isMapping ? "mapping_status" : "status";
   const current = await access.db.prepare(`SELECT ${isMapping ? "product_code" : "code"} AS code, ${statusColumn} AS status, revision FROM ${table} WHERE id = ? LIMIT 1`)
     .bind(id).first<{ code: string; status: string; revision: number }>();
@@ -1018,6 +1020,12 @@ export function createPlugin() {
         request: { body: "json", maxBytes: 12 * 1024 },
         permission: "plugins:manage",
         handler: saveFinishProfile
+      },
+      "product-library/construction/save": {
+        methods: ["POST"],
+        request: { body: "json", maxBytes: 12 * 1024 },
+        permission: "plugins:manage",
+        handler: saveConstructionCapability
       },
       "product-setup/load": {
         methods: ["GET"],
