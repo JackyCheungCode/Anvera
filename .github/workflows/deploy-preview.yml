@@ -107,7 +107,7 @@ jobs:
           };
           const check = () => {
             const result = run(["--check", "--json", "--wrangler-config", config], true);
-            const jsonLine = result.stdout.split(/\\r?\\n/).filter(line => line.trim().startsWith("{")).at(-1);
+            const jsonLine = result.stdout.split(/\r?\n/).filter(line => line.trim().startsWith("{")).at(-1);
             if (!jsonLine) throw new Error("EmDash migration check did not return a JSON report.");
             const report = JSON.parse(jsonLine);
             if (report.target?.kind !== "d1" || report.target?.resourceId !== expectedDatabaseId) {
