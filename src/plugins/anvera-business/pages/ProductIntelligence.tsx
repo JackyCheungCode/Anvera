@@ -330,7 +330,7 @@ export function ProductIntelligence() {
 
   const active = steps[activeStep];
   const missing = useMemo(() => validateStep(active, document, productIndex), [active, document, productIndex]);
-  const completeCount = steps.filter((step) => step.id !== "review" && (step.optional ? stepHasAnyValue(step, document, productIndex) && isStepComplete(step, document, productIndex) : isStepComplete(step, document, productIndex))).length;
+  const completeCount = steps.filter((step) => step.id !== "review" && (step.optional ? stepHasAnyValue(step, document, productIndex) && isStepComplete(step, document, productIndex) : isStepComplete(step, document, productIndex)) && (step.id !== "construction" || approvedConstructions == null || approvedConstructions.length > 0)).length;
 
   const syncLibraryCatalog = useCallback((
     materials: Array<{ id: string; code: string; name: string; grade: string; family: string }> | null,
@@ -409,6 +409,14 @@ export function ProductIntelligence() {
   };
 
   const goNext = () => {
+    if (active.id === "construction" && approvedConstructions === undefined) {
+      setError("Wait for the Construction Capability Matrix to finish loading before continuing.");
+      return;
+    }
+    if (active.id === "construction" && approvedConstructions !== null && !approvedConstructions.length) {
+      setError("At least one construction capability must be approved before products can use it.");
+      return;
+    }
     if (missing.length && !active.optional) {
       setError(`Complete the required fields: ${missing.map((field) => field.label).join(", ")}.`);
       return;
@@ -423,7 +431,7 @@ export function ProductIntelligence() {
     setProductIndex(document.products?.length ?? 0);
   };
 
-  const finalReady = steps.filter((step) => !step.optional && step.id !== "review" && step.id !== "products").every((step) => isStepComplete(step, document, productIndex)) && (document.products ?? []).length > 0 && (document.products ?? []).every((product) => Boolean(typeof product.productCode === "string" && product.productCode.trim() && typeof product.productName === "string" && product.productName.trim() && typeof product.construction === "string" && product.construction.trim() && product.specifications?.length && product.specifications.every(specificationIsComplete)));
+  const finalReady = steps.filter((step) => !step.optional && step.id !== "review" && step.id !== "products").every((step) => isStepComplete(step, document, productIndex)) && (approvedConstructions == null || approvedConstructions.length > 0) && (document.products ?? []).length > 0 && (document.products ?? []).every((product) => Boolean(typeof product.productCode === "string" && product.productCode.trim() && typeof product.productName === "string" && product.productName.trim() && typeof product.construction === "string" && product.construction.trim() && product.specifications?.length && product.specifications.every(specificationIsComplete)));
 
   return (
     <main className="anvera-workspace api-workspace">
