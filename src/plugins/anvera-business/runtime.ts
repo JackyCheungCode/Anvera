@@ -394,7 +394,6 @@ function setupDocumentIsSubmittable(document: Record<string, unknown>) {
   const required = [
     factory.factoryName, factory.factoryCode, factory.country,
     material.materialGrade, material.forgingMethod,
-    construction.constructionTypes,
     specification.diameterRange, specification.widthRange, specification.boltPatterns
   ];
   const materialGrades = inputString(material.materialGrade, 2000).split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean);
