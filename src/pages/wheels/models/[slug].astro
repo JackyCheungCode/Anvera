@@ -1,6 +1,6 @@
 ---
 import Base from "../../../layouts/Base.astro";
-import { getEmDashEntry } from "emdash";
+import { getEmDashCollection, getEmDashEntry } from "emdash";
 import { Image, PortableText } from "emdash/ui";
 
 const { entry: product, error, cacheHint } = await getEmDashEntry("wheel_products", Astro.params.slug ?? "", { references: { available_finishes: true } });
@@ -8,6 +8,16 @@ if (error) throw error;
 if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
 const galleryImages = Array.isArray(product?.data?.gallery_images) ? product.data.gallery_images : [];
 const finishes = product?.references?.available_finishes?.entries ?? [];
+const { entries: fitmentEntries = [] } = await getEmDashCollection("wheel_fitments", { status: "published", limit: 100, references: { products: true } }).catch(() => ({ entries: [] }));
+const verifiedFitments = fitmentEntries.filter((fitment: any) => {
+  if (fitment.data?.verification_status !== "verified") return false;
+  const linked = fitment.references?.products?.entries ?? [];
+  return linked.some((linkedProduct: any) => linkedProduct.id === product?.id || linkedProduct.slug === product?.slug);
+});
+const formatSpec = (spec: any) => {
+  if (!spec || typeof spec !== "object" || Array.isArray(spec)) return "";
+  return [spec.diameter, spec.width, spec.offset, spec.pcd, spec.centre_bore].filter(Boolean).join(" · ");
+};
 const data = product?.data ?? {};
 const title = String(data.title ?? "Wheel design");
 const heroImage = data.hero_image ?? null;
@@ -29,6 +39,7 @@ const modelCode = String(data.model_code ?? "");
     </section>
     {galleryImages.length > 0 && <section class="wheel-product-gallery"><div class="wheel-product-gallery-heading"><p class="section-kicker">Details / 01</p><h2>Considered<br />from every angle.</h2></div><div class="wheel-product-gallery-grid">{galleryImages.map((item: any) => item.image && <figure><Image image={item.image} alt={String(item.alt_text ?? item.image.alt ?? title)} width={1000} height={750} /><figcaption>{String(item.caption ?? item.alt_text ?? "")}</figcaption></figure>)}</div></section>}
     {finishes.length > 0 && <section class="wheel-product-finishes"><p class="section-kicker">Finish library</p><h2>Make it<br />your own.</h2><div class="wheel-finish-grid">{finishes.map((finish: any) => <article>{finish.data?.sample_image && <div class="wheel-finish-image"><Image image={finish.data.sample_image as any} width={720} height={480} /></div>}{typeof finish.data?.swatch_hex === "string" && /^#[0-9a-fA-F]{6}$/.test(finish.data.swatch_hex) && <span class="wheel-finish-swatch" style={`--finish-swatch:${finish.data.swatch_hex}`} aria-label={`${String(finish.data?.title ?? "Finish")} colour sample`}></span>}<h3>{String(finish.data?.title ?? "Finish")}</h3><p>{String(finish.data?.finish_description ?? "")}</p>{finish.data?.finish_code && <span class="wheel-finish-code">{String(finish.data.finish_code)}</span>}</article>)}</div></section>}
+    {verifiedFitments.length > 0 && <section class="wheel-fitments"><div class="wheel-fitments-heading"><div><p class="section-kicker">Engineering / Verified fitment</p><h2>Specified for<br />your vehicle.</h2></div><p>Only fitments reviewed and marked verified by the ANVERA team are shown here. Always confirm final brake clearance and vehicle configuration before production.</p></div><div class="wheel-fitment-list">{verifiedFitments.map((fitment: any) => { const d = fitment.data ?? {}; const years = [d.model_year_from, d.model_year_to].filter(Boolean); return <article class="wheel-fitment-row"><div><h3>{String(d.vehicle_make ?? "")} {String(d.vehicle_model ?? "")}</h3><p>{years.length ? years.join("–") : "Model year varies"}</p></div><div><span>FRONT</span><strong>{formatSpec(d.front_spec) || "Specification on request"}</strong></div><div><span>REAR</span><strong>{formatSpec(d.rear_spec) || "Specification on request"}</strong></div><div class="wheel-fitment-status"><span aria-label="Verified fitment">VERIFIED</span>{d.verified_at && <small>{new Date(d.verified_at).toLocaleDateString("en-GB", {year:"numeric",month:"short"})}</small>}</div></article>; })}</div></section>}
     {data.design_story && <section class="wheel-product-story">
       <p class="section-kicker">Design perspective</p>
       <div class="wheel-product-richtext"><PortableText value={data.design_story as any} /></div>
