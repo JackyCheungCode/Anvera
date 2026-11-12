@@ -413,7 +413,7 @@ export function ProductIntelligence() {
       setError("Wait for the Construction Capability Matrix to finish loading before continuing.");
       return;
     }
-    if (active.id === "construction" && approvedConstructions !== null && !approvedConstructions.length) {
+    if (active.id === "construction" && Array.isArray(approvedConstructions) && !approvedConstructions.length) {
       setError("At least one construction capability must be approved before products can use it.");
       return;
     }
