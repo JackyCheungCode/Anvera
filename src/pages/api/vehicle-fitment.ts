@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 
 export const prerender = false;
 
-type VehicleEnv = { WHEEL_SIZE_API_KEY?: string };
+type VehicleEnv = { WHEEL_SIZE_API_KEY?: string; PUBLIC_INTAKE_LIMITER?: { limit(input: { key: string }): Promise<{ success: boolean }> } };
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -61,6 +61,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as { runtime?: { env?: VehicleEnv } }).runtime?.env;
   const apiKey = env?.WHEEL_SIZE_API_KEY;
   if (!apiKey) return json({ ok: false, error: "vehicle_fitment_not_configured" }, 503);
+  const clientIp = request.headers.get("CF-Connecting-IP");
+  if (!clientIp || !env?.PUBLIC_INTAKE_LIMITER) return json({ ok: false, error: "rate_limiting_not_configured" }, 503);
+  try {
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(clientIp));
+    const clientKey = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+    const decision = await env.PUBLIC_INTAKE_LIMITER.limit({ key: "wheel-fitment:" + clientKey });
+    if (!decision.success) return json({ ok: false, error: "rate_limit_exceeded" }, 429);
+  } catch { return json({ ok: false, error: "rate_limiting_unavailable" }, 503); }
   params.set("user_key", apiKey);
 
   try {
