@@ -50,7 +50,7 @@ type SetupResponse = {
   versions?: Array<{ id: string; revision: number; version_type: string; note: string | null; created_at: string }>;
 };
 
-type SaveResponse = { saved: boolean; sessionId?: string; revision?: number; status?: string; reason?: string };
+type SaveResponse = { saved: boolean; sessionId?: string; revision?: number; status?: string; reason?: string; mappingWarning?: string | null };
 
 const emptyDocument = (): SetupDocument => ({
   factory: {}, material: {}, construction: {}, specification: {}, finish: {},
@@ -387,7 +387,7 @@ export function ProductIntelligence() {
       if (result.sessionId) setSessionId(result.sessionId);
       setRevision(result.revision ?? revision + 1);
       setStatus(result.status ?? (action === "submit" ? "in_review" : "draft"));
-      setNotice(action === "submit" ? "Submitted for internal review. A version snapshot has been recorded." : "Draft saved. Your changes are stored.");
+      setNotice([action === "submit" ? "Submitted for internal review. A version snapshot has been recorded." : "Draft saved. Your changes are stored.", result.mappingWarning].filter(Boolean).join(" "));
       if (action === "submit") await load();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to save Product Intelligence setup.");
