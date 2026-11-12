@@ -144,6 +144,36 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
+      - name: Smoke test customer configuration order persistence
+        run: |
+          node --input-type=module <<'NODE'
+          const base = "https://anvera-preview.xg-y.workers.dev";
+          const create = await fetch(`${base}/api/configuration-orders`, {
+            method: "POST",
+            headers: { Origin: base, "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "create" })
+          });
+          const created = await create.json();
+          if (create.status !== 201 || !created.referenceCode || !created.accessToken) {
+            throw new Error(`Configuration draft creation failed (${create.status}): ${JSON.stringify(created)}`);
+          }
+          const configuration = { step: 1, product: { slug: "ci-smoke", title: "CI persistence check" }, vehicle: { make: "BMW", model: "M3" } };
+          const saved = await fetch(`${base}/api/configuration-orders`, {
+            method: "POST",
+            headers: { Origin: base, "Content-Type": "application/json", Authorization: `Bearer ${created.accessToken}` },
+            body: JSON.stringify({ action: "save", referenceCode: created.referenceCode, configuration })
+          });
+          if (!saved.ok) throw new Error(`Configuration draft save failed (${saved.status}): ${await saved.text()}`);
+          const loaded = await fetch(`${base}/api/configuration-orders/${created.referenceCode}`, {
+            headers: { Authorization: `Bearer ${created.accessToken}` }
+          });
+          const order = await loaded.json();
+          if (!loaded.ok || order.order?.configuration?.product?.slug !== "ci-smoke") {
+            throw new Error(`Configuration order retrieval failed (${loaded.status}): ${JSON.stringify(order)}`);
+          }
+          console.log(JSON.stringify({ referenceCode: created.referenceCode, draftSave: saved.status, orderLoad: loaded.status }));
+          NODE
+
       - name: Smoke test Wheel-Size catalog proxy
         run: |
           node --input-type=module <<'NODE'
