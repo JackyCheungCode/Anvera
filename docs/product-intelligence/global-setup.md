@@ -103,3 +103,8 @@ Each save increments the revision. A stale revision is rejected rather than over
 - Preview and production configurations explicitly enable `ANVERA_PRODUCT_INTELLIGENCE_ENABLED`.
 - `ANVERA_BUSINESS_API_ENABLED` remains disabled in production.
 - The initial release does not seed product records or publish unreviewed data.
+
+
+## Material and forging reference libraries
+
+The Material & Forging step now includes reusable material profiles and forging process records. The normalized library schema is isolated to Preview in this phase; production remains on the existing global setup aggregate until a separate production migration is explicitly approved. See [material-process-libraries.md](./material-process-libraries.md) for the record fields, lifecycle and governance rules.
