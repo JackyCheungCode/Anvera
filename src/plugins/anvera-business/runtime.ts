@@ -417,7 +417,7 @@ function setupDocumentIsSubmittable(document: Record<string, unknown>) {
         Number.isFinite(width) && width > 0 &&
         Number.isInteger(boltCount) && boltCount > 0 &&
         Number.isFinite(pcd) && pcd > 0 &&
-        Number.isFinite(offset) &&
+        Boolean(inputString(row?.offset, 32)) && Number.isFinite(offset) &&
         Number.isFinite(centerBore) && centerBore > 0 &&
         (loadRating === null || (Number.isFinite(loadRating) && loadRating > 0)) &&
         ["Draft", "Factory Supported", "Engineering Review", "Engineering Approved", "Restricted"].includes(inputString(row?.status, 32));
