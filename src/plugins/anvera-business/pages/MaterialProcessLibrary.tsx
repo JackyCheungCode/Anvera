@@ -84,7 +84,7 @@ export function MaterialProcessLibrary({ onCatalogChange }: {
       const nextProcesses = result.forgingProcesses ?? [];
       setMaterials(nextMaterials);
       setProcesses(nextProcesses);
-      if (nextMaterials.length || nextProcesses.length) onCatalogChange?.(nextMaterials, nextProcesses);
+      if (nextMaterials.length || nextProcesses.length) onCatalogChange?.(nextMaterials.filter((item) => !["restricted", "archived"].includes(item.status)), nextProcesses.filter((item) => !["restricted", "archived"].includes(item.status)));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to load material and forging libraries.");
     } finally {
