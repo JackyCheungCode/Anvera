@@ -351,7 +351,7 @@ export function ProductIntelligence() {
         <>
           <nav className="api-stepper" aria-label="Global setup steps">
             {steps.map((step, index) => {
-              const complete = isStepComplete(step, document, productIndex) && step.id !== "review";
+              const complete = isStepComplete(step, document, productIndex) && step.id !== "review" && (!step.optional || stepHasAnyValue(step, document, productIndex));
               const current = index === activeStep;
               return <button key={step.id} type="button" className={`api-step ${current ? "is-current" : ""} ${complete ? "is-complete" : ""}`} onClick={() => { if (index <= activeStep || complete) { setActiveStep(index); setError(""); } }} aria-current={current ? "step" : undefined}>
                 <span className="api-step-number">{complete ? "✓" : step.number}</span>
