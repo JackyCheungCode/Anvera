@@ -236,3 +236,29 @@
 .api-library-list>.anvera-muted{padding:16px 18px;margin:0}
 @media(max-width:1000px){.api-library-grid{grid-template-columns:1fr}}
 @media(max-width:760px){.api-library-heading{flex-direction:column}.api-library-form-grid{grid-template-columns:1fr}.api-library-field--wide{grid-column:auto}.api-library-list>article{align-items:flex-start;flex-direction:column}.api-library-row-actions{justify-content:space-between;width:100%}}
+
+/* Product Intelligence — engineering review queue */
+.api-review-queue{display:grid;gap:14px;margin-top:24px;padding:18px;background:#e8e8e8}
+.api-review-queue-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.api-review-queue-heading h3{font-size:16px;font-weight:600;margin:0;color:#161616}
+.api-review-queue-heading p:not(.anvera-eyebrow){font-size:11px;line-height:1.6;color:#525252;margin:7px 0 0;max-width:720px}
+.api-review-queue-list{display:grid;gap:1px;background:#c6c6c6}
+.api-review-queue-list>article{display:grid;grid-template-columns:minmax(180px,.8fr) minmax(240px,1.2fr) auto;gap:14px;align-items:center;background:#f4f4f4;padding:14px}
+.api-review-queue-record{display:grid;gap:5px;min-width:0}
+.api-review-queue-record>span{font-size:8px;letter-spacing:.08em;font-weight:700;color:#6f6f6f}
+.api-review-queue-record>strong{font-size:11px;font-weight:600;color:#161616}
+.api-review-queue-record>small{font-size:10px;color:#525252}
+.api-review-note{display:grid;gap:5px;min-width:0}
+.api-review-note>span{font-size:9px;font-weight:600;color:#525252}
+.api-review-note textarea{width:100%;min-width:0;min-height:54px;border:0;border-bottom:1px solid #8d8d8d;background:#fff;padding:8px 10px;color:#161616;font:inherit;font-size:10px;resize:vertical}
+.api-review-note textarea:focus{outline:2px solid #0f62fe;outline-offset:-2px}
+.api-review-decision-actions{display:flex;flex-direction:column;gap:5px;min-width:120px}
+.api-review-decision-actions button{border:0;background:#e0e0e0;color:#393939;padding:8px 10px;font:inherit;font-size:9px;font-weight:600;cursor:pointer;text-align:center;white-space:nowrap}
+.api-review-decision-actions button:disabled{opacity:.5;cursor:wait}
+.api-review-decision-actions .api-review-decision--approve{background:#defbe6;color:#0e6027}
+.api-review-decision-actions .api-review-decision--restrict{background:#fff1f1;color:#a2191f}
+.api-review-queue-empty{display:grid;gap:5px;padding:18px;background:#f4f4f4}
+.api-review-queue-empty strong{font-size:12px;color:#161616}
+.api-review-queue-empty span{font-size:10px;color:#6f6f6f;line-height:1.5}
+@media(max-width:900px){.api-review-queue-list>article{grid-template-columns:1fr}.api-review-decision-actions{flex-direction:row;flex-wrap:wrap}.api-review-decision-actions button{flex:1}}
+@media(max-width:760px){.api-review-queue-heading{flex-direction:column}.api-review-queue{padding:12px}}
