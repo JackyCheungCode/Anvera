@@ -59,6 +59,11 @@ const fallbackFinishOptions = [{value:"gloss-black",label:"Gloss black"},{value:
         <label class="cds-label" for="project-notes">Project notes</label>
         <textarea class="cds-textarea" id="project-notes" name="projectNotes" rows="5" placeholder="Tell us about the look, intended use, brake package, references or any details that matter."></textarea>
       </div>
+      <div class="cds-field brief-notes">
+        <label class="cds-label" for="project-attachments">Reference files</label>
+        <input class="cds-input" id="project-attachments" name="attachments" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" multiple />
+        <p class="cds-help-text">Up to 5 files · 8 MB each · 20 MB total. JPG, PNG, WebP or PDF.</p>
+      </div>
       <div class="brief-actions">
         <button class="cds-btn cds-btn--carbon" type="submit" id="submit-project-brief">Send project inquiry <span aria-hidden="true">↗</span></button>
         <button class="brief-reset" type="button" id="copy-project-brief">Copy project brief</button>
@@ -77,17 +82,26 @@ const fallbackFinishOptions = [{value:"gloss-black",label:"Gloss black"},{value:
   form?.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!form.reportValidity()) return;
-    const data = new FormData(form);
-    const payload = Object.fromEntries(data.entries());
-    payload.customerName = String(data.get("customerName") || "");
-    payload.constructionType = String(data.get("construction") || "");
-    payload.wheelDiameter = String(data.get("diameter") || "");
-    payload.wheelWidth = String(data.get("width") || "");
-    payload.finishCode = String(data.get("finish") || "");
-    payload.turnstileToken = String(data.get("cf-turnstile-response") || "");
-    const response = await fetch("/api/inquiries", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    const payload = new FormData(form);
+    payload.set("constructionType", String(payload.get("construction") || ""));
+    payload.set("wheelDiameter", String(payload.get("diameter") || ""));
+    payload.set("wheelWidth", String(payload.get("width") || ""));
+    payload.set("finishCode", String(payload.get("finish") || ""));
+    payload.set("turnstileToken", String(payload.get("cf-turnstile-response") || ""));
+    const submitButton = document.querySelector<HTMLButtonElement>("#submit-project-brief");
+    if (submitButton) submitButton.disabled = true;
+    if (feedback) feedback.textContent = "Sending your project brief and reference files securely…";
+    let response: Response;
+    try {
+      response = await fetch("/api/inquiries", { method: "POST", body: payload });
+    } catch {
+      if (feedback) feedback.textContent = "Network error. Your inquiry was not submitted. Please try again.";
+      if (submitButton) submitButton.disabled = false;
+      return;
+    }
     const result = await response.json().catch(() => ({})) as { referenceCode?: string; error?: string };
-    if (feedback) feedback.textContent = response.ok ? "Thank you. Your inquiry reference is " + (result.referenceCode || "pending") + ". Our team will review your project." : "We could not submit your inquiry (" + (result.error || response.status) + "). Please try again later.";
+    if (feedback) feedback.textContent = response.ok ? "Thank you. Your inquiry reference is " + (result.referenceCode || "pending") + ". " + (result.attachmentCount ? result.attachmentCount + " reference file(s) received. " : "") + "Our team will review your project." : "We could not submit your inquiry (" + (result.error || response.status) + "). Please try again later.";
+    if (submitButton) submitButton.disabled = false;
   });
   copyButton?.addEventListener("click", async () => {
     if (!form) return;
