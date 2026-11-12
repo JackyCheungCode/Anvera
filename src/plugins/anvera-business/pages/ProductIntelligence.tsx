@@ -3,6 +3,7 @@ import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 import { MaterialProcessLibrary } from "./MaterialProcessLibrary";
 import { LibraryReviewQueue } from "./LibraryReviewQueue";
 import { FinishLibrary, ProductFinishMapping } from "./FinishLibrary";
+import { ConstructionCapabilityMatrix } from "./ConstructionCapabilityMatrix";
 
 type FieldType = "text" | "number" | "textarea" | "select";
 type SelectOption = { value: string; label: string };
@@ -296,6 +297,7 @@ export function ProductIntelligence() {
   const [approvedMaterials, setApprovedMaterials] = useState<Array<{ id: string; code: string; name: string; grade: string; family: string }> | null>(null);
   const [approvedProcesses, setApprovedProcesses] = useState<Array<{ id: string; code: string; name: string; process_type: string }> | null>(null);
   const [approvedFinishes, setApprovedFinishes] = useState<Array<{ id: string; code: string; name: string; finish_type: string; supported_constructions: string[] }> | null | undefined>(undefined);
+  const [approvedConstructions, setApprovedConstructions] = useState<string[] | null | undefined>(undefined);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -350,6 +352,16 @@ export function ProductIntelligence() {
 
   const syncFinishCatalog = useCallback((finishes: Array<{ id: string; code: string; name: string; finish_type: string; supported_constructions: string[] }> | null) => {
     setApprovedFinishes(finishes);
+  }, []);
+
+  const syncConstructionCatalog = useCallback((constructions: string[] | null) => {
+    setApprovedConstructions(constructions);
+    if (constructions?.length) {
+      setDocument((current) => ({
+        ...current,
+        construction: { ...current.construction, constructionTypes: constructions.join("\\n") }
+      }));
+    }
   }, []);
 
   const updateFinishMappings = (next: string[]) => {
@@ -466,8 +478,8 @@ export function ProductIntelligence() {
                 {active.fields.map((field) => {
                   let resolvedField = field;
                   if (active.id === "products" && field.key === "construction") {
-                    const supported = (document.construction.constructionTypes ?? "").split(/[\n,;]+/).map((value) => value.trim()).filter((value) => ["Monoblock", "Two-piece", "Three-piece"].includes(value));
-                    resolvedField = { ...field, options: supported };
+                    const legacy = (document.construction.constructionTypes ?? "").split(/[\n,;]+/).map((value) => value.trim()).filter((value) => ["Monoblock", "Two-piece", "Three-piece"].includes(value));
+                    resolvedField = { ...field, options: approvedConstructions == null ? legacy : approvedConstructions };
                   }
                   if (active.id === "products" && field.key === "materialProfile") {
                     const legacy = (document.material.materialGrade ?? "").split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean);
@@ -486,6 +498,8 @@ export function ProductIntelligence() {
                   return <Field key={field.key} field={resolvedField} value={getPath(document, active.id, field.key, productIndex)} onChange={(value) => updateField(field.key, value)} error={missing.some((item) => item.key === field.key)} />;
                 })}
               </div>
+
+              {active.id === "construction" ? <ConstructionCapabilityMatrix onCatalogChange={syncConstructionCatalog} /> : null}
 
               {active.id === "material" ? <MaterialProcessLibrary onCatalogChange={syncLibraryCatalog} /> : null}
 
