@@ -109,7 +109,10 @@ async function getAdminDatabase(ctx: AdminContext) {
     return { error: { available: false, reason: "migration_pending" } as const };
   }
 
-  return { db: env.DB, media: env.MEDIA };
+  const media = (env as typeof env & {
+    MEDIA?: { get(key: string): Promise<{ arrayBuffer(): Promise<ArrayBuffer> } | null> };
+  }).MEDIA;
+  return { db: env.DB, media };
 }
 
 async function listInquiries(ctx: AdminContext) {
