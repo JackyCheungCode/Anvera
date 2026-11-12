@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
+import { MaterialProcessLibrary } from "./MaterialProcessLibrary";
 
 type FieldType = "text" | "number" | "textarea" | "select";
 type FieldDefinition = {
@@ -317,6 +318,17 @@ export function ProductIntelligence() {
   const missing = useMemo(() => validateStep(active, document, productIndex), [active, document, productIndex]);
   const completeCount = steps.filter((step) => step.id !== "review" && (step.optional ? stepHasAnyValue(step, document, productIndex) && isStepComplete(step, document, productIndex) : isStepComplete(step, document, productIndex))).length;
 
+  const syncLibraryCatalog = useCallback((materials: Array<{ grade: string; family: string }>, processes: Array<{ process_type: string }>) => {
+    setDocument((current) => ({
+      ...current,
+      material: {
+        ...current.material,
+        ...(materials.length ? { materialGrade: [...new Set(materials.map((item) => item.grade.trim()).filter(Boolean))].join("\\n") } : {}),
+        ...(processes.length ? { forgingMethod: [...new Set(processes.map((item) => item.process_type.trim()).filter(Boolean))].join("\\n") } : {})
+      }
+    }));
+  }, []);
+
   const updateField = (key: string, value: string) => {
     setDocument((current) => setValue(current, active.id, key, value, productIndex));
     setNotice("");
@@ -436,6 +448,8 @@ export function ProductIntelligence() {
                   return <Field key={field.key} field={resolvedField} value={getPath(document, active.id, field.key, productIndex)} onChange={(value) => updateField(field.key, value)} error={missing.some((item) => item.key === field.key)} />;
                 })}
               </div>
+
+              {active.id === "material" ? <MaterialProcessLibrary onCatalogChange={syncLibraryCatalog} /> : null}
 
               {active.id === "products" ? <section className="api-spec-editor">
                 <div className="api-spec-heading"><div><p className="anvera-eyebrow">PRODUCT SPECIFICATIONS</p><h3>Specification Matrix</h3><p>Each row is a specific, reviewable wheel specification. Do not enter a range in place of a confirmed combination.</p></div><button className="api-add-product" type="button" onClick={() => setDocument((current) => addSpecification(current, productIndex))}>＋ Add specification</button></div>
