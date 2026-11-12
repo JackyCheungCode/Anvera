@@ -10,8 +10,13 @@ type Application = {
   business_type: string;
   country: string;
   city: string | null;
+  years_in_business?: number | null;
+  represented_brands?: string | null;
   contact_name: string;
+  contact_role?: string | null;
   email: string;
+  phone: string | null;
+  notes?: string | null;
   created_at: string;
 };
 
@@ -28,6 +33,9 @@ export function DealerApplications() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [available, setAvailable] = useState(false);
+  const [selected, setSelected] = useState<Application | null>(null);
+  const [userId, setUserId] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -50,6 +58,56 @@ export function DealerApplications() {
     }
   }, []);
 
+  const review = async (status: "reviewing" | "approved" | "rejected" | "withdrawn") => {
+    if (!selected) return;
+    setSaving(true);
+    setError("");
+    try {
+      const response = await apiFetch("/_emdash/api/plugins/anvera-business/dealer-applications/review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: selected.id, status })
+      });
+      const result = await parseApiResponse<{ reviewed: boolean; reason?: string }>(response, "Unable to update application.");
+      if (!result.reviewed) throw new Error(result.reason === "invalid_transition" ? "This application transition is not allowed." : "The application was not updated.");
+      setSelected({ ...selected, status });
+      await load();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to update application.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const activate = async () => {
+    if (!selected || !userId.trim()) return;
+    setSaving(true);
+    setError("");
+    try {
+      const response = await apiFetch("/_emdash/api/plugins/anvera-business/dealers/activate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ applicationId: selected.id, userId: userId.trim() })
+      });
+      const result = await parseApiResponse<{ activated: boolean; reason?: string }>(response, "Unable to activate dealer.");
+      if (!result.activated) {
+        const messages: Record<string, string> = {
+          emdash_user_not_found: "No EmDash user exists with that ID.",
+          identity_must_be_subscriber: "The linked EmDash account must have the Subscriber role.",
+          application_not_approved_or_identity_already_linked: "The application must be approved, and the identity cannot already belong to another dealer."
+        };
+        throw new Error(messages[result.reason ?? ""] ?? "The dealer account was not activated.");
+      }
+      setUserId("");
+      setSelected(null);
+      await load();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to activate dealer.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   useEffect(() => { void load(); }, [load]);
 
   return (
@@ -69,22 +127,20 @@ export function DealerApplications() {
         <article><span>LOADED RECORDS</span><strong>{available ? items.length : "—"}</strong></article>
         <article><span>REVIEW MODE</span><strong>MANUAL</strong></article>
       </section>
+      {error ? <p className="anvera-inline-message" role="alert">{error}</p> : null}
       <section className="anvera-panel">
         <div className="anvera-panel-heading">
           <h2>Application queue</h2>
-          <button className="anvera-refresh" type="button" onClick={() => void load()} disabled={loading}>
-            {loading ? "Loading…" : "Refresh"}
-          </button>
+          <button className="anvera-refresh" type="button" onClick={() => void load()} disabled={loading}>{loading ? "Loading…" : "Refresh"}</button>
         </div>
-        {error ? <p className="anvera-inline-message" role="status">{error}</p> : null}
         {loading ? (
           <div className="anvera-empty"><h3>Loading applications</h3><p>Connecting to the secured business workspace.</p></div>
         ) : items.length ? (
           <div className="anvera-table-wrap">
             <table className="anvera-data-table">
-              <thead><tr><th>REFERENCE</th><th>COMPANY</th><th>CONTACT</th><th>MARKET</th><th>BUSINESS TYPE</th><th>STATUS</th><th>SUBMITTED</th></tr></thead>
+              <thead><tr><th>REFERENCE</th><th>COMPANY</th><th>CONTACT</th><th>MARKET</th><th>BUSINESS TYPE</th><th>STATUS</th><th>SUBMITTED</th><th></th></tr></thead>
               <tbody>{items.map((item) => (
-                <tr key={item.id}>
+                <tr key={item.id} className={selected?.id === item.id ? "anvera-row-selected" : ""}>
                   <td>{item.reference_code}</td>
                   <td><strong>{item.trading_name || item.legal_company_name}</strong><small>{item.legal_company_name}</small></td>
                   <td><strong>{item.contact_name}</strong><small>{item.email}</small></td>
@@ -92,6 +148,7 @@ export function DealerApplications() {
                   <td>{item.business_type}</td>
                   <td><span className="anvera-record-status">{item.status}</span></td>
                   <td>{new Date(item.created_at).toLocaleDateString()}</td>
+                  <td><button className="anvera-link-button" type="button" onClick={() => setSelected(item)}>Review</button></td>
                 </tr>
               ))}</tbody>
             </table>
@@ -104,6 +161,27 @@ export function DealerApplications() {
           </div>
         )}
       </section>
+      {selected ? (
+        <section className="anvera-detail-panel">
+          <div className="anvera-panel-heading"><h2>Application review · {selected.reference_code}</h2><button className="anvera-refresh anvera-refresh--light" type="button" onClick={() => setSelected(null)}>Close</button></div>
+          <div className="anvera-detail-content">
+            <div className="anvera-detail-heading"><div><p className="anvera-eyebrow">COMPANY</p><h3>{selected.trading_name || selected.legal_company_name}</h3><p>{selected.legal_company_name}</p></div><span className="anvera-record-status">{selected.status}</span></div>
+            <div className="anvera-detail-grid">
+              <div><span>CONTACT</span><strong>{selected.contact_name}{selected.contact_role ? ` · ${selected.contact_role}` : ""}</strong></div>
+              <div><span>EMAIL / PHONE</span><strong>{selected.email}{selected.phone ? ` · ${selected.phone}` : ""}</strong></div>
+              <div><span>MARKET</span><strong>{[selected.city, selected.country].filter(Boolean).join(", ")}</strong></div>
+              <div><span>BUSINESS TYPE</span><strong>{selected.business_type}</strong></div>
+              <div><span>YEARS IN BUSINESS</span><strong>{selected.years_in_business ?? "—"}</strong></div>
+              <div><span>REPRESENTED BRANDS</span><strong>{selected.represented_brands || "—"}</strong></div>
+            </div>
+            {selected.notes ? <div className="anvera-detail-notes"><span>APPLICATION NOTES</span><p>{selected.notes}</p></div> : null}
+            {selected.status === "pending" ? <div className="anvera-action-section"><h3>Review decision</h3><div className="anvera-action-row"><button className="anvera-action-button" disabled={saving} onClick={() => void review("reviewing")}>Start review</button><button className="anvera-action-button anvera-action-button--quiet" disabled={saving} onClick={() => void review("withdrawn")}>Withdraw</button></div></div> : null}
+            {selected.status === "reviewing" ? <div className="anvera-action-section"><h3>Review decision</h3><div className="anvera-action-row"><button className="anvera-action-button" disabled={saving} onClick={() => void review("approved")}>Approve application</button><button className="anvera-action-button anvera-action-button--danger" disabled={saving} onClick={() => void review("rejected")}>Reject</button><button className="anvera-action-button anvera-action-button--quiet" disabled={saving} onClick={() => void review("withdrawn")}>Withdraw</button></div></div> : null}
+            {selected.status === "approved" ? <div className="anvera-action-section"><h3>Activate dealer access</h3><p className="anvera-muted">Approval does not activate access. Enter the ID of an existing EmDash Subscriber account to link this organization.</p><label className="anvera-field-label" htmlFor="anvera-dealer-user-id">EmDash user ID</label><input id="anvera-dealer-user-id" className="anvera-note-input" value={userId} onChange={(event) => setUserId(event.target.value)} maxLength={128} placeholder="Existing Subscriber user ID" /><button className="anvera-refresh" type="button" disabled={saving || !userId.trim()} onClick={() => void activate()}>{saving ? "Activating…" : "Activate dealer"}</button></div> : null}
+            {["rejected", "withdrawn"].includes(selected.status) ? <p className="anvera-muted">This application is closed. No dealer identity has been activated.</p> : null}
+          </div>
+        </section>
+      ) : null}
     </main>
   );
 }
