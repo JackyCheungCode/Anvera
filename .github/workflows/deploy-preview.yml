@@ -7,6 +7,7 @@ on:
       - feature/wheel-size-fitment
       - fix/vehicle-fitment-worker-dispatch
       - feat/vehicle-fitment-oem-aftermarket-products
+      - fix/vehicle-fitment-carbon-ui
     paths-ignore:
       - "docs/**"
       - "*.md"
