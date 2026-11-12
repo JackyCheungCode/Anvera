@@ -427,11 +427,43 @@ function setupDocumentIsSubmittable(document: Record<string, unknown>) {
       Boolean(inputString(product?.productName, 120)) &&
       Boolean(selectedConstruction) &&
       supportedConstructions.includes(selectedConstruction) &&
-      Boolean(selectedMaterial) && materialGrades.includes(selectedMaterial) &&
-      Boolean(selectedForging) && forgingMethods.includes(selectedForging) &&
+      Boolean(selectedMaterial) &&
+      Boolean(selectedForging) &&
       validSpecifications;
   });
   return required.every((value) => typeof value === "string" && value.trim().length > 0) && validProducts;
+}
+
+
+async function validateProductCapabilityReferences(db: D1Database, document: Record<string, unknown>) {
+  const products = Array.isArray(document.products) ? document.products.map(inputRecord).filter(Boolean) : [];
+  const material = inputRecord(document.material) ?? {};
+  const legacyGrades = inputString(material.materialGrade, 2000).split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean);
+  const legacyProcesses = inputString(material.forgingMethod, 2000).split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean);
+  const materialIds = [...new Set(products.map((product) => inputString(product?.materialProfile, 128)).filter(Boolean))];
+  const processIds = [...new Set(products.map((product) => inputString(product?.forgingProfile, 128)).filter(Boolean))];
+  if (!materialIds.length || !processIds.length) return false;
+
+  try {
+    const [materials, processes] = await Promise.all([
+      db.prepare(`SELECT id, status FROM anvera_pi_material_profiles WHERE id IN (${materialIds.map(() => "?").join(",")})`)
+        .bind(...materialIds).all<{ id: string; status: string }>(),
+      db.prepare(`SELECT id, status FROM anvera_pi_forging_processes WHERE id IN (${processIds.map(() => "?").join(",")})`)
+        .bind(...processIds).all<{ id: string; status: string }>()
+    ]);
+    const materialStatus = new Map(materials.results.map((item) => [item.id, item.status]));
+    const processStatus = new Map(processes.results.map((item) => [item.id, item.status]));
+    return products.every((product) =>
+      materialStatus.get(inputString(product?.materialProfile, 128)) === "approved" &&
+      processStatus.get(inputString(product?.forgingProfile, 128)) === "approved"
+    );
+  } catch (cause) {
+    if (!String(cause).toLowerCase().includes("no such table")) throw cause;
+    return products.every((product) =>
+      legacyGrades.includes(inputString(product?.materialProfile, 200)) &&
+      legacyProcesses.includes(inputString(product?.forgingProfile, 200))
+    );
+  }
 }
 
 async function loadProductSetup(ctx: AdminContext) {
@@ -478,8 +510,11 @@ async function saveProductSetup(ctx: AdminContext) {
   if (new TextEncoder().encode(documentJson).byteLength > 64 * 1024 || new TextEncoder().encode(stepStateJson).byteLength > 8 * 1024) {
     return { saved: false, reason: "payload_too_large" };
   }
-  if (action === "submit" && !setupDocumentIsSubmittable(document)) {
-    return { saved: false, reason: "validation_failed" };
+  if (action === "submit") {
+    if (!setupDocumentIsSubmittable(document)) return { saved: false, reason: "validation_failed" };
+    if (!await validateProductCapabilityReferences(access.db, document)) {
+      return { saved: false, reason: "product_capability_reference_invalid" };
+    }
   }
 
   const existing = await access.db.prepare(
