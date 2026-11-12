@@ -3,6 +3,7 @@ import { getSiteSettingsWithCacheHint } from "emdash";
 import { EmDashHead, EmDashBodyStart, EmDashBodyEnd } from "emdash/ui";
 import { createPublicPageContext } from "emdash/page";
 import { resolveStarterSiteIdentity } from "../utils/site-identity";
+import BrandLogo from "../components/BrandLogo.astro";
 import "../styles/global.css";
 
 interface Props {
@@ -56,8 +57,7 @@ const navigation = [
   <header class="site-header">
     <div class="header-inner">
       <a class="brand-mark" href="/" aria-label="ANVERA home">
-        <span class="brand-symbol" aria-hidden="true">A</span>
-        <span class="brand-wordmark">ANVERA</span>
+        <BrandLogo id="anvera-header" />
       </a>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">
         <span>Menu</span>
@@ -76,8 +76,7 @@ const navigation = [
   <footer class="site-footer">
     <div class="footer-inner">
       <a class="brand-mark" href="/" aria-label="ANVERA home">
-        <span class="brand-symbol" aria-hidden="true">A</span>
-        <span class="brand-wordmark">ANVERA</span>
+        <BrandLogo id="anvera-footer" />
       </a>
       <div class="footer-links">
         <a href="/wheels">Wheels</a>
