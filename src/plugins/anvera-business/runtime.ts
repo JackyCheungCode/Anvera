@@ -972,7 +972,8 @@ async function reviewProductLibraryRecord(ctx: AdminContext) {
     entityType === "forging_process" ? "anvera_pi_forging_processes" :
     entityType === "finish_profile" ? "anvera_pi_finish_profiles" : entityType === "product_finish_mapping" ? "anvera_pi_product_finish_mappings" : "anvera_pi_construction_capabilities";
   const statusColumn = isMapping ? "mapping_status" : "status";
-  const current = await access.db.prepare(`SELECT ${isMapping ? "product_code" : "code"} AS code, ${statusColumn} AS status, revision FROM ${table} WHERE id = ? LIMIT 1`)
+  const codeColumn = isMapping ? "product_code" : entityType === "construction_capability" ? "construction_type" : "code";
+  const current = await access.db.prepare(`SELECT ${codeColumn} AS code, ${statusColumn} AS status, revision FROM ${table} WHERE id = ? LIMIT 1`)
     .bind(id).first<{ code: string; status: string; revision: number }>();
   if (!current) return { reviewed: false, reason: "not_found" };
   if (current.status !== "pending_review") return { reviewed: false, reason: "not_pending_review", status: current.status };
