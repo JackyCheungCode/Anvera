@@ -68,6 +68,12 @@ The public Turnstile widget also requires PUBLIC_TURNSTILE_SITE_KEY at build tim
 
 Important remaining gate: per-IP/email rate limiting is not implemented in application code. Configure and test a Cloudflare edge rate-limiting rule for both public POST routes before enabling the feature flag. Do not enable public submission until that control and the reviewed D1 migration are in place.
 
+## Inquiry attachments
+
+The inquiry endpoint accepts either JSON (without files) or multipart form data. Multipart uploads use the repeated `attachments` field and are limited to five files, 8 MiB per file, and 20 MiB total. Accepted formats are PDF, JPEG, PNG and WebP; the handler checks the file signature rather than trusting the browser-provided MIME type.
+
+Objects are written to the private `MEDIA` R2 binding under `private/inquiries/{inquiryId}/...`. The D1 attachment metadata and `attachment_added` timeline events are committed in the same D1 batch as the inquiry. If the D1 batch fails, uploaded R2 objects are deleted as compensation. Objects are never served from a public URL; a separately authenticated admin download route is still required before staff can retrieve them from the workbench.
+
 ## Administrator-only operations
 
 All review and activation endpoints must:
