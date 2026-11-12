@@ -83,6 +83,20 @@ const safeProducts = products.map((product) => ({
     img.onerror = () => { if (source && slug) { img.src = iconBase + slug + ".svg"; } else img.remove(); };
     return img;
   };
+  const modelImage = (raw) => {
+    const imageValue = raw?.vehicle?.image ?? raw?.image ?? raw?.image_url ?? raw?.photo ?? raw?.picture ?? null;
+    const source = typeof imageValue === "string" ? imageValue : imageValue?.url ?? imageValue?.src ?? null;
+    if (!source || !/^https?:\/\//i.test(source)) return null;
+    const frame = document.createElement("span"); frame.className = "vf-model-image-frame";
+    const img = document.createElement("img"); img.className = "vf-model-image"; img.alt = ""; img.loading = "lazy"; img.decoding = "async";
+    img.src = source; img.onerror = () => frame.remove(); frame.append(img); return frame;
+  };
+  const renderSelectedValue = (key, item, label) => {
+    valueLabel.replaceChildren();
+    if (key === "make") { const logo = makeLogo(label, item?.raw); if (logo) valueLabel.append(logo); }
+    if (key === "model") { const image = modelImage(item?.raw); if (image) valueLabel.append(image); }
+    const text = document.createElement("span"); text.className = "vf-select-value-text"; text.textContent = label; valueLabel.append(text);
+  };
   document.querySelectorAll("[data-dropdown]").forEach((host) => {
     const key = host.dataset.dropdown;
     const trigger = document.createElement("button");
@@ -103,8 +117,9 @@ const safeProducts = products.map((product) => ({
         const option = document.createElement("button"); option.type = "button"; option.className = "vf-select-option";
         option.setAttribute("role", "option"); option.setAttribute("aria-selected", String(item.value === values[key]));
         if (key === "make") { const logo = makeLogo(item.label, item.raw); if (logo) option.append(logo); }
+        if (key === "model") { const image = modelImage(item.raw); if (image) option.append(image); }
         const label = document.createElement("span"); label.textContent = item.label; option.append(label);
-        option.addEventListener("click", () => { values[key] = item.value; valueLabel.textContent = item.label; close(); render(); host.dispatchEvent(new CustomEvent("vf-change", { bubbles: true, detail: { key, value: item.value, item } })); });
+        option.addEventListener("click", () => { values[key] = item.value; renderSelectedValue(key, item, item.label); close(); render(); host.dispatchEvent(new CustomEvent("vf-change", { bubbles: true, detail: { key, value: item.value, item } })); });
         menu.append(option);
       }
       if (!options.length) { const empty = document.createElement("div"); empty.className = "vf-select-empty"; empty.textContent = "No options available"; menu.append(empty); }
@@ -118,7 +133,9 @@ const safeProducts = products.map((product) => ({
         trigger.disabled = disabled || !options.length;
         trigger.classList.toggle("is-disabled", trigger.disabled);
         if (!options.some((item) => item.value === values[key])) values[key] = "";
-        valueLabel.textContent = options.find((item) => item.value === values[key])?.label || text;
+        const selected = options.find((item) => item.value === values[key]);
+        if (selected) renderSelectedValue(key, selected, selected.label);
+        else valueLabel.textContent = text;
         render();
       },
       reset(text = placeholder, disabled = true) { options = []; values[key] = ""; valueLabel.textContent = text; trigger.disabled = disabled; trigger.classList.toggle("is-disabled", disabled); close(); render(); }
@@ -341,8 +358,7 @@ const safeProducts = products.map((product) => ({
       const records = rowsFrom(payload?.result);
       const intro = document.createElement("div"); intro.className = "vf-results-heading";
       const title = document.createElement("h3"); title.textContent = "Vehicle fitment results";
-      const count = document.createElement("p"); count.textContent = records.length + " vehicle record(s) returned. Choose a specific wheel configuration below.";
-      intro.append(title,count); results.append(intro);
+      intro.append(title); results.append(intro);
       let selected = null;
       const groups = { oem: [], aftermarket: [], other: [] };
       records.forEach((record) => allFitments(record).forEach((fitment) => groups[fitment.classification].push({record,fitment})));
@@ -384,6 +400,10 @@ const safeProducts = products.map((product) => ({
 .vf-select-option,.vf-mini-menu button{width:100%;min-height:46px;display:flex;align-items:center;gap:13px;padding:8px 14px;border:0;background:#fff;color:#161616;text-align:left;font-size:14px;letter-spacing:0;text-transform:none}
 .vf-select-option:hover,.vf-select-option[aria-selected=true],.vf-mini-menu button:hover{background:#edf1f5}
 .vf-make-logo{width:27px;height:27px;object-fit:contain;flex:0 0 27px}
+.vf-select-value{display:flex;align-items:center;gap:12px;min-width:0}
+.vf-select-value-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vf-model-image-frame{display:inline-flex;align-items:center;justify-content:center;flex:0 0 56px;width:56px;height:36px;overflow:hidden;background:#fff}
+.vf-model-image{display:block;width:56px;height:36px;object-fit:contain;background:#fff}
 .vf-select-empty{padding:14px;color:#777;font-size:13px}
 .vehicle-finder-actions{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-top:28px}
 .vehicle-finder-actions p{margin:0;color:var(--cds-text-secondary);font-size:12px}
@@ -457,6 +477,10 @@ const safeProducts = products.map((product) => ({
 .vf-fitment-badge--other{background:#e0e0e0;color:#393939}
 .vf-choose-fitment{min-height:32px;padding:0 12px;font-size:12px}
 .vf-select-option .vf-make-logo{width:32px;height:24px;object-fit:contain}
+.vf-select-trigger .vf-make-logo{width:28px;height:28px;object-fit:contain}
+.vf-select-option .vf-model-image-frame{width:56px;height:36px;flex-basis:56px}
+.vf-select-trigger .vf-model-image-frame{width:48px;height:32px;flex-basis:48px}
+.vf-select-trigger .vf-model-image{width:48px;height:32px}
 .vf-product-filter{gap:8px;color:#525252;font-size:12px;font-weight:400;letter-spacing:0;text-transform:none}
 .vf-product-filter>span{font-weight:600}
 .vf-product-grid{gap:1px;background:#e0e0e0}
