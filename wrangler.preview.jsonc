@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "anvera-preview",
-  "main": "./node_modules/@astrojs/cloudflare/dist/entrypoints/server.js",
+  "main": "@astrojs/cloudflare/entrypoints/server",
   "compatibility_date": "2026-11-12",
   "compatibility_flags": [
     "nodejs_compat"
