@@ -1,6 +1,54 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
+
+type Dealer = {
+  id: string;
+  emdash_user_id: string;
+  application_id: string;
+  legal_company_name: string;
+  country: string;
+  status: string;
+  activated_at: string;
+  updated_at: string;
+};
+
+type DealerResponse = {
+  available: boolean;
+  reason?: string;
+  items?: Dealer[];
+  total?: number;
+};
 
 export function DealerAccounts() {
+  const [items, setItems] = useState<Dealer[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [available, setAvailable] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await apiFetch("/_emdash/api/plugins/anvera-business/dealers/list?limit=50");
+      const result = await parseApiResponse<DealerResponse>(response, "Unable to load dealer accounts.");
+      setAvailable(result.available);
+      setItems(result.items ?? []);
+      setTotal(result.total ?? 0);
+      if (!result.available) {
+        setError(result.reason === "migration_pending"
+          ? "The business database is not enabled yet. The reviewed D1 migration must be approved and applied before dealer accounts can load."
+          : "The dealer account service is currently unavailable.");
+      }
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to load dealer accounts.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
   return (
     <main className="anvera-workspace">
       <header className="anvera-page-header">
@@ -9,15 +57,48 @@ export function DealerAccounts() {
           <h1>Dealer Accounts</h1>
           <p className="anvera-description">Manage approved dealer organizations and their access status.</p>
         </div>
-        <span className="anvera-status">DATA CONNECTION PENDING</span>
+        <span className={available ? "anvera-status anvera-status--ready" : "anvera-status"}>
+          {available ? "LIVE DATA" : "DATABASE NOT ENABLED"}
+        </span>
       </header>
+      <section className="anvera-metrics" aria-label="Dealer account overview">
+        <article><span>TOTAL DEALER ACCOUNTS</span><strong>{available ? total : "—"}</strong></article>
+        <article><span>LOADED RECORDS</span><strong>{available ? items.length : "—"}</strong></article>
+        <article><span>ACCESS CONTROL</span><strong>SERVER-SIDE</strong></article>
+      </section>
       <section className="anvera-panel">
-        <div className="anvera-panel-heading"><h2>Active dealer network</h2><span>Every account must be linked to an approved organization.</span></div>
-        <div className="anvera-empty">
-          <div className="anvera-empty-mark">A</div>
-          <h3>No dealer accounts loaded</h3>
-          <p>Dealer records will appear here after server-side identity and organization checks are implemented.</p>
+        <div className="anvera-panel-heading">
+          <h2>Dealer network</h2>
+          <button className="anvera-refresh" type="button" onClick={() => void load()} disabled={loading}>
+            {loading ? "Loading…" : "Refresh"}
+          </button>
         </div>
+        {error ? <p className="anvera-inline-message" role="status">{error}</p> : null}
+        {loading ? (
+          <div className="anvera-empty"><h3>Loading dealer accounts</h3><p>Connecting to the secured business workspace.</p></div>
+        ) : items.length ? (
+          <div className="anvera-table-wrap">
+            <table className="anvera-data-table">
+              <thead><tr><th>COMPANY</th><th>COUNTRY</th><th>EMDASH USER</th><th>APPLICATION</th><th>STATUS</th><th>ACTIVATED</th></tr></thead>
+              <tbody>{items.map((item) => (
+                <tr key={item.id}>
+                  <td><strong>{item.legal_company_name}</strong></td>
+                  <td>{item.country}</td>
+                  <td>{item.emdash_user_id}</td>
+                  <td>{item.application_id}</td>
+                  <td><span className="anvera-record-status">{item.status}</span></td>
+                  <td>{new Date(item.activated_at).toLocaleDateString()}</td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="anvera-empty">
+            <div className="anvera-empty-mark">A</div>
+            <h3>{available ? "No dealer accounts yet" : "Dealer data is not connected"}</h3>
+            <p>{available ? "Approved and activated dealer organizations will appear here." : "Dealer identities will only be linked after manual approval and an explicit administrator activation."}</p>
+          </div>
+        )}
       </section>
     </main>
   );
