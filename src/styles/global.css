@@ -540,3 +540,51 @@ img, video { display: block; max-width: 100%; }
 .wheel-fitment-status small { color:#74797e; font-size:10px; }
 @media(max-width:800px) { .wheel-fitments-heading { grid-template-columns:1fr; gap:18px; } .wheel-fitment-row { grid-template-columns:1fr 1fr; } .wheel-fitment-status { justify-items:start; } }
 @media(max-width:520px) { .wheel-fitment-row { grid-template-columns:1fr; gap:14px; } }
+
+
+/* Vehicle fitment finder — Carbon-inspired, high-contrast workflow */
+.vehicle-finder-hero { min-height: 560px; display: flex; align-items: end; color: white; background: radial-gradient(ellipse at 78% 45%, rgba(91,101,113,.32), transparent 36%), linear-gradient(112deg,#090a0b 0%,#171b20 56%,#08090a 100%); }
+.vehicle-finder-hero-inner { width: min(100%,var(--content-max)); margin: 0 auto; padding: 180px var(--page-gutter) 76px; }
+.vehicle-finder-hero h1 { margin: 24px 0; font-family: var(--font-display); font-size: clamp(52px,8vw,96px); line-height: .9; letter-spacing: -.055em; text-transform: uppercase; }
+.vehicle-finder-hero h1 span { color: var(--anvera-red); }
+.vehicle-finder-hero p:last-child { max-width: 600px; color: rgba(255,255,255,.68); line-height: 1.8; }
+.vehicle-finder-section { padding: clamp(64px,8vw,112px) var(--page-gutter); background: var(--anvera-white); }
+.vehicle-finder-inner { width: min(100%,1120px); margin: 0 auto; }
+.vehicle-finder-heading { display: grid; grid-template-columns: 1fr .7fr; gap: 56px; align-items: end; margin-bottom: 44px; }
+.vehicle-finder-heading h2,.vehicle-finder-next h2 { margin: 16px 0 0; font-family: var(--font-display); font-size: clamp(40px,5.6vw,72px); line-height: .94; letter-spacing: -.045em; text-transform: uppercase; }
+.vehicle-finder-heading h2 span { color: var(--anvera-red); }
+.vehicle-finder-heading > p,.vehicle-finder-next p { color: var(--cds-text-secondary); font-size: 14px; line-height: 1.85; }
+.vehicle-finder-form { padding: clamp(22px,4vw,44px); background: var(--cds-layer-01); }
+.vehicle-finder-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 26px 20px; }
+.vehicle-finder-field { display: grid; gap: 9px; min-width: 0; }
+.vehicle-finder-field > span { color: var(--cds-text-secondary); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.vehicle-finder-field select { width: 100%; min-height: 50px; padding: 0 42px 0 14px; appearance: none; border: 0; border-bottom: 1px solid var(--cds-border-strong); border-radius: 0; color: var(--cds-text-primary); background: var(--cds-field) linear-gradient(45deg,transparent 50%,#525252 50%) calc(100% - 19px) 22px/6px 6px no-repeat; background-image: linear-gradient(45deg,transparent 50%,#525252 50%),linear-gradient(135deg,#525252 50%,transparent 50%); background-position: calc(100% - 19px) 22px,calc(100% - 14px) 22px; background-size: 5px 5px,5px 5px; background-repeat: no-repeat; }
+.vehicle-finder-field select:focus { outline: 2px solid var(--cds-focus); outline-offset: -2px; }
+.vehicle-finder-field select:disabled { color: #8d8d8d; background-color: #e8e8e8; cursor: not-allowed; }
+.vehicle-finder-actions { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 34px; }
+.vehicle-finder-actions p { margin: 0; color: var(--cds-text-secondary); font-size: 12px; }
+.vehicle-finder-actions button:disabled { opacity: .48; cursor: not-allowed; transform: none; }
+.vehicle-finder-disclaimer { max-width: 900px; margin: 22px 0 0; color: var(--cds-text-secondary); font-size: 11px; line-height: 1.8; }
+.vehicle-finder-results { margin-top: 34px; padding: 28px; background: #fff; border-top: 3px solid var(--anvera-red); }
+.vehicle-finder-results > h3 { margin: 0 0 20px; font-size: 18px; text-transform: uppercase; letter-spacing: .04em; }
+.vehicle-fitment-result { padding: 22px 0; border-top: 1px solid var(--cds-border-subtle); }
+.vehicle-fitment-result h4 { margin: 0 0 14px; font-size: 15px; }
+.vehicle-fitment-result dl { display: flex; flex-wrap: wrap; gap: 10px 28px; margin: 0; }
+.vehicle-fitment-result dl div { min-width: 120px; }
+.vehicle-fitment-result dt { color: var(--cds-text-secondary); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+.vehicle-fitment-result dd { margin: 4px 0 0; font-size: 14px; font-weight: 700; }
+.vehicle-fitment-result details { margin-top: 16px; color: var(--cds-text-secondary); font-size: 12px; }
+.vehicle-fitment-result summary { cursor: pointer; }
+.vehicle-fitment-result pre { max-height: 360px; overflow: auto; padding: 16px; color: #e8e8e8; background: #161616; font-size: 11px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.vehicle-finder-next { display: flex; align-items: end; justify-content: space-between; gap: 36px; padding: clamp(64px,8vw,112px) var(--page-gutter); color: white; background: #111418; }
+.vehicle-finder-next > div { width: min(100%,var(--content-max)); }
+.vehicle-finder-next h2 { margin-bottom: 20px; }
+.vehicle-finder-next p { max-width: 540px; color: rgba(255,255,255,.62); }
+@media (max-width: 760px) {
+  .vehicle-finder-hero { min-height: 500px; }
+  .vehicle-finder-heading { grid-template-columns: 1fr; gap: 14px; }
+  .vehicle-finder-grid { grid-template-columns: 1fr 1fr; gap: 20px 12px; }
+  .vehicle-finder-actions,.vehicle-finder-next { align-items: stretch; flex-direction: column; }
+  .vehicle-finder-actions .cds-btn { width: 100%; }
+}
+@media (max-width: 480px) { .vehicle-finder-grid { grid-template-columns: 1fr; } }
