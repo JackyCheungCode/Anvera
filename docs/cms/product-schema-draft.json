@@ -1,0 +1,283 @@
+{
+  "$schema": "https://emdashcms.com/seed.schema.json",
+  "version": "1",
+  "meta": {
+    "name": "ANVERA Product Catalog Schema Draft",
+    "description": "Draft only. Do not merge into the active seed or apply to production before explicit migration approval.",
+    "author": "ANVERA"
+  },
+  "collections": [
+    {
+      "slug": "wheel_products",
+      "label": "Wheel Products",
+      "labelSingular": "Wheel Product",
+      "urlPattern": "/wheels/models/{slug}",
+      "supports": [
+        "drafts",
+        "revisions",
+        "preview",
+        "search",
+        "seo"
+      ],
+      "fields": [
+        {
+          "slug": "title",
+          "label": "Product Name",
+          "type": "string",
+          "required": true,
+          "searchable": true
+        },
+        {
+          "slug": "model_code",
+          "label": "Model Code",
+          "type": "string",
+          "required": true,
+          "unique": true,
+          "searchable": true
+        },
+        {
+          "slug": "construction_type",
+          "label": "Construction Type",
+          "type": "select",
+          "required": true,
+          "options": [
+            {
+              "label": "Monoblock",
+              "value": "monoblock"
+            },
+            {
+              "label": "Two-piece",
+              "value": "two_piece"
+            },
+            {
+              "label": "Three-piece",
+              "value": "three_piece"
+            }
+          ]
+        },
+        {
+          "slug": "short_description",
+          "label": "Short Description",
+          "type": "text",
+          "required": true,
+          "searchable": true
+        },
+        {
+          "slug": "design_story",
+          "label": "Design Story",
+          "type": "portableText"
+        },
+        {
+          "slug": "hero_image",
+          "label": "Hero Image",
+          "type": "image"
+        },
+        {
+          "slug": "gallery_images",
+          "label": "Gallery Images",
+          "type": "repeater"
+        },
+        {
+          "slug": "available_finishes",
+          "label": "Available Finishes",
+          "type": "reference",
+          "options": {
+            "collection": "wheel_finishes",
+            "multiple": true
+          }
+        },
+        {
+          "slug": "featured",
+          "label": "Featured",
+          "type": "boolean",
+          "defaultValue": false,
+          "indexed": true
+        },
+        {
+          "slug": "display_order",
+          "label": "Display Order",
+          "type": "integer",
+          "defaultValue": 100,
+          "indexed": true
+        },
+        {
+          "slug": "technical_disclaimer",
+          "label": "Technical Disclaimer",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "slug": "wheel_finishes",
+      "label": "Wheel Finishes",
+      "labelSingular": "Wheel Finish",
+      "supports": [
+        "drafts",
+        "revisions",
+        "search"
+      ],
+      "fields": [
+        {
+          "slug": "title",
+          "label": "Finish Name",
+          "type": "string",
+          "required": true,
+          "searchable": true
+        },
+        {
+          "slug": "finish_code",
+          "label": "Finish Code",
+          "type": "string",
+          "required": true,
+          "unique": true
+        },
+        {
+          "slug": "finish_family",
+          "label": "Finish Family",
+          "type": "select",
+          "required": true,
+          "options": [
+            {
+              "label": "Paint",
+              "value": "paint"
+            },
+            {
+              "label": "Metal",
+              "value": "metal"
+            },
+            {
+              "label": "Machined",
+              "value": "machined"
+            },
+            {
+              "label": "Special",
+              "value": "special"
+            }
+          ]
+        },
+        {
+          "slug": "finish_description",
+          "label": "Description",
+          "type": "text"
+        },
+        {
+          "slug": "swatch_hex",
+          "label": "Swatch Hex",
+          "type": "string"
+        },
+        {
+          "slug": "sample_image",
+          "label": "Sample Image",
+          "type": "image"
+        },
+        {
+          "slug": "active",
+          "label": "Active",
+          "type": "boolean",
+          "defaultValue": true,
+          "indexed": true
+        },
+        {
+          "slug": "display_order",
+          "label": "Display Order",
+          "type": "integer",
+          "defaultValue": 100,
+          "indexed": true
+        }
+      ]
+    },
+    {
+      "slug": "wheel_fitments",
+      "label": "Verified Fitments",
+      "labelSingular": "Fitment",
+      "supports": [
+        "drafts",
+        "revisions",
+        "search"
+      ],
+      "fields": [
+        {
+          "slug": "title",
+          "label": "Fitment Label",
+          "type": "string",
+          "required": true,
+          "searchable": true
+        },
+        {
+          "slug": "vehicle_make",
+          "label": "Vehicle Make",
+          "type": "string",
+          "required": true,
+          "indexed": true
+        },
+        {
+          "slug": "vehicle_model",
+          "label": "Vehicle Model",
+          "type": "string",
+          "required": true,
+          "indexed": true
+        },
+        {
+          "slug": "model_year_from",
+          "label": "Model Year From",
+          "type": "integer"
+        },
+        {
+          "slug": "model_year_to",
+          "label": "Model Year To",
+          "type": "integer"
+        },
+        {
+          "slug": "front_spec",
+          "label": "Front Specification",
+          "type": "json"
+        },
+        {
+          "slug": "rear_spec",
+          "label": "Rear Specification",
+          "type": "json"
+        },
+        {
+          "slug": "products",
+          "label": "Applicable Products",
+          "type": "reference",
+          "options": {
+            "collection": "wheel_products",
+            "multiple": true
+          }
+        },
+        {
+          "slug": "verification_status",
+          "label": "Verification Status",
+          "type": "select",
+          "required": true,
+          "options": [
+            {
+              "label": "Pending",
+              "value": "pending"
+            },
+            {
+              "label": "Verified",
+              "value": "verified"
+            },
+            {
+              "label": "Retired",
+              "value": "retired"
+            }
+          ],
+          "indexed": true
+        },
+        {
+          "slug": "verification_note",
+          "label": "Verification Note",
+          "type": "text"
+        },
+        {
+          "slug": "verified_at",
+          "label": "Verified At",
+          "type": "datetime"
+        }
+      ]
+    }
+  ]
+}
