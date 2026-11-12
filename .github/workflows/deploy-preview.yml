@@ -44,6 +44,15 @@ jobs:
           pnpm typecheck
           pnpm build
 
+      - name: Inspect generated Worker and adapter entrypoints
+        run: |
+          echo "=== Astro dist ==="
+          find dist -maxdepth 5 -print | sort | head -200
+          echo "=== Cloudflare adapter package ==="
+          find node_modules/@astrojs/cloudflare -maxdepth 5 -type f -print | sort | head -200
+          echo "=== Adapter exports ==="
+          node -e "console.log(JSON.stringify(require('./node_modules/@astrojs/cloudflare/package.json').exports, null, 2))"
+
       - name: Deploy isolated preview Worker
         run: pnpm exec wrangler deploy --config wrangler.preview.jsonc
         env:
