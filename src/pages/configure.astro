@@ -82,17 +82,18 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
       </section>
 
       <section class="studio-step" data-step="2" hidden>
-        <div class="step-heading"><div><p class="step-kicker">02 / VEHICLE SELECTION</p><h2>Find your vehicle fitment.</h2><p>Select the market and exact vehicle configuration. Available factory and alternative fitments will be grouped and shown below.</p></div><span class="step-index">02—07</span></div>
-        <div class="configure-fitment-block"><p class="step-kicker">VEHICLE / FITMENT REFERENCE</p><VehicleFitmentFinder compact={true} /></div>
+        <div class="step-heading"><div><p class="step-kicker">02 / VEHICLE SELECTION</p><h2>Find your vehicle fitment.</h2><p>Select your market and exact vehicle configuration. Fitment records will be retrieved for the next step.</p></div><span class="step-index">02—07</span></div>
+        <div class="vehicle-selection-shell"><VehicleFitmentFinder compact={true} resultsTarget="fitment-results-slot" /></div>
 
-        <p class="studio-note" id="vehicle-status" role="status">Choose your market, manufacturer, model and vehicle details. Select a fitment result to continue.</p>
+        <p class="studio-note" id="vehicle-status" role="status">Choose your market, manufacturer, model and vehicle details to continue to fitment results.</p>
       </section>
 
       <section class="studio-step" data-step="3" hidden>
-        <div class="step-heading"><div><p class="step-kicker">03 / SPECIFICATION</p><h2>Review your wheel specification.</h2><p>Your selected vehicle fitment is the reference. Adjust dimensions only when you need a bespoke setup.</p></div><span class="step-index">03—07</span></div>
+        <div class="step-heading"><div><p class="step-kicker">03 / FITMENT & SPECIFICATION</p><h2>Choose your fitment reference.</h2><p>Review the available vehicle configurations, select the correct reference, then confirm or customize your wheel dimensions.</p></div><span class="step-index">03—07</span></div>
+        <div class="fitment-results-slot" id="fitment-results-slot"></div>
         <div class="spec-detail" id="spec-detail">
           <div class="spec-detail-heading"><div><p class="step-kicker" id="spec-detail-kicker">SELECTED VEHICLE FITMENT</p><h3 id="spec-detail-title">Selected fitment specification</h3></div><span class="review-status">ENGINEERING REVIEW REQUIRED</span></div>
-          <p class="fitment-status" id="fitment-status" role="status">Select a fitment result in Step 2. Its front and rear dimensions will appear here.</p>
+          <p class="fitment-status" id="fitment-status" role="status">Select a fitment result above. Its front and rear dimensions will appear here.</p>
           <div class="spec-table-wrap" id="spec-reference"><table class="spec-table"><thead><tr><th>Parameter</th><th>Front</th><th>Rear</th></tr></thead><tbody><tr><th>Diameter</th><td id="front-diameter">—</td><td id="rear-diameter">—</td></tr><tr><th>Width / J</th><td id="front-width">—</td><td id="rear-width">—</td></tr><tr><th>PCD</th><td id="front-pcd">Vehicle-specific</td><td id="rear-pcd">Vehicle-specific</td></tr><tr><th>Offset / ET</th><td id="front-offset">—</td><td id="rear-offset">—</td></tr><tr><th>Centre bore</th><td id="front-bore">—</td><td id="rear-bore">—</td></tr></tbody></table><p class="locked-fitment-note">PCD and centre bore are vehicle-dependent safety dimensions. They cannot be changed in a standard fitment selection. Request engineering review for any change.</p></div>
           <div class="finish-selection" id="finish-selection"><label>Surface treatment <div class="carbon-dropdown" data-carbon-dropdown><input type="hidden" id="wheel-finish" value="brushed" /><button type="button" class="carbon-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false"><span data-dropdown-label>Brushed</span><span>⌄</span></button><div class="carbon-dropdown-menu" role="listbox" hidden><button type="button" role="option" data-value="brushed">Brushed</button><button type="button" role="option" data-value="polished">Polished</button><button type="button" role="option" data-value="machined">Machined</button><button type="button" role="option" data-value="painted">Painted</button><button type="button" role="option" data-value="powder-coated">Powder coated</button><button type="button" role="option" data-value="anodized">Anodized</button></div></div></label><label>Colour <div class="carbon-dropdown" data-carbon-dropdown><input type="hidden" id="wheel-colour" value="satin-black" /><button type="button" class="carbon-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false"><span data-dropdown-label>Satin Black</span><span>⌄</span></button><div class="carbon-dropdown-menu" role="listbox" hidden><button type="button" role="option" data-value="satin-black">Satin Black</button><button type="button" role="option" data-value="gloss-black">Gloss Black</button><button type="button" role="option" data-value="titanium">Titanium</button><button type="button" role="option" data-value="graphite">Graphite</button><button type="button" role="option" data-value="silver">Silver</button><button type="button" role="option" data-value="bronze">Bronze</button><button type="button" role="option" data-value="custom">Custom Colour</button></div></div></label></div>
           <section class="custom-spec-entry" aria-labelledby="custom-spec-heading">
@@ -298,14 +299,14 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
     next.hidden = state.step===6 || state.step===7;
     previous.hidden = state.step===7;
     root.querySelector("#studio-controls").hidden = state.step===7;
-    hint.textContent = state.step===1 ? "Choose a wheel design to continue." : state.step===2 ? "Select your vehicle and one fitment result." : state.step===3 ? "Review the selected fitment or customize your dimensions." : state.step===5 ? "Complete the required delivery and contact details." : "Review the information before continuing.";
+    hint.textContent = state.step===1 ? "Choose a wheel design to continue." : state.step===2 ? "Select your market and vehicle configuration." : state.step===3 ? "Select a fitment reference and review your specification." : state.step===5 ? "Complete the required delivery and contact details." : "Review the information before continuing.";
     next.disabled = !canContinue();
     next.textContent = state.step===5 ? "Review confirmation →" : "Next step →";
     saveDraft();
   };
   const canContinue = () => {
     if(state.step===1) return Boolean(state.product);
-    if(state.step===2) return Boolean(state.vehicle.make && state.vehicle.model && (state.vehicle.year || state.vehicle.generation) && state.selectedFitment);
+    if(state.step===2) return Boolean(state.vehicle.make && state.vehicle.model && (state.vehicle.year || state.vehicle.generation));
     if(state.step===3) return state.specPath==="custom" ? ["custom-front-diameter","custom-front-width","custom-rear-diameter","custom-rear-width"].every(id=>root.querySelector("#"+id).value.trim()) : Boolean(state.selectedFitment);
     if(state.step===5) return ["delivery-country","delivery-city","delivery-address","contact-name","contact-email"].every(id=>root.querySelector("#"+id).value.trim()) && (root.querySelector("#delivery-city").value!=="__other__" || root.querySelector("#delivery-city-other").value.trim());
     return [4,6].includes(state.step);
@@ -382,4 +383,23 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
 #custom-spec-fields input[readonly]{background:#252a30!important;color:#a7adb4!important}
 #custom-spec-fields .pcd-change-request{background:#202328;color:#a7adb4;padding:18px}
 @media(max-width:680px){.custom-spec-entry{align-items:stretch;flex-direction:column}.custom-spec-entry .carbon-button{width:100%}}
+</style>
+
+<style is:global>
+/* Configure flow: one aligned content rail; vehicle selection is a quiet dark surface. */
+#configuration-studio .vehicle-selection-shell,
+#configuration-studio .fitment-results-slot,
+#configuration-studio .spec-detail{width:100%;max-width:100%;min-width:0;margin-left:auto;margin-right:auto}
+#configuration-studio .vehicle-selection-shell{padding:0;background:transparent;border:0;box-shadow:none;border-radius:0}
+#configuration-studio .vehicle-finder-section--compact{width:100%;max-width:100%;margin:0;padding:0;background:transparent;border:0;box-shadow:none}
+#configuration-studio .vehicle-finder-section--compact .vehicle-finder-inner{width:100%;max-width:100%;margin:0}
+#configuration-studio .vehicle-finder-section--compact .vehicle-finder-form{width:100%;padding:24px 0;background:transparent;border:0;box-shadow:none;border-radius:0}
+#configuration-studio .vehicle-finder-section--compact .vehicle-finder-grid{width:100%;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 24px}
+#configuration-studio .fitment-results-slot{margin:0 0 28px;padding:0;background:transparent;border:0;box-shadow:none}
+#configuration-studio .fitment-results-slot .vehicle-finder-results{width:100%;max-width:100%;margin:0;padding:0;background:transparent;border:0;box-shadow:none}
+#configuration-studio .fitment-results-slot .vf-table-scroll{width:100%;max-width:100%}
+#configuration-studio .fitment-results-slot .vf-fitment-table{width:100%}
+#configuration-studio .spec-detail{margin-top:24px}
+@media(max-width:760px){#configuration-studio .vehicle-finder-section--compact .vehicle-finder-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){#configuration-studio .vehicle-finder-section--compact .vehicle-finder-grid{grid-template-columns:1fr}}
 </style>
