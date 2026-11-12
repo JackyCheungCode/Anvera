@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS anvera_dealer_application_events (
   id TEXT PRIMARY KEY NOT NULL,
   application_id TEXT NOT NULL,
   event_type TEXT NOT NULL
-    CHECK (event_type IN ('status_changed', 'note_added')),
+    CHECK (event_type IN ('created', 'status_changed', 'note_added')),
   actor_user_id TEXT NOT NULL,
   previous_value TEXT,
   new_value TEXT,
