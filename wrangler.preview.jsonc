@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "anvera-preview",
-  "main": "./dist/_worker.js/index.js",
+  "main": "./src/worker.ts",
   "compatibility_date": "2026-11-12",
   "compatibility_flags": ["nodejs_compat"],
   "d1_databases": [{
@@ -13,6 +13,13 @@
     "binding": "MEDIA",
     "bucket_name": "anvera-preview-media"
   }],
+  "kv_namespaces": [{
+    "binding": "SESSION",
+    "id": "472d64d0b1a34140b005dd92d2bcbb35"
+  }],
+  "images": {
+    "binding": "IMAGES"
+  },
   "ratelimits": [{
     "name": "PUBLIC_INTAKE_LIMITER",
     "namespace_id": "7311202602",
