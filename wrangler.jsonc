@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "anvera",
+  "main": "./src/worker.ts",
+  "compatibility_date": "2026-11-12",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "anvera",
+      "database_id": "311616cb-e9fb-4dfd-a8cf-c4df68d45e36"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "anvera-media"
+    }
+  ],
+  "triggers": { "crons": ["* * * * *"] }
+}
