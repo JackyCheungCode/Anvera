@@ -544,7 +544,9 @@ export function ProductIntelligence() {
                     <td><input aria-label="Center bore in millimeters" type="number" min="1" step="0.1" value={row.centerBore} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "centerBore", event.target.value))} /></td>
                     <td><input aria-label="Load rating in kilograms" type="number" min="1" step="1" value={row.loadRating} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "loadRating", event.target.value))} /></td>
                     <td><input aria-label="Specification evidence reference" type="text" value={row.evidenceRef ?? ""} placeholder="Drawing / test report ID" onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "evidenceRef", event.target.value))} /></td>
-                    <td><span className={`api-library-status api-library-status--${row.status === "Engineering Approved" ? "approved" : row.status === "Restricted" ? "restricted" : row.status === "Engineering Review" ? "pending_review" : row.status === "Factory Supported" ? "factory_supported" : "draft"}`}>{row.status || "Draft"}</span></td>
+                    <td>{["Engineering Approved", "Restricted"].includes(row.status) ?
+                      <span className={`api-library-status api-library-status--${row.status === "Engineering Approved" ? "approved" : "restricted"}`}>{row.status}</span> :
+                      <CustomSelect label="Specification status" value={row.status || "Draft"} options={["Draft", "Factory Supported", "Engineering Review"]} onChange={(value) => setDocument((current) => updateSpecification(current, productIndex, row.id, "status", value))} />}</td>
                     <td><button className="api-remove-spec" type="button" aria-label="Remove specification row" onClick={() => setDocument((current) => removeSpecification(current, productIndex, row.id))}>×</button></td>
                   </tr>)}</tbody>
                 </table></div>
