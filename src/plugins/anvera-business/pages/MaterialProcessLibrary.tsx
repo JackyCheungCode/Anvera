@@ -51,7 +51,7 @@ function StatusControl({ value, onChange }: { value: string; onChange: (value: s
 }
 
 export function MaterialProcessLibrary({ onCatalogChange }: {
-  onCatalogChange?: (materials: Array<{ grade: string; family: string }>, processes: Array<{ process_type: string }>) => void;
+  onCatalogChange?: (materials: Array<{ id: string; code: string; name: string; grade: string; family: string }>, processes: Array<{ id: string; code: string; name: string; process_type: string }>) => void;
 }) {
   const [materials, setMaterials] = useState<MaterialProfile[]>([]);
   const [processes, setProcesses] = useState<ForgingProcess[]>([]);
@@ -84,7 +84,7 @@ export function MaterialProcessLibrary({ onCatalogChange }: {
       const nextProcesses = result.forgingProcesses ?? [];
       setMaterials(nextMaterials);
       setProcesses(nextProcesses);
-      if (nextMaterials.length || nextProcesses.length) onCatalogChange?.(nextMaterials.filter((item) => !["restricted", "archived"].includes(item.status)), nextProcesses.filter((item) => !["restricted", "archived"].includes(item.status)));
+      onCatalogChange?.(nextMaterials.filter((item) => item.status === "approved").map(({ id, code, name, grade, family }) => ({ id, code, name, grade, family })), nextProcesses.filter((item) => item.status === "approved").map(({ id, code, name, process_type }) => ({ id, code, name, process_type })));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to load material and forging libraries.");
     } finally {
