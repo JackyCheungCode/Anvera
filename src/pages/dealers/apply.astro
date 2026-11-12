@@ -7,11 +7,12 @@ import TextInput from "../../components/ui/TextInput.astro";
   <section class="dealer-apply-layout">
     <div><p class="section-kicker">Partner profile / 01</p><h2>About your<br />business.</h2><p>Prepare your company profile for the ANVERA partner team. Required commercial and compliance checks will take place during the review process.</p><div class="dealer-review-note"><b>Review process</b><span>Administrator approval is required before any dealer account is activated.</span></div></div>
     <form id="dealer-application" class="dealer-application-form">
+      <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="form-honeypot" />
       <div class="brief-form-heading"><span>01 — COMPANY INFORMATION</span><span>YOUR BUSINESS</span></div>
       <div class="brief-grid">
         <TextInput id="company-name" name="companyName" label="Legal company name" required />
         <TextInput id="trading-name" name="tradingName" label="Trading name" />
-        <TextInput id="company-website" name="website" label="Company website" type="url" placeholder="https://" />
+        <TextInput id="company-website" name="companyWebsite" label="Company website" type="url" placeholder="https://" />
         <TextInput id="business-type" name="businessType" label="Business type" placeholder="Retailer, distributor, workshop…" required />
       </div>
       <div class="brief-form-heading"><span>02 — MARKET & EXPERIENCE</span><span>REGIONAL COVERAGE</span></div>
@@ -29,15 +30,27 @@ import TextInput from "../../components/ui/TextInput.astro";
         <TextInput id="contact-phone" name="phone" label="Telephone / WhatsApp" type="tel" />
       </div>
       <div class="cds-field brief-notes"><label class="cds-label" for="dealer-notes">Tell us about your business</label><textarea class="cds-textarea" id="dealer-notes" name="notes" rows="5" placeholder="Customer profile, sales channels, workshop capability, regional coverage…"></textarea></div>
-      <div class="brief-actions"><button class="cds-btn cds-btn--carbon" type="button" id="copy-dealer-application">Copy application summary ↗</button><button class="brief-reset" type="reset">Clear all fields</button></div>
-      <p class="brief-feedback" id="dealer-feedback" role="status" aria-live="polite">This preview prepares your application summary locally. Secure submission, review workflow and account activation will be connected with the dealer backend phase.</p>
+      <div class="brief-actions"><button class="cds-btn cds-btn--carbon" type="submit" id="submit-dealer-application">Submit dealer application ↗</button><button class="brief-reset" type="button" id="copy-dealer-application">Copy application summary</button><button class="brief-reset" type="reset">Clear all fields</button></div>
+      <div class="cf-turnstile" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || ""}></div>
+      <p class="brief-feedback" id="dealer-feedback" role="status" aria-live="polite">Applications are subject to manual review. Submission does not activate a dealer account.</p>
     </form>
   </section>
+  <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </Base>
 <script>
   const form = document.querySelector<HTMLFormElement>("#dealer-application");
   const button = document.querySelector<HTMLButtonElement>("#copy-dealer-application");
   const feedback = document.querySelector<HTMLElement>("#dealer-feedback");
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+    const data = new FormData(form);
+    const payload = Object.fromEntries(data.entries());
+    payload.turnstileToken = String(data.get("cf-turnstile-response") || "");
+    const response = await fetch("/api/dealer-applications", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    const result = await response.json().catch(() => ({}));
+    if (feedback) feedback.textContent = response.ok ? "Application received. Your reference is " + result.referenceCode + ". Our team will review it manually." : "We could not submit your application (" + (result.error || response.status) + "). Please try again later.";
+  });
   button?.addEventListener("click", async () => {
     if (!form) return;
     if (!form.reportValidity()) return;
