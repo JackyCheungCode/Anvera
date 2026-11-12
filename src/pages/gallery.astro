@@ -1,0 +1,23 @@
+---
+import Base from "../layouts/Base.astro";
+const projects = [
+  { n:"01", name:"The 911 commission", type:"MONOBLOCK / PERFORMANCE", vehicle:"Porsche 911", tone:"silver" },
+  { n:"02", name:"A study in contrast", type:"TWO-PIECE / BESPOKE", vehicle:"Grand touring", tone:"dark" },
+  { n:"03", name:"Form in motion", type:"THREE-PIECE / INDIVIDUAL", vehicle:"Performance coupe", tone:"warm" },
+  { n:"04", name:"Precision, up close", type:"DETAIL / FINISH", vehicle:"Surface study", tone:"detail" }
+];
+---
+<Base title="Gallery" description="A visual journal of forged wheel design, material, finish and automotive expression from ANVERA.">
+  <section class="gallery-hero">
+    <div class="gallery-hero-inner"><p class="eyebrow">ANVERA / VISUAL JOURNAL</p><h1>Made to be<br /><span>remembered.</span></h1><p>A collection of forms, surfaces and considered details. A point of departure for your own wheel project.</p></div>
+  </section>
+  <section class="gallery-intro"><p class="section-kicker">Selected perspectives</p><h2>Every project<br />has its own character.</h2><p>Explore construction, proportion and finish. The projects shown here are visual directions, not a representation of confirmed production specifications.</p></section>
+  <section class="gallery-grid">
+    {projects.map((project) => <article class="gallery-tile">
+      <div class:list={["gallery-art", `gallery-art--${project.tone}`]} aria-hidden="true"><div class="wheel-render"></div></div>
+      <div class="gallery-tile-meta"><span>{project.n} / 04</span><span>{project.type}</span></div>
+      <h3>{project.name}</h3><p>{project.vehicle}</p>
+    </article>)}
+  </section>
+  <section class="gallery-end"><p class="section-kicker">Create your own direction</p><h2>Start with<br />your vision.</h2><a class="cds-btn cds-btn--primary" href="/custom-inquiry">Discuss a project <span aria-hidden="true">↗</span></a></section>
+</Base>
