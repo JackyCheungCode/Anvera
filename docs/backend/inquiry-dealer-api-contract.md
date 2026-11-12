@@ -17,7 +17,7 @@ It deliberately does not create EmDash users, change EmDash core tables, send em
 
 ### `POST /api/inquiries`
 
-Accepts JSON from the custom wheel inquiry form.
+Accepts JSON without files or multipart form data with repeated `attachments` fields from the custom wheel inquiry form.
 
 Required:
 - `customerName`
@@ -33,9 +33,9 @@ Optional:
 - `website` (honeypot; any non-empty value is silently discarded with a generic accepted response)
 - `turnstileToken` (required for successful server verification)
 
-Success: `201 { ok: true, referenceCode }`.
+Success: `201 { ok: true, referenceCode, attachmentCount }` (attachmentCount is zero when no files are attached).
 
-Validation: reject malformed JSON, invalid email, oversized request bodies, invalid year/quantity, unsupported enum values and non-empty honeypot; string fields are normalized and capped before persistence. Normalize whitespace; never trust client-provided status, timestamps, assignment, actor IDs or R2 keys.
+Validation: reject malformed bodies, invalid email, oversized request bodies, invalid year/quantity, unsupported enum values and non-empty honeypot; string fields are normalized and capped before persistence. Multipart files are limited to five, 8 MiB each and 20 MiB total. Normalize whitespace; never trust client-provided status, timestamps, assignment, actor IDs or R2 keys.
 
 ### `POST /api/dealer-applications`
 
@@ -62,7 +62,7 @@ Implemented Astro server endpoints:
 - POST /api/inquiries: validates customer and vehicle fields, maps form values to the D1 schema, verifies Turnstile, and creates the inquiry plus its initial created event in one D1 batch.
 - POST /api/dealer-applications: validates company/contact fields, verifies Turnstile and creates a pending application. It does not create a dealer identity.
 
-Both endpoints enforce same-origin browser requests, JSON content type, a 12 KiB request-body limit, field length limits, basic email validation and a honeypot. The server requires ANVERA_BUSINESS_API_ENABLED=true and TURNSTILE_SECRET_KEY; absent bindings fail closed. The public forms now POST to these endpoints and display a reference code only after a successful response.
+Both endpoints enforce same-origin browser requests, accepted content types, request-body limits, field length limits, basic email validation and a honeypot. Inquiry multipart requests allow up to 22 MiB; JSON and dealer application requests are limited to 12 KiB. The server requires ANVERA_BUSINESS_API_ENABLED=true and TURNSTILE_SECRET_KEY; absent bindings fail closed. The public forms now POST to these endpoints and display a reference code only after a successful response.
 
 The public Turnstile widget also requires PUBLIC_TURNSTILE_SITE_KEY at build time. Configure the public site key and Worker secret in the preview environment before testing.
 
@@ -151,12 +151,12 @@ Before enabling the endpoints:
 2. Configure Turnstile site/secret keys as Worker secrets.
 3. Configure Cloudflare edge rate limiting for both public POST routes and test the thresholds.
 4. Confirm the exact EmDash server-side session and role-verification API for the installed 1.5.0 version.
-4. Select an email provider for acknowledgement and internal notifications.
-5. Add integration tests against a disposable D1 database and R2 test bucket.
-6. Only after those checks, enable the API feature flag and deploy to a non-production preview first.
+5. Select an email provider for acknowledgement and internal notifications.
+6. Add integration tests against a disposable D1 database and R2 test bucket.
+7. Only after those checks, enable the API feature flag and deploy to a non-production preview first.
 
 ## Current UI behavior
 
-The public inquiry and dealer application forms POST to the new server endpoints and show a reference code only after a successful database write. Turnstile Siteverify is implemented server-side. The endpoints remain unavailable while the feature flag is unset. Edge rate limiting, email notifications and attachment upload are not yet implemented.
+The public inquiry and dealer application forms POST to the new server endpoints and show a reference code only after a successful database write. Turnstile Siteverify is implemented server-side. The endpoints remain unavailable while the feature flag is unset. Private R2 attachment upload is implemented for inquiry submissions; authenticated staff download, edge rate limiting and email notifications are not yet implemented.
 
 The private administrator workbench is wired to the plugin route contracts in source, but D1-backed operations are feature-flagged off by default. A successful CI build does not mean these routes have been exercised against a migrated database.
