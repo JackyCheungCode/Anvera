@@ -51,3 +51,13 @@ Tables:
 The new migration is applied only to the isolated Preview D1 database in this implementation phase. Production continues using the first three Product Intelligence setup tables; production migration of the normalized libraries requires a separate explicit approval.
 
 The future engineering-review phase will own approval decisions and evidence verification. No record created here should be presented as a certified material, process or manufacturing claim.
+
+## Engineering review
+
+The final Review & Activation step includes a Material & Forging Review Queue:
+- Approve: changes the record to `approved` and locks direct edits.
+- Return for revision: returns the record to `draft` so the owner can revise and resubmit.
+- Restrict: marks the record `restricted` and removes it from product capability options.
+- Every decision is recorded in the append-only `anvera_pi_library_review_decisions` table with reviewer identity, note and before/after revisions.
+
+Review migration: `migrations/0003_product_intelligence_library_reviews.sql` (Preview only).
