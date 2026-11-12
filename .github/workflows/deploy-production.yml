@@ -45,6 +45,32 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
+      - name: Inspect generated vehicle API route registration
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          import path from "node:path";
+          const root = "dist/server";
+          const hits = [];
+          const walk = (dir) => {
+            for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+              const file = path.join(dir, entry.name);
+              if (entry.isDirectory()) walk(file);
+              else if (entry.name.endsWith(".mjs")) {
+                const source = fs.readFileSync(file, "utf8");
+                for (const needle of ["/api/vehicle-catalog", "vehicle-catalog"]) {
+                  const index = source.indexOf(needle);
+                  if (index >= 0) hits.push({ file, needle, excerpt: source.slice(Math.max(0, index - 180), index + 260) });
+                }
+              }
+            }
+          };
+          walk(root);
+          console.log(JSON.stringify(hits.slice(0, 12), null, 2));
+          if (!hits.some(hit => hit.needle === "vehicle-catalog")) throw new Error("Vehicle catalog route module was not emitted.");
+          NODE
+
+
       - name: Validate production Worker bundle
         run: pnpm exec wrangler deploy --dry-run --config dist/server/wrangler.json
         env:
@@ -66,9 +92,20 @@ jobs:
           if (!page.ok || !html.includes("brand-logo") || !html.includes("vehicle-fitment")) {
             throw new Error(`Vehicle fitment page check failed (${page.status}).`);
           }
-          const response = await fetch(`${base}/api/vehicle-catalog?resource=makes&region=sam`);
-          const text = await response.text();
-          if (!response.ok) throw new Error(`Wheel-Size catalog failed (${response.status}): ${text.slice(0, 500)}`);
+          const candidates = [
+            "/api/vehicle-catalog?resource=makes&region=sam",
+            "/api/vehicle-catalog/?resource=makes&region=sam",
+            "/api/vehicle-catalog.json?resource=makes&region=sam"
+          ];
+          let response;
+          let text = "";
+          for (const path of candidates) {
+            const candidate = await fetch(`${base}${path}`);
+            const candidateText = await candidate.text();
+            console.log(`Route probe ${path}: HTTP ${candidate.status} (${candidate.headers.get("content-type")})`);
+            if (candidate.ok) { response = candidate; text = candidateText; break; }
+          }
+          if (!response) throw new Error("No tested vehicle-catalog route returned a successful response.");
           const payload = JSON.parse(text);
           const rows = Array.isArray(payload) ? payload : (payload.data ?? payload.results ?? payload.makes);
           if (!Array.isArray(rows) || rows.length === 0) {
