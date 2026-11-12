@@ -812,15 +812,17 @@ async function listProductLibraryReviewQueue(ctx: AdminContext) {
   const access = await getProductLibraryDatabase(ctx);
   if ("error" in access) return access.error;
   try {
-    const [materials, forgingProcesses] = await Promise.all([
+    const [materials, forgingProcesses, finishes] = await Promise.all([
       access.db.prepare("SELECT id, code, name, grade AS detail, status, revision, updated_at FROM anvera_pi_material_profiles WHERE status = 'pending_review' ORDER BY updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>(),
-      access.db.prepare("SELECT id, code, name, process_type AS detail, status, revision, updated_at FROM anvera_pi_forging_processes WHERE status = 'pending_review' ORDER BY updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>()
+      access.db.prepare("SELECT id, code, name, process_type AS detail, status, revision, updated_at FROM anvera_pi_forging_processes WHERE status = 'pending_review' ORDER BY updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>(),
+      access.db.prepare("SELECT id, code, name, finish_type AS detail, status, revision, updated_at FROM anvera_pi_finish_profiles WHERE status = 'pending_review' ORDER BY updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>()
     ]);
     return {
       available: true,
       items: [
         ...materials.results.map((item) => ({ ...item, entity_type: "material" })),
-        ...forgingProcesses.results.map((item) => ({ ...item, entity_type: "forging_process" }))
+        ...forgingProcesses.results.map((item) => ({ ...item, entity_type: "forging_process" })),
+        ...finishes.results.map((item) => ({ ...item, entity_type: "finish_profile" }))
       ].sort((a, b) => String(a.updated_at).localeCompare(String(b.updated_at)))
     };
   } catch (cause) {
@@ -839,10 +841,10 @@ async function reviewProductLibraryRecord(ctx: AdminContext) {
   const revision = Math.max(0, Math.floor(Number(body?.revision) || 0));
   const decision = inputString(body?.decision, 32);
   const note = inputString(body?.note, 2000);
-  if (!id || revision < 1 || !["material", "forging_process"].includes(entityType) || !["approved", "needs_revision", "restricted"].includes(decision)) {
+  if (!id || revision < 1 || !["material", "forging_process", "finish_profile"].includes(entityType) || !["approved", "needs_revision", "restricted"].includes(decision)) {
     return { reviewed: false, reason: "invalid_input" };
   }
-  const table = entityType === "material" ? "anvera_pi_material_profiles" : "anvera_pi_forging_processes";
+  const table = entityType === "material" ? "anvera_pi_material_profiles" : entityType === "forging_process" ? "anvera_pi_forging_processes" : "anvera_pi_finish_profiles";
   const current = await access.db.prepare(`SELECT code, status, revision FROM ${table} WHERE id = ? LIMIT 1`)
     .bind(id).first<{ code: string; status: string; revision: number }>();
   if (!current) return { reviewed: false, reason: "not_found" };
@@ -898,6 +900,12 @@ export function createPlugin() {
         request: { body: "json", maxBytes: 12 * 1024 },
         permission: "plugins:manage",
         handler: saveForgingProcess
+      },
+      "product-library/finish/save": {
+        methods: ["POST"],
+        request: { body: "json", maxBytes: 12 * 1024 },
+        permission: "plugins:manage",
+        handler: saveFinishProfile
       },
       "product-setup/load": {
         methods: ["GET"],
