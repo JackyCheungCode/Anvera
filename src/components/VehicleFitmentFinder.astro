@@ -44,6 +44,7 @@ const regions = [
   </div>
 </section>
 <script>
+  // @ts-nocheck — this browser-only script uses DOM APIs that conflict with Cloudflare Workers ambient DOM types.
   const form = document.querySelector<HTMLFormElement>("#vehicle-finder-form");
   const region = document.querySelector<HTMLSelectElement>("#vf-region");
   const make = document.querySelector<HTMLSelectElement>("#vf-make");
