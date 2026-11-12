@@ -1,4 +1,3 @@
-import { definePlugin } from "emdash";
 import type { PluginDescriptor } from "emdash";
 
 export function anveraBusinessPlugin(): PluginDescriptor {
