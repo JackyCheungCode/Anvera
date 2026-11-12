@@ -285,8 +285,8 @@ const safeProducts = products.map((product) => ({
       const button = document.createElement("button"); button.type = "button"; button.className = "vf-mini-trigger"; button.textContent = "All " + label.toLowerCase() + "s  ⌄";
       const menu = document.createElement("div"); menu.className = "vf-mini-menu"; menu.hidden = true;
       const choices = ["All",...options.filter(Boolean)];
-      choices.forEach((choice) => { const option = document.createElement("button"); option.type = "button"; option.textContent = choice; option.addEventListener("click", () => { filtered[key] = choice === "All" ? "" : choice; button.textContent = (choice === "All" ? "All " + label.toLowerCase() + "s" : choice) + "  ⌄"; menu.hidden = true; paint(); }); menu.append(option); });
-      button.addEventListener("click", () => { menu.hidden = !menu.hidden; }); host.append(button,menu); wrap.append(caption,host); controls.append(wrap);
+      choices.forEach((choice) => { const option = document.createElement("button"); option.type = "button"; option.textContent = choice; option.addEventListener("click", () => { filtered[key] = choice === "All" ? "" : choice; button.textContent = (choice === "All" ? "All " + label.toLowerCase() + "s" : choice) + "  ⌄"; menu.hidden = true; button.setAttribute("aria-expanded","false"); paint(); }); menu.append(option); });
+      button.setAttribute("aria-haspopup","listbox"); button.setAttribute("aria-expanded","false"); menu.setAttribute("role","listbox"); button.addEventListener("click", () => { menu.hidden = !menu.hidden; button.setAttribute("aria-expanded",String(!menu.hidden)); }); host.append(button,menu); wrap.append(caption,host); controls.append(wrap);
     };
     const unique = (key) => [...new Set(productRows.flatMap((product) => productValues(product,key)))].sort();
     createFilter("construction","Construction",unique(["construction","construction_type"]));
@@ -365,7 +365,7 @@ const safeProducts = products.map((product) => ({
     finally { submit.disabled = false; }
   });
 </script>
-<style>
+<style is:global>
 .vehicle-finder-section{padding:clamp(64px,8vw,112px) var(--page-gutter);background:#f1f2f3}
 .vehicle-finder-inner{width:min(100%,var(--content-max));margin:auto}
 .vehicle-finder-heading{display:flex;justify-content:space-between;align-items:end;gap:48px;margin-bottom:44px}
