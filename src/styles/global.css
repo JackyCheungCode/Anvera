@@ -496,3 +496,22 @@ img, video { display: block; max-width: 100%; }
 .wheel-product-missing h1 span { color:var(--anvera-red); }
 .wheel-product-missing > p:not(.eyebrow) { max-width:480px; margin:0 0 30px; color:rgba(255,255,255,.68); line-height:1.8; }
 @media(max-width:800px) { .wheel-product-hero { grid-template-columns:1fr; } .wheel-product-visual { min-height:380px; } .wheel-product-intro { padding:60px var(--page-gutter) 76px; } .wheel-product-story { grid-template-columns:1fr; gap:28px; padding-top:70px; padding-bottom:70px; } }
+
+
+/* Product gallery and finish details */
+.wheel-product-gallery { padding:88px var(--page-gutter); background:#e8e8e8; }
+.wheel-product-gallery-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:30px; margin-bottom:34px; }
+.wheel-product-gallery-heading h2,.wheel-product-finishes h2 { margin:0; font-family:var(--font-display); font-size:clamp(38px,5vw,64px); line-height:.94; text-transform:uppercase; }
+.wheel-product-gallery-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+.wheel-product-gallery-grid figure { margin:0; min-width:0; }
+.wheel-product-gallery-grid img { width:100%; aspect-ratio:4/3; object-fit:cover; background:#171b20; }
+.wheel-product-gallery-grid figcaption { min-height:28px; padding-top:10px; color:#525252; font-size:11px; }
+.wheel-product-finishes { padding:88px var(--page-gutter); color:white; background:#171b20; }
+.wheel-product-finishes > .section-kicker { color:rgba(255,255,255,.55); }
+.wheel-finish-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1px; margin-top:38px; background:#555b62; }
+.wheel-finish-grid article { min-height:140px; padding:24px; background:#22282f; }
+.wheel-finish-grid h3 { margin:0 0 10px; font-family:var(--font-display); font-size:22px; text-transform:uppercase; }
+.wheel-finish-grid p { margin:0 0 14px; color:rgba(255,255,255,.62); font-size:12px; line-height:1.7; }
+.wheel-finish-grid span { color:var(--anvera-red); font-size:10px; font-weight:800; letter-spacing:.14em; }
+@media(max-width:800px) { .wheel-product-gallery-grid,.wheel-finish-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .wheel-product-gallery-heading { align-items:flex-start; flex-direction:column; } }
+@media(max-width:560px) { .wheel-product-gallery-grid,.wheel-finish-grid { grid-template-columns:1fr; } .wheel-product-gallery,.wheel-product-finishes { padding:68px var(--page-gutter); } }
