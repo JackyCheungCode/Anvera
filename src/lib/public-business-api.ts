@@ -4,7 +4,7 @@ type BusinessEnv = {
   TURNSTILE_SECRET_KEY?: string;
 };
 
-type RequestContext = { request: Request; locals: { runtime?: { env?: BusinessEnv } } };
+type RequestContext = { request: Request; locals: unknown };
 
 export type PublicResult = { status: number; body: Record<string, unknown> };
 
@@ -78,7 +78,8 @@ export async function acceptPublicSubmission(ctx: RequestContext, required: stri
   const email = clean(data.email, 254).toLowerCase();
   if (!EMAIL_PATTERN.test(email)) return { ok: false, response: json({ ok: false, error: "invalid_email" }, 422) };
 
-  const env = ctx.locals.runtime?.env;
+  const locals = ctx.locals as { runtime?: { env?: BusinessEnv } };
+  const env = locals.runtime?.env;
   if (!env?.DB || env.ANVERA_BUSINESS_API_ENABLED !== "true") {
     return { ok: false, response: json({ ok: false, error: "submission_temporarily_unavailable" }, 503) };
   }
