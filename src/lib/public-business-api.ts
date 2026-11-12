@@ -2,6 +2,13 @@ type BusinessEnv = {
   DB: D1Database;
   ANVERA_BUSINESS_API_ENABLED?: string;
   TURNSTILE_SECRET_KEY?: string;
+  MEDIA?: {
+    put(key: string, value: ArrayBuffer | ArrayBufferView | Blob | string | null, options?: {
+      httpMetadata?: { contentType?: string; contentDisposition?: string };
+      customMetadata?: Record<string, string>;
+    }): Promise<{ size: number } | null>;
+    delete(key: string): Promise<void>;
+  };
 };
 
 type RequestContext = { request: Request; locals: unknown };
@@ -9,6 +16,9 @@ type RequestContext = { request: Request; locals: unknown };
 export type PublicResult = { status: number; body: Record<string, unknown> };
 
 const MAX_BODY_BYTES = 12 * 1024;
+const MAX_MULTIPART_BODY_BYTES = 22 * 1024 * 1024;
+const MAX_FILE_BYTES = 8 * 1024 * 1024;
+const MAX_FILES = 5;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function clean(value: unknown, max: number): string {
@@ -41,7 +51,7 @@ async function verifyTurnstile(token: string, secret: string, remoteIp: string |
 }
 
 export async function acceptPublicSubmission(ctx: RequestContext, required: string[]): Promise<
-  { ok: true; env: BusinessEnv; data: Record<string, unknown> } |
+  { ok: true; env: BusinessEnv; data: Record<string, unknown>; files: File[] } |
   { ok: false; response: Response }
 > {
   const { request } = ctx;
@@ -50,23 +60,39 @@ export async function acceptPublicSubmission(ctx: RequestContext, required: stri
   if (!origin || origin !== url.origin) {
     return { ok: false, response: json({ ok: false, error: "origin_not_allowed" }, 403) };
   }
-  if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {
-    return { ok: false, response: json({ ok: false, error: "json_required" }, 415) };
+  const contentType = request.headers.get("content-type")?.toLowerCase() || "";
+  const isJson = contentType.includes("application/json");
+  const isMultipart = contentType.includes("multipart/form-data");
+  if (!isJson && !isMultipart) {
+    return { ok: false, response: json({ ok: false, error: "unsupported_content_type" }, 415) };
   }
   const length = Number(request.headers.get("content-length") || 0);
-  if (length > MAX_BODY_BYTES) return { ok: false, response: json({ ok: false, error: "payload_too_large" }, 413) };
+  const bodyLimit = isMultipart ? MAX_MULTIPART_BODY_BYTES : MAX_BODY_BYTES;
+  if (length > bodyLimit) return { ok: false, response: json({ ok: false, error: "payload_too_large" }, 413) };
 
   let data: Record<string, unknown>;
+  let files: File[] = [];
   try {
-    const raw = await request.text();
-    if (new TextEncoder().encode(raw).byteLength > MAX_BODY_BYTES) {
-      return { ok: false, response: json({ ok: false, error: "payload_too_large" }, 413) };
+    if (isMultipart) {
+      const form = await request.formData();
+      const entries = [...form.entries()];
+      data = Object.fromEntries(entries.filter(([, value]) => typeof value === "string")) as Record<string, unknown>;
+      files = form.getAll("attachments").filter((value): value is File => typeof value !== "string" && value.size > 0);
+      const totalFileBytes = files.reduce((total, file) => total + file.size, 0);
+      if (files.length > MAX_FILES || files.some((file) => file.size > MAX_FILE_BYTES) || totalFileBytes > 20 * 1024 * 1024) {
+        return { ok: false, response: json({ ok: false, error: "attachment_limits_exceeded" }, 413) };
+      }
+    } else {
+      const raw = await request.text();
+      if (new TextEncoder().encode(raw).byteLength > MAX_BODY_BYTES) {
+        return { ok: false, response: json({ ok: false, error: "payload_too_large" }, 413) };
+      }
+      const parsed: unknown = JSON.parse(raw);
+      if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) throw new Error("invalid");
+      data = parsed as Record<string, unknown>;
     }
-    const parsed: unknown = JSON.parse(raw);
-    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) throw new Error("invalid");
-    data = parsed as Record<string, unknown>;
   } catch {
-    return { ok: false, response: json({ ok: false, error: "invalid_json" }, 400) };
+    return { ok: false, response: json({ ok: false, error: "invalid_request_body" }, 400) };
   }
 
   if (clean(data.website, 300)) {
@@ -89,7 +115,10 @@ export async function acceptPublicSubmission(ctx: RequestContext, required: stri
   const token = clean(data.turnstileToken, 2048);
   const verified = await verifyTurnstile(token, env.TURNSTILE_SECRET_KEY, request.headers.get("CF-Connecting-IP"), url.hostname);
   if (!verified) return { ok: false, response: json({ ok: false, error: "verification_failed" }, 403) };
-  return { ok: true, env, data: { ...data, email } };
+  if (files.length && !env.MEDIA) {
+    return { ok: false, response: json({ ok: false, error: "attachment_storage_not_configured" }, 503) };
+  }
+  return { ok: true, env, data: { ...data, email }, files };
 }
 
 export function publicJson(body: Record<string, unknown>, status: number): Response {
