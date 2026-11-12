@@ -549,7 +549,8 @@ async function saveProductSetup(ctx: AdminContext) {
         .bind(versionId, id, nextRevision, documentJson, stepStateJson, actorId, "Initial submission"));
     }
     await access.db.batch(statements);
-    return { saved: true, sessionId: id, revision: nextRevision, status: nextStatus };
+    const mappingWarning = await trySyncProductFinishMappings(access.db, id, document, actorId);
+    return { saved: true, sessionId: id, revision: nextRevision, status: nextStatus, mappingWarning };
   }
 
   const statements = [
@@ -564,7 +565,8 @@ async function saveProductSetup(ctx: AdminContext) {
   }
   const result = await access.db.batch(statements);
   if ((result[0]?.meta?.changes ?? 0) === 0) return { saved: false, reason: "revision_conflict", revision: nowRevision };
-  return { saved: true, sessionId: existing.id, revision: nextRevision, status: nextStatus };
+  const mappingWarning = await trySyncProductFinishMappings(access.db, existing.id, document, actorId);
+  return { saved: true, sessionId: existing.id, revision: nextRevision, status: nextStatus, mappingWarning };
 }
 
 
@@ -839,6 +841,16 @@ async function validateProductFinishMappings(db: D1Database, document: Record<st
   } catch (cause) {
     if (String(cause).toLowerCase().includes("no such table")) return false;
     throw cause;
+  }
+}
+
+async function trySyncProductFinishMappings(db: D1Database, sessionId: string, document: Record<string, unknown>, actorId: string) {
+  try {
+    await syncProductFinishMappings(db, sessionId, document, actorId);
+    return null;
+  } catch (cause) {
+    if (String(cause).toLowerCase().includes("no such table")) return null;
+    return "The setup draft was saved, but one or more finish mappings could not be synchronized. Check finish approval and construction compatibility.";
   }
 }
 
