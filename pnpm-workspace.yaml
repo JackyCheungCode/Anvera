@@ -7,3 +7,4 @@ minimumReleaseAgeExclude:
   - emdash
   - "@emdash-cms/*"
 blockExoticSubdeps: true
+nodeLinker: hoisted
