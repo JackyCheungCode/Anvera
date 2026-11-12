@@ -66,7 +66,7 @@ Both endpoints enforce same-origin browser requests, accepted content types, req
 
 The public Turnstile widget also requires PUBLIC_TURNSTILE_SITE_KEY at build time. Configure the public site key and Worker secret in the preview environment before testing.
 
-Important remaining gate: per-IP/email rate limiting is not implemented in application code. Configure and test a Cloudflare edge rate-limiting rule for both public POST routes before enabling the feature flag. Do not enable public submission until that control and the reviewed D1 migration are in place.
+The Worker Rate Limiting API binding is configured in Wrangler and enforced by the public endpoint helper. It allows five requests per 60 seconds for each endpoint, keyed separately by hashed client IP and normalized email. Cloudflare documents these limits as approximate and local to each edge location, so this is not a strict global quota; Turnstile remains required.
 
 ## Inquiry attachments
 
@@ -132,7 +132,7 @@ additional table in the draft only; it has not been applied to production.
 
 - Server-side schema validation and strict request-body size limits.
 - Honeypot plus Cloudflare Turnstile Siteverify before accepting public submissions.
-- Cloudflare edge rate limiting must be configured for both public POST routes before enabling submissions. Application-level per-IP/email throttling is not yet implemented; do not claim this control is active.
+- The Worker `PUBLIC_INTAKE_LIMITER` binding applies five requests per 60 seconds per endpoint, per hashed client IP and normalized email. Cloudflare's Worker Rate Limiting API is approximate and location-local, not a strict global quota; keep Turnstile enabled and treat this as a defence-in-depth control. Missing or failing rate-limit bindings fail closed.
 - Same-origin checks for browser form posts; CORS disabled unless a documented integration requires it.
 - No public read endpoint for inquiries, applications, dealer records or event logs.
 - Store uploads in R2 under generated opaque object keys; never accept caller-selected object keys.
@@ -157,6 +157,6 @@ Before enabling the endpoints:
 
 ## Current UI behavior
 
-The public inquiry and dealer application forms POST to the new server endpoints and show a reference code only after a successful database write. Turnstile Siteverify is implemented server-side. The endpoints remain unavailable while the feature flag is unset. Private R2 attachment upload is implemented for inquiry submissions; authenticated staff download, edge rate limiting and email notifications are not yet implemented.
+The public inquiry and dealer application forms POST to the new server endpoints and show a reference code only after a successful database write. Turnstile Siteverify is implemented server-side. The endpoints remain unavailable while the feature flag is unset. Private R2 attachment upload and Worker-level per-IP/email rate limiting are implemented for inquiry submissions; authenticated staff download and email notifications are not yet implemented.
 
 The private administrator workbench is wired to the plugin route contracts in source, but D1-backed operations are feature-flagged off by default. A successful CI build does not mean these routes have been exercised against a migrated database.
