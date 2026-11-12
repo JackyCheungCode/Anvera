@@ -82,7 +82,7 @@ const steps: StepDefinition[] = [
   {
     id: "construction", number: "03", title: "Construction & Engineering", subtitle: "Wheel architecture and engineering requirements", eyebrow: "ENGINEERING",
     fields: [
-      { key: "constructionTypes", label: "Supported constructions", required: true, type: "select", options: ["Monoblock", "Two-piece", "Three-piece", "Multiple constructions — specify below"] },
+      { key: "constructionTypes", label: "Supported constructions", required: true, type: "textarea", placeholder: "One construction per line: Monoblock, Two-piece, Three-piece. Include only approved factory capabilities." },
       { key: "constructionNotes", label: "Construction capability details", type: "textarea", placeholder: "Document supported structures, process ownership and limitations." },
       { key: "assemblyMethod", label: "Assembly method", placeholder: "Required for multi-piece products where applicable" },
       { key: "fastenerRequirements", label: "Fastener requirements", placeholder: "Material, grade, size and torque evidence where applicable" },
@@ -126,8 +126,8 @@ const steps: StepDefinition[] = [
       { key: "designStyle", label: "Design style", placeholder: "e.g. Performance / Luxury / Motorsport" },
       { key: "spokeCount", label: "Spoke count", type: "number", placeholder: "e.g. 10" },
       { key: "faceProfile", label: "Face / concavity profile", placeholder: "Documented design profile" },
-      { key: "materialProfile", label: "Material profile reference", placeholder: "Select an approved material record" },
-      { key: "forgingProfile", label: "Manufacturing profile reference", placeholder: "Select an approved process record" },
+      { key: "materialProfile", label: "Material profile reference", type: "select", options: [] },
+      { key: "forgingProfile", label: "Manufacturing profile reference", type: "select", options: [] },
       { key: "intendedUse", label: "Intended use", type: "select", options: ["Street", "Performance", "Luxury", "Track — evidence required", "Off-road — evidence required", "Show / Custom"] },
       { key: "productDescription", label: "Product description", type: "textarea", placeholder: "Product identity and design language." },
       { key: "designRevision", label: "Design revision", placeholder: "e.g. Rev A" }
@@ -187,6 +187,10 @@ function validateStep(step: StepDefinition, document: SetupDocument, productInde
 
 function isStepComplete(step: StepDefinition, document: SetupDocument, productIndex: number) {
   return validateStep(step, document, productIndex).length === 0;
+}
+
+function stepHasAnyValue(step: StepDefinition, document: SetupDocument, productIndex: number) {
+  return step.fields.some((field) => getPath(document, step.id, field.key, productIndex).trim().length > 0);
 }
 
 function CustomSelect({ value, options, onChange, label }: { value: string; options: string[]; onChange: (value: string) => void; label: string }) {
@@ -263,7 +267,7 @@ export function ProductIntelligence() {
 
   const active = steps[activeStep];
   const missing = useMemo(() => validateStep(active, document, productIndex), [active, document, productIndex]);
-  const completeCount = steps.filter((step) => step.id !== "review" && isStepComplete(step, document, productIndex)).length;
+  const completeCount = steps.filter((step) => step.id !== "review" && (step.optional ? stepHasAnyValue(step, document, productIndex) && isStepComplete(step, document, productIndex) : isStepComplete(step, document, productIndex))).length;
 
   const updateField = (key: string, value: string) => {
     setDocument((current) => setValue(current, active.id, key, value, productIndex));
@@ -317,7 +321,7 @@ export function ProductIntelligence() {
     setProductIndex(document.products?.length ?? 0);
   };
 
-  const finalReady = steps.filter((step) => !step.optional && step.id !== "review").every((step) => isStepComplete(step, document, productIndex));
+  const finalReady = steps.filter((step) => !step.optional && step.id !== "review" && step.id !== "products").every((step) => isStepComplete(step, document, productIndex)) && (document.products ?? []).length > 0 && (document.products ?? []).every((product) => Boolean(product.productCode?.trim() && product.productName?.trim() && product.construction?.trim()));
 
   return (
     <main className="anvera-workspace api-workspace">
@@ -369,14 +373,28 @@ export function ProductIntelligence() {
               </div> : null}
 
               <div className="api-field-grid">
-                {active.fields.map((field) => <Field key={field.key} field={field} value={getPath(document, active.id, field.key, productIndex)} onChange={(value) => updateField(field.key, value)} error={missing.some((item) => item.key === field.key)} />)}
+                {active.fields.map((field) => {
+                  let resolvedField = field;
+                  if (active.id === "products" && field.key === "construction") {
+                    const supported = (document.construction.constructionTypes ?? "").split(/[\\n,;]+/).map((value) => value.trim()).filter((value) => ["Monoblock", "Two-piece", "Three-piece"].includes(value));
+                    resolvedField = { ...field, options: supported };
+                  }
+                  if (active.id === "products" && field.key === "materialProfile") {
+                    resolvedField = { ...field, options: (document.material.materialGrade ?? "").split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean) };
+                  }
+                  if (active.id === "products" && field.key === "forgingProfile") {
+                    resolvedField = { ...field, options: (document.material.forgingMethod ?? "").split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean) };
+                  }
+                  return <Field key={field.key} field={resolvedField} value={getPath(document, active.id, field.key, productIndex)} onChange={(value) => updateField(field.key, value)} error={missing.some((item) => item.key === field.key)} />;
+                })}
               </div>
 
               {active.id === "review" ? <div className="api-review-summary">
                 <h3>Global validation summary</h3>
                 {steps.filter((step) => step.id !== "review").map((step) => {
                   const missingFields = validateStep(step, document, productIndex);
-                  const state = missingFields.length ? (step.optional ? "pending" : "missing") : "passed";
+                  const hasValue = stepHasAnyValue(step, document, productIndex);
+                  const state = missingFields.length ? (step.optional && !hasValue ? "pending" : "missing") : (step.optional && !hasValue ? "pending" : "passed");
                   return <div key={step.id} className="api-review-row"><span>{step.number}</span><strong>{step.title}</strong><em className={`api-validation api-validation--${state}`}>{state.toUpperCase()}</em><button type="button" onClick={() => setActiveStep(steps.findIndex((item) => item.id === step.id))}>Review</button></div>;
                 })}
                 <p className="anvera-muted">Submitting creates an immutable review snapshot. It does not publish products or alter public website data.</p>
