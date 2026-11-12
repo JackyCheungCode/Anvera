@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { acceptPublicSubmission, clean, publicJson, referenceCode } from "../../lib/public-business-api";
+import { detectAttachmentExtension } from "../../lib/attachment-validation.js";
 
 export const prerender = false;
 
@@ -25,20 +26,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return publicJson({ ok: false, error: "invalid_quantity" }, 422);
   }
 
-  const allowedTypes: Record<string, string> = { "application/pdf": "pdf", "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
   const uploads: Array<{ file: File; mime: string; extension: string; bytes: ArrayBuffer }> = [];
   for (const file of accepted.files) {
     const mime = file.type.toLowerCase();
-    const extension = allowedTypes[mime];
-    if (!extension) return publicJson({ ok: false, error: "unsupported_attachment_type" }, 415);
     const bytes = await file.arrayBuffer();
-    const signature = new Uint8Array(bytes);
-    const valid =
-      (mime === "application/pdf" && new TextDecoder().decode(signature.slice(0, 5)) === "%PDF-") ||
-      (mime === "image/jpeg" && signature[0] === 0xff && signature[1] === 0xd8 && signature[2] === 0xff) ||
-      (mime === "image/png" && signature.length >= 8 && [137, 80, 78, 71, 13, 10, 26, 10].every((value, index) => signature[index] === value)) ||
-      (mime === "image/webp" && new TextDecoder().decode(signature.slice(0, 4)) === "RIFF" && new TextDecoder().decode(signature.slice(8, 12)) === "WEBP");
-    if (!valid) return publicJson({ ok: false, error: "attachment_content_mismatch" }, 415);
+    const extension = detectAttachmentExtension(mime, new Uint8Array(bytes));
+    if (!extension) return publicJson({ ok: false, error: "attachment_content_mismatch" }, 415);
     uploads.push({ file, mime, extension, bytes });
   }
 
