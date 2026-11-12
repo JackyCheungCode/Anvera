@@ -1,4 +1,5 @@
 import React from "react";
+import "./admin.css";
 import { InquiryInbox } from "./pages/InquiryInbox";
 import { DealerApplications } from "./pages/DealerApplications";
 import { DealerAccounts } from "./pages/DealerAccounts";
