@@ -27,6 +27,7 @@
   }],
   "vars": {
     "ANVERA_BUSINESS_API_ENABLED": "false",
+    "ANVERA_PRODUCT_INTELLIGENCE_ENABLED": "false",
     "EMDASH_MIGRATIONS_MODE": "check"
   },
   "triggers": {
