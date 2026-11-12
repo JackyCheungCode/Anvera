@@ -46,11 +46,12 @@ import TextInput from "../../components/ui/TextInput.astro";
     if (!form.reportValidity()) return;
     const data = new FormData(form);
     const payload = Object.fromEntries(data.entries());
+    payload.legalCompanyName = String(data.get("companyName") || "");
     payload.yearsInBusiness = String(data.get("years") || "");
     payload.turnstileToken = String(data.get("cf-turnstile-response") || "");
     const response = await fetch("/api/dealer-applications", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-    const result = await response.json().catch(() => ({}));
-    if (feedback) feedback.textContent = response.ok ? "Application received. Your reference is " + result.referenceCode + ". Our team will review it manually." : "We could not submit your application (" + (result.error || response.status) + "). Please try again later.";
+    const result = await response.json().catch(() => ({})) as { referenceCode?: string; error?: string };
+    if (feedback) feedback.textContent = response.ok ? "Application received. Your reference is " + (result.referenceCode || "pending") + ". Our team will review it manually." : "We could not submit your application (" + (result.error || response.status) + "). Please try again later.";
   });
   button?.addEventListener("click", async () => {
     if (!form) return;
@@ -62,10 +63,10 @@ import TextInput from "../../components/ui/TextInput.astro";
     }).filter(row => !row.endsWith(": "));
     try {
       await navigator.clipboard.writeText(["ANVERA — DEALER APPLICATION PROFILE","",...rows].join("\n"));
-      if (feedback) feedback.textContent = "Application summary copied. Secure online submission will be enabled when the dealer backend is connected.";
+      if (feedback) feedback.textContent = "Application summary copied. You can paste it into an email or message.";
     } catch {
       if (feedback) feedback.textContent = "Clipboard access is unavailable. Please copy the completed details manually.";
     }
   });
-  form?.addEventListener("reset",()=>{if(feedback)feedback.textContent="This preview prepares your application summary locally. Secure submission, review workflow and account activation will be connected with the dealer backend phase.";});
+  form?.addEventListener("reset",()=>{if(feedback)feedback.textContent="Applications are subject to manual review. Submission does not activate a dealer account.";});
 </script>
