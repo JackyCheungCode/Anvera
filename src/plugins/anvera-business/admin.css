@@ -17,3 +17,15 @@
 .anvera-empty h3{font-size:16px;margin:0 0 8px}
 .anvera-empty p{max-width:460px;color:#6f6f6f;font-size:13px;line-height:1.6;margin:0}
 @media(max-width:720px){.anvera-workspace{padding:20px}.anvera-page-header{display:block}.anvera-status{display:inline-block;margin-top:18px}.anvera-metrics{grid-template-columns:1fr}.anvera-panel-heading{align-items:flex-start;flex-direction:column}}
+
+.anvera-status--ready{background:#defbe6;color:#0e6027}
+.anvera-refresh{border:0;background:#161616;color:#fff;padding:9px 14px;font:inherit;font-size:12px;cursor:pointer}
+.anvera-refresh:disabled{opacity:.55;cursor:wait}
+.anvera-inline-message{margin:16px 20px 0;padding:12px 14px;background:#fff1f1;color:#a2191f;font-size:13px;line-height:1.5}
+.anvera-table-wrap{overflow-x:auto;width:100%}
+.anvera-data-table{border-collapse:collapse;width:100%;min-width:860px;text-align:left}
+.anvera-data-table th,.anvera-data-table td{height:52px;padding:10px 16px;border-bottom:1px solid #e0e0e0;white-space:nowrap;font-size:12px;vertical-align:middle}
+.anvera-data-table th{background:#e8e8e8;color:#525252;font-size:10px;letter-spacing:.08em;font-weight:700}
+.anvera-data-table td strong,.anvera-data-table td small{display:block}
+.anvera-data-table td small{color:#6f6f6f;margin-top:4px}
+.anvera-record-status{display:inline-block;padding:5px 8px;background:#e0e0e0;color:#393939;font-size:10px;font-weight:600}
