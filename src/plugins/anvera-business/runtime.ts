@@ -402,11 +402,34 @@ function setupDocumentIsSubmittable(document: Record<string, unknown>) {
   const validProducts = products.length > 0 && products.every((product) => {
     const selectedConstruction = inputString(product?.construction, 40);
     const selectedMaterial = inputString(product?.materialProfile, 200);
+    const selectedForging = inputString(product?.forgingProfile, 200);
+    const specifications = Array.isArray(product?.specifications) ? product.specifications.map(inputRecord).filter(Boolean) : [];
+    const validSpecifications = specifications.length > 0 && specifications.every((row) => {
+      const diameter = Number(row?.diameter);
+      const width = Number(row?.width);
+      const boltCount = Number(row?.boltCount);
+      const pcd = Number(row?.pcd);
+      const offset = Number(row?.offset);
+      const centerBore = Number(row?.centerBore);
+      const loadRating = row?.loadRating === undefined || row?.loadRating === "" ? null : Number(row.loadRating);
+      return ["Front", "Rear", "Front & Rear"].includes(inputString(row?.role, 24)) &&
+        Number.isFinite(diameter) && diameter > 0 &&
+        Number.isFinite(width) && width > 0 &&
+        Number.isInteger(boltCount) && boltCount > 0 &&
+        Number.isFinite(pcd) && pcd > 0 &&
+        Number.isFinite(offset) &&
+        Number.isFinite(centerBore) && centerBore > 0 &&
+        (loadRating === null || (Number.isFinite(loadRating) && loadRating > 0)) &&
+        ["Draft", "Factory Supported", "Engineering Review", "Engineering Approved", "Restricted"].includes(inputString(row?.status, 32));
+    });
+    const forgingMethods = inputString(material.forgingMethod, 500).split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean);
     return Boolean(inputString(product?.productCode, 80)) &&
       Boolean(inputString(product?.productName, 120)) &&
       Boolean(selectedConstruction) &&
       supportedConstructions.includes(selectedConstruction) &&
-      (!selectedMaterial || materialGrades.includes(selectedMaterial));
+      (!selectedMaterial || materialGrades.includes(selectedMaterial)) &&
+      (!selectedForging || forgingMethods.includes(selectedForging)) &&
+      validSpecifications;
   });
   return required.every((value) => typeof value === "string" && value.trim().length > 0) && validProducts;
 }
