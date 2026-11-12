@@ -119,11 +119,20 @@ const safeProducts = products.map((product) => ({
   };
   const modelImage = (raw, modelLabel) => {
     const frame = document.createElement("span"); frame.className = "vf-model-image-frame";
-    commonsVehicleImage(selectedMakeLabel, modelLabel).then((image) => {
+    const loadImage = () => commonsVehicleImage(selectedMakeLabel, modelLabel).then((image) => {
       if (!image || !frame.isConnected) { if (frame.isConnected) frame.remove(); return; }
       const img = document.createElement("img"); img.className = "vf-model-image"; img.alt = "";
       img.loading = "lazy"; img.decoding = "async"; img.src = image.source; img.title = image.title;
       img.onerror = () => frame.remove(); frame.append(img);
+    });
+    queueMicrotask(() => {
+      if (!frame.isConnected) return;
+      if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver((entries) => {
+          if (entries.some((entry) => entry.isIntersecting)) { observer.disconnect(); loadImage(); }
+        }, { root: frame.closest(".vf-select-menu") });
+        observer.observe(frame);
+      } else loadImage();
     });
     return frame;
   };
