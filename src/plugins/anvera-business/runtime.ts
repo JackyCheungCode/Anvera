@@ -479,6 +479,7 @@ async function validateProductCapabilityReferences(db: D1Database, document: Rec
 
 async function syncWheelSpecifications(db: D1Database, sessionId: string, document: Record<string, unknown>, actorId: string) {
   const products = Array.isArray(document.products) ? document.products.map(inputRecord).filter(Boolean) : [];
+  const activeSpecificationKeys = new Set<string>();
   for (const product of products) {
     const productCode = inputString(product?.productCode, 80);
     if (!productCode) continue;
@@ -500,6 +501,7 @@ async function syncWheelSpecifications(db: D1Database, sessionId: string, docume
       const evidenceRef = inputString(row?.evidenceRef, 200);
       if (!id || !["Front", "Rear", "Front & Rear"].includes(position) || ![diameter, width, boltCount, pcd, offset, centerBore].every(Number.isFinite)) continue;
       activeIds.add(id);
+      activeSpecificationKeys.add(productCode + "::" + id);
       const previous = existingById.get(id);
       const unchanged = previous && previous.position === position && previous.diameter === diameter && previous.width === width &&
         previous.bolt_count === boltCount && previous.pcd === pcd && previous.offset === offset &&
@@ -521,6 +523,14 @@ async function syncWheelSpecifications(db: D1Database, sessionId: string, docume
         await db.prepare("UPDATE anvera_pi_wheel_specifications SET status = 'superseded', revision = revision + 1, updated_by_user_id = ?, updated_at = CURRENT_TIMESTAMP WHERE setup_session_id = ? AND product_code = ? AND specification_id = ?")
           .bind(actorId, sessionId, productCode, previous.specification_id).run();
       }
+    }
+  }
+  const allSpecifications = await db.prepare("SELECT product_code, specification_id, status FROM anvera_pi_wheel_specifications WHERE setup_session_id = ?")
+    .bind(sessionId).all<{ product_code: string; specification_id: string; status: string }>();
+  for (const row of allSpecifications.results) {
+    if (!activeSpecificationKeys.has(row.product_code + "::" + row.specification_id) && row.status !== "superseded") {
+      await db.prepare("UPDATE anvera_pi_wheel_specifications SET status = 'superseded', revision = revision + 1, updated_by_user_id = ?, updated_at = CURRENT_TIMESTAMP WHERE setup_session_id = ? AND product_code = ? AND specification_id = ?")
+        .bind(actorId, sessionId, row.product_code, row.specification_id).run();
     }
   }
 }
