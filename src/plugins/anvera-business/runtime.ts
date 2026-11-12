@@ -397,7 +397,6 @@ function setupDocumentIsSubmittable(document: Record<string, unknown>) {
     construction.constructionTypes,
     specification.diameterRange, specification.widthRange, specification.boltPatterns
   ];
-  const supportedConstructions = inputString(construction.constructionTypes, 1000).split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean);
   const materialGrades = inputString(material.materialGrade, 2000).split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean);
   const validProducts = products.length > 0 && products.every((product) => {
     const selectedConstruction = inputString(product?.construction, 40);
@@ -425,7 +424,6 @@ function setupDocumentIsSubmittable(document: Record<string, unknown>) {
     return Boolean(inputString(product?.productCode, 80)) &&
       Boolean(inputString(product?.productName, 120)) &&
       Boolean(selectedConstruction) &&
-      supportedConstructions.includes(selectedConstruction) &&
       Boolean(selectedMaterial) &&
       Boolean(selectedForging) &&
       validSpecifications;
@@ -433,6 +431,23 @@ function setupDocumentIsSubmittable(document: Record<string, unknown>) {
   return required.every((value) => typeof value === "string" && value.trim().length > 0) && validProducts;
 }
 
+
+async function validateProductConstructionCapabilities(db: D1Database, document: Record<string, unknown>) {
+  const products = Array.isArray(document.products) ? document.products.map(inputRecord).filter(Boolean) : [];
+  const construction = inputRecord(document.construction) ?? {};
+  const legacy = inputString(construction.constructionTypes, 1000).split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean);
+  const selected = [...new Set(products.map((product) => inputString(product?.construction, 40)).filter(Boolean))];
+  if (!selected.length) return false;
+  try {
+    const rows = await db.prepare(`SELECT construction_type, status FROM anvera_pi_construction_capabilities WHERE construction_type IN (${selected.map(() => "?").join(",")})`)
+      .bind(...selected).all<{ construction_type: string; status: string }>();
+    const statuses = new Map(rows.results.map((item) => [item.construction_type, item.status]));
+    return products.every((product) => statuses.get(inputString(product?.construction, 40)) === "approved");
+  } catch (cause) {
+    if (!String(cause).toLowerCase().includes("no such table")) throw cause;
+    return products.every((product) => legacy.includes(inputString(product?.construction, 40)));
+  }
+}
 
 async function validateProductCapabilityReferences(db: D1Database, document: Record<string, unknown>) {
   const products = Array.isArray(document.products) ? document.products.map(inputRecord).filter(Boolean) : [];
@@ -511,6 +526,9 @@ async function saveProductSetup(ctx: AdminContext) {
   }
   if (action === "submit") {
     if (!setupDocumentIsSubmittable(document)) return { saved: false, reason: "validation_failed" };
+    if (!await validateProductConstructionCapabilities(access.db, document)) {
+      return { saved: false, reason: "product_construction_capability_invalid" };
+    }
     if (!await validateProductCapabilityReferences(access.db, document)) {
       return { saved: false, reason: "product_capability_reference_invalid" };
     }
