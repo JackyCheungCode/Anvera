@@ -51,7 +51,7 @@ function StatusControl({ value, onChange }: { value: string; onChange: (value: s
 }
 
 export function MaterialProcessLibrary({ onCatalogChange }: {
-  onCatalogChange?: (materials: Array<{ id: string; code: string; name: string; grade: string; family: string }>, processes: Array<{ id: string; code: string; name: string; process_type: string }>) => void;
+  onCatalogChange?: (materials: Array<{ id: string; code: string; name: string; grade: string; family: string }> | null, processes: Array<{ id: string; code: string; name: string; process_type: string }> | null) => void;
 }) {
   const [materials, setMaterials] = useState<MaterialProfile[]>([]);
   const [processes, setProcesses] = useState<ForgingProcess[]>([]);
@@ -73,6 +73,7 @@ export function MaterialProcessLibrary({ onCatalogChange }: {
       const result = await parseApiResponse<LibraryResponse>(response, "Unable to load material and forging libraries.");
       setAvailable(result.available);
       if (!result.available) {
+        onCatalogChange?.(null, null);
         setMaterials([]);
         setProcesses([]);
         setError(result.reason === "migration_pending"
