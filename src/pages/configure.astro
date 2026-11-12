@@ -1,0 +1,261 @@
+---
+import Base from "../layouts/Base.astro";
+import { wheelDevelopmentProducts } from "../data/wheel-products";
+
+const products = wheelDevelopmentProducts.map((product) => ({
+  slug: product.slug,
+  title: product.title,
+  code: product.modelCode,
+  construction: product.constructionType.replaceAll("_", "-"),
+  description: product.shortDescription,
+  diameter: product.diameterOptions.join(" / "),
+}));
+---
+<Base title="Configure Your ANVERA Wheels" description="Configure ANVERA forged wheels around your vehicle, engineering requirements and delivery destination.">
+  <section class="studio-shell" id="configuration-studio">
+    <header class="studio-heading">
+      <div>
+        <p class="studio-eyebrow">ANVERA / CUSTOMER CONFIGURATION STUDIO</p>
+        <h1>Configure your<br /><span>forged wheels.</span></h1>
+        <p class="studio-intro">A considered process from wheel design to delivery. Your configuration reference is created as soon as you begin.</p>
+      </div>
+      <aside class="reference-panel">
+        <span>CONFIGURATION REFERENCE</span>
+        <strong id="reference-code">Creating reference…</strong>
+        <small>Saved as a local draft on this device</small>
+      </aside>
+    </header>
+
+    <nav class="studio-progress" aria-label="Configuration progress">
+      <div class="progress-track"><span id="progress-fill"></span></div>
+      <ol id="progress-steps">
+        <li class="is-current" data-step-label="1"><span>01</span><b>Design</b></li>
+        <li data-step-label="2"><span>02</span><b>Vehicle</b></li>
+        <li data-step-label="3"><span>03</span><b>Specifications</b></li>
+        <li data-step-label="4"><span>04</span><b>Manufacturing</b></li>
+        <li data-step-label="5"><span>05</span><b>Delivery</b></li>
+        <li data-step-label="6"><span>06</span><b>Confirmation</b></li>
+        <li data-step-label="7"><span>07</span><b>Complete</b></li>
+      </ol>
+      <div class="progress-caption"><span id="progress-current">STEP 01 / 07</span><span id="progress-title">Select a wheel design</span></div>
+    </nav>
+
+    <main class="studio-content">
+      <section class="studio-step is-active" data-step="1">
+        <div class="step-heading"><div><p class="step-kicker">01 / DESIGN SELECTION</p><h2>Choose your wheel design.</h2><p>Start with a design direction. Every selection can be refined later.</p></div><span class="step-index">01—07</span></div>
+        <div class="design-grid" id="design-grid">
+          {products.map((product, index) => (
+            <button class="design-card" type="button" data-product={product.slug} aria-pressed="false">
+              <span class="design-art"><span class:list={["wheel-render", `design-wheel-${index % 5}`]}></span><i>{String(index + 1).padStart(2, "0")}</i></span>
+              <span class="design-meta"><b>{product.title}</b><small>{product.code} / {product.construction.toUpperCase()}</small><small>{product.diameter || "Vehicle-specific sizing"}</small></span>
+              <span class="design-check" aria-hidden="true">✓</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section class="studio-step" data-step="2" hidden>
+        <div class="step-heading"><div><p class="step-kicker">02 / VEHICLE SELECTION</p><h2>Tell us what you drive.</h2><p>Choose your market, vehicle and model year. Vehicle imagery appears when a suitable image is available.</p></div><span class="step-index">02—07</span></div>
+        <div class="vehicle-filter-row">
+          <label>Market region <div class="carbon-select-wrap"><select id="vehicle-region"><option value="sam">Southeast Asia</option><option value="usdm">USA & North America</option><option value="eudm">Europe</option><option value="jdm">Japan</option><option value="chdm">China</option><option value="audm">Oceania</option></select></div></label>
+          <label>Manufacturer <div class="carbon-select-wrap"><select id="vehicle-make" disabled><option value="">Loading manufacturers…</option></select></div></label>
+          <label>Model <div class="carbon-select-wrap"><select id="vehicle-model" disabled><option value="">Select manufacturer first</option></select></div></label>
+          <label>Model year <div class="carbon-select-wrap"><select id="vehicle-year" disabled><option value="">Select model first</option></select></div></label>
+          <label>Generation <div class="carbon-select-wrap"><select id="vehicle-generation" disabled><option value="">Optional generation</option></select></div></label>
+          <label>Modification / trim <div class="carbon-select-wrap"><select id="vehicle-trim" disabled><option value="">Optional trim</option></select></div></label>
+        </div>
+        <div class="vehicle-preview" id="vehicle-preview">
+          <div class="vehicle-preview-art"><span class="vehicle-silhouette">ANVERA</span></div>
+          <div><p class="step-kicker">YOUR VEHICLE</p><h3 id="vehicle-preview-title">Vehicle not selected</h3><p id="vehicle-preview-copy">Select the manufacturer, model and year above. The vehicle catalogue is loaded from the existing Wheel-Size integration.</p></div>
+        </div>
+        <p class="studio-note" id="vehicle-status" role="status">Loading vehicle catalogue…</p>
+      </section>
+
+      <section class="studio-step" data-step="3" hidden>
+        <div class="step-heading"><div><p class="step-kicker">03 / SPECIFICATION</p><h2>Choose your specification path.</h2><p>Factory and upgrade references are starting points. Final fitment requires engineering verification.</p></div><span class="step-index">03—07</span></div>
+        <div class="spec-path-grid">
+          <button class="spec-path" type="button" data-spec-path="oem" aria-pressed="false"><span class="path-label">01 / FACTORY REFERENCE</span><b>OEM specification</b><p>Review original equipment dimensions for your selected vehicle.</p><span class="path-action">Use factory reference ↗</span></button>
+          <button class="spec-path" type="button" data-spec-path="upgrade" aria-pressed="false"><span class="path-label">02 / ANVERA RECOMMENDATION</span><b>Upgrade reference</b><p>Explore a considered upgrade direction for further engineering review.</p><span class="path-action">Explore upgrade ↗</span></button>
+          <button class="spec-path spec-path--custom" type="button" data-spec-path="custom" aria-pressed="false"><span class="path-label">03 / YOUR OWN BRIEF</span><b>Custom specification</b><p>Submit your own front and rear dimensions for an engineering review.</p><span class="path-action">Submit custom brief ↗</span></button>
+        </div>
+        <div class="spec-detail" id="spec-detail" hidden>
+          <div class="spec-detail-heading"><div><p class="step-kicker" id="spec-detail-kicker">REFERENCE SPECIFICATION</p><h3 id="spec-detail-title">Specification overview</h3></div><span class="review-status">ENGINEERING REVIEW REQUIRED</span></div>
+          <div class="spec-columns" id="spec-reference">
+            <div><b>FRONT</b><dl><dt>Diameter</dt><dd id="front-diameter">—</dd><dt>Width</dt><dd id="front-width">—</dd><dt>PCD</dt><dd id="front-pcd">—</dd><dt>Offset</dt><dd id="front-offset">—</dd><dt>Centre bore</dt><dd id="front-bore">—</dd></dl></div>
+            <div><b>REAR</b><dl><dt>Diameter</dt><dd id="rear-diameter">—</dd><dt>Width</dt><dd id="rear-width">—</dd><dt>PCD</dt><dd id="rear-pcd">—</dd><dt>Offset</dt><dd id="rear-offset">—</dd><dt>Centre bore</dt><dd id="rear-bore">—</dd></dl></div>
+          </div>
+          <div class="custom-spec-fields" id="custom-spec-fields" hidden>
+            <label>Front wheel specification <input id="custom-front" placeholder="e.g. 20 × 9.0J / ET25 / 5×112" /></label>
+            <label>Rear wheel specification <input id="custom-rear" placeholder="e.g. 20 × 10.5J / ET35 / 5×112" /></label>
+            <label>Additional engineering notes <textarea id="custom-notes" rows="3" placeholder="Brake package, suspension, tyre size or other requirements…"></textarea></label>
+            <label class="upload-field">Vehicle / wheel reference photos <input id="custom-files" type="file" accept="image/*,.pdf" multiple /></label>
+            <p class="custom-response">Our engineering team will review your custom specifications and respond within <strong>1 business day</strong> after submission.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="studio-step" data-step="4" hidden>
+        <div class="step-heading"><div><p class="step-kicker">04 / MANUFACTURING</p><h2>From forged billet to finished wheel.</h2><p>An initial manufacturing estimate based on a typical bespoke forged wheel project.</p></div><span class="step-index">04—07</span></div>
+        <div class="manufacturing-summary"><div><span>ESTIMATED MANUFACTURING TIME</span><strong>15–27 <small>working days</small></strong><p>Planning estimate only. Final lead time is confirmed after engineering review and order acceptance.</p></div><div class="manufacturing-wheel"><span class="wheel-render"></span></div></div>
+        <div class="manufacturing-track" id="manufacturing-track">
+          <article class="manufacturing-node"><i>01</i><div><b>Engineering confirmation</b><p>Review vehicle, dimensions and brake clearance</p></div><strong>1–3 days</strong></article>
+          <article class="manufacturing-node"><i>02</i><div><b>Material preparation</b><p>Forging billet preparation and material traceability</p></div><strong>2–4 days</strong></article>
+          <article class="manufacturing-node"><i>03</i><div><b>Aluminium forging</b><p>Controlled forging and blank preparation</p></div><strong>2–3 days</strong></article>
+          <article class="manufacturing-node"><i>04</i><div><b>CNC precision machining</b><p>Spoke, barrel, hub and mounting geometry</p></div><strong>4–7 days</strong></article>
+          <article class="manufacturing-node"><i>05</i><div><b>Surface finishing</b><p>Preparation, coating and final finish</p></div><strong>3–5 days</strong></article>
+          <article class="manufacturing-node"><i>06</i><div><b>Assembly & quality inspection</b><p>Dimensional, runout and appearance checks</p></div><strong>2–3 days</strong></article>
+          <article class="manufacturing-node"><i>07</i><div><b>Packaging & dispatch readiness</b><p>Protective packing and export preparation</p></div><strong>1–2 days</strong></article>
+        </div>
+        <p class="studio-note">The animated sequence illustrates the planned production stages; it does not represent live factory progress. Some operations may overlap depending on the final construction and factory schedule.</p>
+      </section>
+
+      <section class="studio-step" data-step="5" hidden>
+        <div class="step-heading"><div><p class="step-kicker">05 / DELIVERY & LOGISTICS</p><h2>Where should we deliver?</h2><p>Choose the Incoterm and destination. The route and arrival window will be estimated from the destination address.</p></div><span class="step-index">05—07</span></div>
+        <div class="delivery-form-grid">
+          <label>Delivery term <div class="carbon-select-wrap"><select id="delivery-term"><option value="FOB">FOB — Free On Board</option><option value="EXW">EXW — Ex Works</option><option value="FCA">FCA — Free Carrier</option><option value="CFR">CFR — Cost and Freight</option><option value="CIF">CIF — Cost, Insurance and Freight</option><option value="CPT">CPT — Carriage Paid To</option><option value="CIP">CIP — Carriage and Insurance Paid To</option><option value="DAP">DAP — Delivered at Place</option><option value="DPU">DPU — Delivered at Place Unloaded</option><option value="DDP">DDP — Delivered Duty Paid</option></select></div></label>
+          <label>Transport method <div class="carbon-select-wrap"><select id="shipping-method"><option value="sea">Sea freight (default)</option><option value="air">Air freight (estimate required)</option></select></div></label>
+          <label>Country / territory <input id="delivery-country" autocomplete="country-name" placeholder="e.g. Germany" /></label>
+          <label>State / province <input id="delivery-region" autocomplete="address-level1" placeholder="State or province" /></label>
+          <label>City <input id="delivery-city" autocomplete="address-level2" placeholder="City" /></label>
+          <label>Postal code <input id="delivery-postal" autocomplete="postal-code" placeholder="Postal code" /></label>
+          <label class="delivery-address">Street address <input id="delivery-address" autocomplete="street-address" placeholder="Street, building and unit number" /></label>
+          <label>Contact name <input id="contact-name" autocomplete="name" placeholder="Full name" /></label>
+          <label>Email <input id="contact-email" type="email" autocomplete="email" placeholder="name@example.com" /></label>
+          <label>Phone / WhatsApp <input id="contact-phone" autocomplete="tel" placeholder="Country code + number" /></label>
+        </div>
+        <div class="route-estimate">
+          <div class="route-heading"><div><p class="step-kicker">LOGISTICS ROUTE / PLANNING VIEW</p><h3>Chengdu → Yantian → Destination</h3></div><span class="route-tag">SEA FREIGHT DEFAULT</span></div>
+          <div class="route-stages">
+            <div class="route-stage"><span class="route-dot">01</span><b>Chengdu factory</b><small>Factory dispatch</small><em>1–2 days</em></div>
+            <div class="route-stage"><span class="route-dot">02</span><b>Shenzhen Yantian Port</b><small>Road freight · export handling</small><em>2–4 days</em></div>
+            <div class="route-stage"><span class="route-dot">03</span><b>Destination port</b><small>Ocean transit · customs</small><em id="ocean-estimate">Route required</em></div>
+            <div class="route-stage"><span class="route-dot">04</span><b>Delivery address</b><small>Local transport</small><em>Route required</em></div>
+          </div>
+          <div class="route-map-placeholder"><span class="map-pin map-pin--start">CHENGDU</span><span class="map-route-line"></span><span class="map-truck">▰</span><span class="map-pin map-pin--port">YANTIAN PORT</span><p>Verified road, port and ocean-route mapping will be calculated after destination geocoding is connected.</p></div>
+          <div class="arrival-estimate"><span>ESTIMATED TOTAL DELIVERY WINDOW</span><strong id="delivery-window">Awaiting destination details</strong><small id="delivery-window-note">Includes manufacturing estimate and indicative transport stages; customs and carrier schedules may change the arrival date.</small></div>
+        </div>
+        <p class="studio-note">Incoterms allocate delivery obligations, costs and risk. FOB is intended for sea or inland-waterway transport; the selected term will be explained in the confirmation document.</p>
+      </section>
+
+      <section class="studio-step" data-step="6" hidden>
+        <div class="step-heading"><div><p class="step-kicker">06 / CONFIGURATION CONFIRMATION</p><h2>Review your configuration.</h2><p>Your confirmation document records the brief and planning estimates. It contains no price and is not a sales contract.</p></div><span class="step-index">06—07</span></div>
+        <article class="confirmation-document" id="confirmation-document">
+          <header class="document-header"><div><span>ANVERA / FORGED WHEEL ENGINEERING</span><h2>Configuration<br />Confirmation</h2></div><div class="document-reference"><small>REFERENCE</small><b id="document-reference">—</b><small>CREATED</small><b id="document-date">—</b></div></header>
+          <div class="document-rule"></div>
+          <section class="document-section"><span>01 / SELECTED DESIGN</span><div class="document-value"><b id="document-design">—</b><small id="document-construction">—</small></div></section>
+          <section class="document-section"><span>02 / VEHICLE</span><div class="document-value"><b id="document-vehicle">—</b><small id="document-vehicle-detail">—</small></div></section>
+          <section class="document-section"><span>03 / WHEEL SPECIFICATION</span><div class="document-value"><b id="document-spec-type">—</b><small id="document-spec-details">—</small><small class="document-warning">Fitment subject to ANVERA engineering verification.</small></div></section>
+          <section class="document-section"><span>04 / MANUFACTURING PLAN</span><div class="document-value"><b>Estimated 15–27 working days</b><small>Seven planned production stages. Not live production tracking.</small></div></section>
+          <section class="document-section"><span>05 / DELIVERY</span><div class="document-value"><b id="document-delivery">—</b><small id="document-address">—</small><small id="document-arrival">—</small></div></section>
+          <section class="document-section"><span>06 / CUSTOMER CONTACT</span><div class="document-value"><b id="document-contact">—</b><small id="document-email">—</small><small id="document-phone">—</small></div></section>
+          <footer class="document-footer"><b>ANVERA</b><span>CONFIGURATION RECORD · NO PRICING · SUBJECT TO REVIEW</span></footer>
+        </article>
+        <div class="confirmation-actions"><button class="carbon-button carbon-button--secondary" id="download-pdf" type="button">Export PDF ↓</button><button class="carbon-button carbon-button--primary" id="submit-configuration" type="button">Submit configuration ↗</button></div>
+        <p class="studio-note" id="submit-status" role="status">Submitting creates a review request. ANVERA will confirm fitment, quotation and final delivery schedule separately.</p>
+      </section>
+
+      <section class="studio-step" data-step="7" hidden>
+        <div class="completion-mark">✓</div>
+        <p class="step-kicker">07 / CONFIGURATION RECEIVED</p>
+        <h2>Thank you for<br /><span>choosing ANVERA.</span></h2>
+        <p class="completion-copy">Your configuration has been recorded for review. Once your account is connected, you will be able to manage enquiries and follow confirmed production and logistics updates in one place.</p>
+        <div class="completion-reference"><small>YOUR REFERENCE</small><strong id="completion-reference">—</strong><span>Keep this reference for future correspondence.</span></div>
+        <a class="carbon-button carbon-button--primary" href="/dealers">Explore ANVERA</a>
+      </section>
+    </main>
+
+    <footer class="studio-controls" id="studio-controls">
+      <button class="carbon-button carbon-button--ghost" id="previous-step" type="button" disabled>← Previous</button>
+      <span id="control-hint">Choose a wheel design to continue.</span>
+      <button class="carbon-button carbon-button--primary" id="next-step" type="button" disabled>Next step →</button>
+    </footer>
+  </section>
+</Base>
+
+<style>
+.studio-shell{background:#0b0c0e;color:#f4f4f4;padding:clamp(28px,5vw,76px) var(--page-gutter) 70px;min-height:80vh}.studio-shell *{box-sizing:border-box}.studio-shell input,.studio-shell select,.studio-shell textarea,.studio-shell button{font:inherit}.studio-heading,.studio-content,.studio-progress,.studio-controls{max-width:1440px;margin-inline:auto}.studio-heading{display:flex;justify-content:space-between;gap:32px;align-items:end;padding-bottom:42px}.studio-eyebrow,.step-kicker{font-size:11px;letter-spacing:.16em;font-weight:700;color:#8d96a0}.studio-heading h1{font-size:clamp(42px,6vw,82px);line-height:.94;letter-spacing:-.055em;margin:20px 0}.studio-heading h1 span,.studio-step h2 span{color:#9bbcff}.studio-intro{color:#a7adb4;max-width:560px;line-height:1.7}.reference-panel{background:#17191c;padding:20px 24px;min-width:250px;border-left:3px solid #0f62fe;display:grid;gap:8px}.reference-panel span,.reference-panel small{font-size:10px;letter-spacing:.12em;color:#969da5}.reference-panel strong{font-size:18px;letter-spacing:.04em}.studio-progress{position:sticky;top:0;z-index:10;background:#0b0c0e;padding:18px 0 16px;border-bottom:1px solid #282c31}.progress-track{height:4px;background:#34383d;position:relative}.progress-track span{display:block;width:14.28%;height:4px;background:#0f62fe;transition:width .35s ease}.studio-progress ol{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;list-style:none;padding:0;margin:14px 0 10px}.studio-progress li{display:flex;gap:8px;align-items:center;color:#717981;font-size:11px;min-width:0}.studio-progress li span{font-variant-numeric:tabular-nums}.studio-progress li b{font-weight:500;white-space:nowrap}.studio-progress li.is-current,.studio-progress li.is-complete{color:#f4f4f4}.studio-progress li.is-current span{color:#78a9ff}.progress-caption{display:flex;gap:14px;font-size:10px;letter-spacing:.12em;color:#a7adb4}.progress-caption span:first-child{color:#78a9ff}.studio-content{padding:48px 0 34px;min-height:550px}.studio-step[hidden]{display:none}.step-heading{display:flex;justify-content:space-between;align-items:start;margin-bottom:30px}.step-heading h2,.studio-step>h2{font-size:clamp(30px,4vw,48px);letter-spacing:-.04em;margin:8px 0 10px}.step-heading p:not(.step-kicker){color:#a7adb4;margin:0;line-height:1.6}.step-index{font-size:12px;color:#68717a;letter-spacing:.12em}.design-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.design-card{position:relative;text-align:left;padding:0;background:#17191c;color:#f4f4f4;border:1px solid transparent;cursor:pointer;transition:background .2s,border-color .2s}.design-card:hover{background:#202328}.design-card[aria-pressed=true]{border-color:#0f62fe;background:#202833}.design-art{height:220px;display:grid;place-items:center;position:relative;background:linear-gradient(145deg,#252a30,#111315);overflow:hidden}.design-art:after{content:"";position:absolute;width:72%;height:1px;background:#4b5158;bottom:18px}.design-art i{position:absolute;top:14px;left:16px;font-style:normal;color:#858d96;font-size:11px}.wheel-render{width:150px;height:150px;border-radius:50%;display:block;border:10px solid #aeb4ba;background:repeating-conic-gradient(from 4deg,#555d66 0 5deg,#c5cbd0 5deg 8deg,#454b52 8deg 14deg);box-shadow:0 12px 34px #0009,inset 0 0 0 8px #30363d,inset 0 0 0 17px #9da4aa;position:relative;animation:wheelReveal 1s ease both}.wheel-render:before{content:"";position:absolute;inset:35%;border-radius:50%;background:#171a1e;border:7px solid #aab0b6;box-shadow:inset 0 0 0 5px #555d66}.wheel-render:after{content:"";position:absolute;inset:7%;border-radius:50%;border:1px solid #eef2f5aa}.design-wheel-1{filter:contrast(1.15);transform:rotate(12deg)}.design-wheel-2{background:repeating-conic-gradient(#7c8791 0 3deg,#252b31 3deg 10deg)}.design-wheel-3{background:repeating-conic-gradient(#c5cbd0 0 2deg,#414951 2deg 13deg)}.design-wheel-4{background:repeating-conic-gradient(#77818b 0 7deg,#20252a 7deg 11deg)}.design-meta{display:grid;gap:7px;padding:16px}.design-meta b{font-size:17px}.design-meta small{font-size:10px;color:#9da5ad;letter-spacing:.08em}.design-check{position:absolute;right:12px;top:12px;width:24px;height:24px;border-radius:50%;background:#0f62fe;display:grid;place-items:center;opacity:0}.design-card[aria-pressed=true] .design-check{opacity:1}.vehicle-filter-row,.delivery-form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 16px}.vehicle-filter-row label,.delivery-form-grid label,.custom-spec-fields label{display:grid;gap:9px;color:#c4c9ce;font-size:12px}.carbon-select-wrap{position:relative}.carbon-select-wrap:after{content:"⌄";position:absolute;right:15px;top:50%;transform:translateY(-50%);pointer-events:none;color:#a7adb4}.carbon-select-wrap select,.delivery-form-grid input,.custom-spec-fields input,.custom-spec-fields textarea{width:100%;height:48px;padding:0 14px;background:#202328;color:#f4f4f4;border:0;border-bottom:1px solid #69717a;border-radius:0;outline:0;appearance:none}.carbon-select-wrap select:focus,.delivery-form-grid input:focus,.custom-spec-fields input:focus,.custom-spec-fields textarea:focus{outline:2px solid #0f62fe;outline-offset:-2px}.carbon-select-wrap select:disabled{opacity:.45}.vehicle-preview{margin-top:30px;display:grid;grid-template-columns:1.1fr 1fr;background:#17191c;min-height:220px}.vehicle-preview-art{display:grid;place-items:center;background:linear-gradient(135deg,#262b31,#111315);overflow:hidden}.vehicle-silhouette{font-size:clamp(32px,6vw,74px);font-weight:800;letter-spacing:.12em;color:#454c54}.vehicle-preview>div:last-child{padding:30px;align-self:center}.vehicle-preview h3{font-size:25px;margin:8px 0}.vehicle-preview p:last-child,.studio-note{color:#9da5ad;font-size:12px;line-height:1.7}.spec-path-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.spec-path{padding:24px;background:#17191c;color:#f4f4f4;border:1px solid transparent;text-align:left;min-height:205px;cursor:pointer;display:flex;flex-direction:column;align-items:start}.spec-path:hover,.spec-path[aria-pressed=true]{background:#202833;border-color:#0f62fe}.path-label{font-size:10px;color:#8d96a0;letter-spacing:.13em}.spec-path b{font-size:21px;margin:18px 0 8px}.spec-path p{font-size:13px;color:#a7adb4;line-height:1.6}.path-action{margin-top:auto;color:#78a9ff;font-size:12px}.spec-detail{margin-top:20px;background:#17191c;padding:24px}.spec-detail-heading{display:flex;justify-content:space-between;gap:20px;align-items:center}.spec-detail h3{font-size:24px;margin:8px 0}.review-status,.route-tag{font-size:10px;letter-spacing:.1em;color:#f1c21b;background:#3b3216;padding:8px 10px}.spec-columns{display:grid;grid-template-columns:1fr 1fr;gap:30px}.spec-columns>div{padding:18px;background:#202328}.spec-columns>div>b{font-size:11px;letter-spacing:.14em;color:#78a9ff}.spec-columns dl{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 0;font-size:12px}.spec-columns dt{color:#9da5ad}.spec-columns dd{margin:0;text-align:right}.custom-spec-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}.custom-spec-fields textarea{height:auto;padding:12px;resize:vertical}.custom-spec-fields .upload-field{grid-column:1/-1}.custom-spec-fields input[type=file]{height:auto;padding:12px}.custom-response{grid-column:1/-1;color:#a7adb4;font-size:13px;background:#202833;padding:14px;border-left:3px solid #0f62fe}.manufacturing-summary{display:flex;justify-content:space-between;align-items:center;background:#17191c;padding:28px 34px;margin-bottom:20px}.manufacturing-summary>div:first-child{display:grid;gap:8px}.manufacturing-summary span{font-size:10px;letter-spacing:.14em;color:#9da5ad}.manufacturing-summary strong{font-size:42px}.manufacturing-summary strong small{font-size:14px;color:#a7adb4}.manufacturing-summary p{font-size:12px;color:#9da5ad;margin:0}.manufacturing-wheel .wheel-render{width:120px;height:120px}.manufacturing-track{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}.manufacturing-node{position:relative;min-height:170px;background:#17191c;padding:17px 13px;display:flex;flex-direction:column;gap:18px;overflow:hidden}.manufacturing-node:after{content:"";height:3px;background:#0f62fe;position:absolute;left:0;bottom:0;width:100%;transform:scaleX(.2);transform-origin:left;animation:nodeProgress 2.6s ease-in-out infinite alternate}.manufacturing-node:nth-child(2):after{animation-delay:.2s}.manufacturing-node:nth-child(3):after{animation-delay:.4s}.manufacturing-node:nth-child(4):after{animation-delay:.6s}.manufacturing-node:nth-child(5):after{animation-delay:.8s}.manufacturing-node:nth-child(6):after{animation-delay:1s}.manufacturing-node:nth-child(7):after{animation-delay:1.2s}.manufacturing-node i{font-style:normal;color:#78a9ff;font-size:11px}.manufacturing-node b{font-size:13px;line-height:1.4}.manufacturing-node p{font-size:10px;color:#9da5ad;line-height:1.5}.manufacturing-node strong{font-size:11px;margin-top:auto}.delivery-address{grid-column:span 2}.route-estimate{margin-top:30px;background:#17191c;padding:24px}.route-heading{display:flex;justify-content:space-between;align-items:center}.route-heading h3{font-size:24px;margin:8px 0}.route-stages{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:22px 0}.route-stage{padding:16px;background:#202328;display:grid;gap:7px}.route-dot{width:26px;height:26px;display:grid;place-items:center;background:#0f62fe;font-size:10px}.route-stage b{font-size:12px}.route-stage small,.route-stage em{font-size:10px;color:#9da5ad;font-style:normal}.route-map-placeholder{height:180px;background:radial-gradient(ellipse at 30% 50%,#263541,#15191e 68%);display:flex;align-items:center;justify-content:space-around;position:relative;overflow:hidden}.map-pin{z-index:1;background:#0f62fe;padding:8px 10px;font-size:9px;letter-spacing:.08em}.map-route-line{height:2px;background:repeating-linear-gradient(90deg,#78a9ff 0 9px,transparent 9px 16px);width:55%;position:absolute}.map-truck{z-index:2;background:#0b0c0e;color:#78a9ff;padding:8px 12px;animation:truckMove 4s ease-in-out infinite alternate}.route-map-placeholder p{position:absolute;bottom:8px;left:12px;right:12px;text-align:center;font-size:10px;color:#9da5ad}.arrival-estimate{display:grid;gap:8px;padding:20px 0 0}.arrival-estimate span{font-size:10px;letter-spacing:.12em;color:#9da5ad}.arrival-estimate strong{font-size:25px}.arrival-estimate small{font-size:11px;color:#9da5ad}.confirmation-document{background:#f4f4f4;color:#161616;max-width:900px;margin:0 auto;padding:clamp(24px,5vw,58px);box-shadow:0 18px 60px #0005}.document-header{display:flex;justify-content:space-between;gap:20px}.document-header span,.document-reference small,.document-section>span{font-size:9px;letter-spacing:.13em;color:#525252}.document-header h2{font-size:clamp(34px,5vw,54px);line-height:.98;margin:18px 0}.document-reference{display:grid;align-content:start;gap:7px;text-align:right}.document-reference b{font-size:12px}.document-rule{height:4px;background:#0f62fe;margin:25px 0}.document-section{display:grid;grid-template-columns:200px 1fr;gap:20px;padding:20px 0;border-bottom:1px solid #d8d8d8}.document-value{display:grid;gap:7px}.document-value b{font-size:15px}.document-value small{font-size:11px;color:#525252}.document-warning{color:#8a5700!important}.document-footer{display:flex;justify-content:space-between;align-items:center;padding-top:28px}.document-footer b{font-size:20px;letter-spacing:.12em}.document-footer span{font-size:8px;letter-spacing:.1em;color:#525252}.confirmation-actions{display:flex;justify-content:center;gap:12px;margin:22px auto}.carbon-button{border:0;border-radius:0;padding:14px 22px;min-height:48px;cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.02em;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}.carbon-button:disabled{opacity:.4;cursor:not-allowed}.carbon-button--primary{background:#0f62fe;color:white}.carbon-button--primary:hover{background:#0353e9}.carbon-button--secondary{background:#393939;color:white}.carbon-button--ghost{background:transparent;color:#f4f4f4;border:1px solid #525960}.studio-controls{display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid #34383d;padding:22px 0}.studio-controls>span{font-size:11px;color:#9da5ad;text-align:center}.completion-mark{width:56px;height:56px;background:#198038;border-radius:50%;display:grid;place-items:center;font-size:26px;margin-bottom:25px}.completion-copy{max-width:620px;color:#a7adb4;line-height:1.7}.completion-reference{display:grid;gap:8px;padding:20px;background:#17191c;max-width:360px;margin:25px 0}.completion-reference small,.completion-reference span{font-size:10px;color:#9da5ad;letter-spacing:.1em}.completion-reference strong{font-size:22px}@keyframes wheelReveal{from{transform:scale(.82) rotate(-20deg);opacity:.3}to{transform:scale(1) rotate(0);opacity:1}}@keyframes nodeProgress{from{transform:scaleX(.12)}to{transform:scaleX(1)}}@keyframes truckMove{from{transform:translateX(-100px)}to{transform:translateX(100px)}}@media(max-width:1000px){.design-grid{grid-template-columns:repeat(2,1fr)}.manufacturing-track{grid-template-columns:repeat(4,1fr)}.studio-progress li b{display:none}.studio-progress li{justify-content:center}.vehicle-filter-row,.delivery-form-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:620px){.studio-heading{display:block}.reference-panel{margin-top:24px}.studio-progress ol{gap:2px}.studio-progress li{font-size:9px}.studio-progress li span{font-size:9px}.studio-content{padding-top:30px}.design-grid,.spec-path-grid,.vehicle-filter-row,.delivery-form-grid,.spec-columns{grid-template-columns:1fr}.design-art{height:180px}.vehicle-preview{grid-template-columns:1fr}.vehicle-preview-art{min-height:130px}.custom-spec-fields{grid-template-columns:1fr}.custom-spec-fields .upload-field,.custom-response{grid-column:auto}.manufacturing-track{grid-template-columns:repeat(2,1fr)}.manufacturing-summary{padding:20px}.manufacturing-summary strong{font-size:32px}.manufacturing-wheel .wheel-render{width:80px;height:80px}.route-stages{grid-template-columns:repeat(2,1fr)}.route-heading{align-items:start;flex-direction:column}.document-section{grid-template-columns:1fr;gap:8px}.document-header{flex-direction:column}.document-reference{text-align:left;grid-template-columns:1fr 1fr}.document-footer{align-items:start;flex-direction:column;gap:10px}.confirmation-actions{flex-direction:column}.studio-controls{flex-wrap:wrap}.studio-controls>span{order:3;flex-basis:100%}.studio-controls .carbon-button{flex:1}.delivery-address{grid-column:auto}}
+@media(prefers-reduced-motion:reduce){.studio-shell *{animation:none!important;transition:none!important}}
+</style>
+
+<script define:vars={{ productRows: products }}>
+  const root = document.querySelector("#configuration-studio");
+  const steps = [...root.querySelectorAll("[data-step]")];
+  const labels = [...root.querySelectorAll("[data-step-label]")];
+  const progressFill = root.querySelector("#progress-fill");
+  const progressCurrent = root.querySelector("#progress-current");
+  const progressTitle = root.querySelector("#progress-title");
+  const previous = root.querySelector("#previous-step");
+  const next = root.querySelector("#next-step");
+  const hint = root.querySelector("#control-hint");
+  const stepTitles = ["Select a wheel design","Select your vehicle","Choose specifications","Review manufacturing estimate","Set delivery destination","Review configuration document","Configuration received"];
+  const draftKey = "anvera.configuration.draft.v1";
+  const state = { step:1, reference:"", product:null, vehicle:{region:"sam",make:"",model:"",year:"",generation:"",trim:""}, specPath:"", customSubmitted:false, delivery:{term:"FOB",method:"sea"} };
+  const makeReference = () => "ANV-" + new Date().getFullYear() + "-" + Math.random().toString(36).slice(2,8).toUpperCase();
+  try {
+    const saved = JSON.parse(localStorage.getItem(draftKey) || "null");
+    if (saved && saved.reference && saved.step < 7) Object.assign(state, saved, {step:1});
+  } catch {}
+  if (!state.reference) state.reference = makeReference();
+  root.querySelector("#reference-code").textContent = state.reference;
+  const saveDraft = () => { try { localStorage.setItem(draftKey, JSON.stringify({...state, updatedAt:new Date().toISOString()})); } catch {} };
+  const updateProgress = () => {
+    steps.forEach((step) => { const active = Number(step.dataset.step) === state.step; step.hidden = !active; step.classList.toggle("is-active",active); });
+    labels.forEach((label) => { const n = Number(label.dataset.stepLabel); label.classList.toggle("is-current",n===state.step); label.classList.toggle("is-complete",n<state.step); });
+    progressFill.style.width = (state.step/7*100)+"%";
+    progressCurrent.textContent = "STEP "+String(state.step).padStart(2,"0")+" / 07";
+    progressTitle.textContent = stepTitles[state.step-1];
+    previous.disabled = state.step===1 || state.step===7;
+    next.hidden = state.step===6 || state.step===7;
+    previous.hidden = state.step===7;
+    root.querySelector("#studio-controls").hidden = state.step===7;
+    hint.textContent = state.step===1 ? "Choose a wheel design to continue." : state.step===2 ? "Select a make, model and year." : state.step===3 ? "Choose OEM, upgrade or custom specifications." : state.step===5 ? "Complete the required delivery and contact details." : "Review the information before continuing.";
+    next.disabled = !canContinue();
+    next.textContent = state.step===5 ? "Review confirmation →" : "Next step →";
+    saveDraft();
+  };
+  const canContinue = () => {
+    if(state.step===1) return Boolean(state.product);
+    if(state.step===2) return Boolean(state.vehicle.make && state.vehicle.model && state.vehicle.year);
+    if(state.step===3) return Boolean(state.specPath && (state.specPath!=="custom" || state.customSubmitted));
+    if(state.step===5) return ["delivery-country","delivery-city","delivery-address","contact-name","contact-email"].every(id=>root.querySelector("#"+id).value.trim());
+    return [4,6].includes(state.step);
+  };
+  const setStep = (n) => { state.step=Math.max(1,Math.min(7,n)); updateProgress(); if(state.step===6) buildConfirmation(); window.scrollTo({top:root.offsetTop-20,behavior:"smooth"}); };
+  previous.addEventListener("click",()=>setStep(state.step-1));
+  next.addEventListener("click",()=>{ if(!canContinue()) return; if(state.step===3 && state.specPath==="custom"){ submitCustomBrief(); return; } setStep(state.step+1); });
+  root.querySelectorAll("[data-product]").forEach(button=>button.addEventListener("click",()=>{root.querySelectorAll("[data-product]").forEach(b=>b.setAttribute("aria-pressed","false"));button.setAttribute("aria-pressed","true");state.product=productRows.find(p=>p.slug===button.dataset.product);updateProgress();}));
+  const catalog = async(resource,params={}) => {const q=new URLSearchParams({resource,...params});const r=await fetch("/vehicle-fitment/catalog?"+q);const data=await r.json();if(!r.ok)throw new Error(data.error||"catalog_unavailable");const rows=data?.data??data?.results??data;return Array.isArray(rows)?rows:[];};
+  const selects = {region:root.querySelector("#vehicle-region"),make:root.querySelector("#vehicle-make"),model:root.querySelector("#vehicle-model"),year:root.querySelector("#vehicle-year"),generation:root.querySelector("#vehicle-generation"),trim:root.querySelector("#vehicle-trim")};
+  const optionValue = x => String(typeof x==="object"?(x.slug??x.id??x.code??x.value??x.year??""):x);
+  const optionLabel = x => String(typeof x==="object"?(x.name??x.title??x.label??x.year??x.trim??x.slug??""):x);
+  const fill = (select,rows,placeholder) => {select.replaceChildren(new Option(placeholder,""));rows.forEach(row=>select.add(new Option(optionLabel(row),optionValue(row))));select.disabled=!rows.length;};
+  const status = root.querySelector("#vehicle-status");
+  const resetVehicle = (from) => {const order=["model","year","generation","trim"];const idx=order.indexOf(from);order.slice(idx).forEach(k=>fill(selects[k],[], "Select "+k));};
+  const loadMakes = async()=>{status.textContent="Loading manufacturers…";fill(selects.make,[],"Loading…");try{fill(selects.make,await catalog("makes",{region:selects.region.value}),"Select manufacturer");status.textContent="Select a manufacturer to begin.";}catch{status.textContent="Vehicle catalogue unavailable. Please try again.";fill(selects.make,[],"Catalogue unavailable");}};
+  selects.region.addEventListener("change",()=>{state.vehicle.region=selects.region.value;resetVehicle("model");loadMakes();});
+  selects.make.addEventListener("change",async()=>{state.vehicle.make=selects.make.value;resetVehicle("model");if(!state.vehicle.make)return;status.textContent="Loading models…";try{fill(selects.model,await catalog("models",{region:selects.region.value,make:selects.make.value}),"Select model");}catch{status.textContent="Could not load models.";}});
+  selects.model.addEventListener("change",async()=>{state.vehicle.model=selects.model.value;resetVehicle("year");if(!state.vehicle.model)return;status.textContent="Loading model years and generations…";const params={region:selects.region.value,make:selects.make.value,model:selects.model.value};try{const [years,generations]=await Promise.all([catalog("years",params),catalog("generations",params)]);fill(selects.year,years,"Select year");fill(selects.generation,generations,"Optional generation");status.textContent="Select a model year. Generation and trim are optional refinements.";}catch{status.textContent="Could not load model years.";}});
+  selects.year.addEventListener("change",()=>{state.vehicle.year=selects.year.value;updateVehiclePreview();});
+  selects.generation.addEventListener("change",()=>{state.vehicle.generation=selects.generation.value;updateVehiclePreview();});
+  selects.trim.addEventListener("change",()=>{state.vehicle.trim=selects.trim.value;updateVehiclePreview();});
+  const updateVehiclePreview=()=>{const label=[selects.make.selectedOptions[0]?.textContent,selects.model.selectedOptions[0]?.textContent,selects.year.value,selects.generation.selectedOptions[0]?.textContent].filter(Boolean).join(" ");root.querySelector("#vehicle-preview-title").textContent=label||"Vehicle not selected";root.querySelector("#vehicle-preview-copy").textContent="Vehicle selection saved. Fitment data will be checked against the vehicle catalogue and engineering requirements.";updateProgress();};
+  const loadTrims=async()=>{if(!state.vehicle.make||!state.vehicle.model||(!state.vehicle.year&&!state.vehicle.generation))return;const p={region:selects.region.value,make:selects.make.value,model:selects.model.value};if(state.vehicle.year)p.year=state.vehicle.year;if(state.vehicle.generation)p.generation=state.vehicle.generation;try{fill(selects.trim,await catalog("modifications",p),"Optional trim");}catch{}};
+  selects.year.addEventListener("change",loadTrims);selects.generation.addEventListener("change",loadTrims);
+  root.querySelectorAll("[data-spec-path]").forEach(button=>button.addEventListener("click",()=>{root.querySelectorAll("[data-spec-path]").forEach(b=>b.setAttribute("aria-pressed","false"));button.setAttribute("aria-pressed","true");state.specPath=button.dataset.specPath;const detail=root.querySelector("#spec-detail");detail.hidden=false;root.querySelector("#custom-spec-fields").hidden=state.specPath!=="custom";root.querySelector("#spec-reference").hidden=state.specPath==="custom";root.querySelector("#spec-detail-title").textContent=state.specPath==="oem"?"Factory specification reference":state.specPath==="upgrade"?"ANVERA upgrade reference":"Your custom specification";root.querySelector("#spec-detail-kicker").textContent=state.specPath.toUpperCase()+" / SPECIFICATION PATH";if(state.specPath!=="custom"){root.querySelector("#spec-detail-title").textContent+=" · engineering validation required";}updateProgress();}));
+  const submitCustomBrief=()=>{const front=root.querySelector("#custom-front").value.trim(),rear=root.querySelector("#custom-rear").value.trim();if(!front||!rear){hint.textContent="Enter both front and rear specifications before submitting.";return;}state.customSubmitted=true;root.querySelector("#spec-detail-title").textContent="Custom specification received for review";root.querySelector("#spec-detail-kicker").textContent="CUSTOM BRIEF / REVIEW REQUEST";root.querySelector("#spec-reference").hidden=true;root.querySelector("#custom-spec-fields").innerHTML='<p class="custom-response">Thank you. Your custom specifications are ready for engineering review. ANVERA will respond within 1 business day after the brief is submitted to our team.</p>';next.disabled=false;next.textContent="Continue to manufacturing →";hint.textContent="Custom brief prepared. Continue to review manufacturing and delivery.";saveDraft();};
+  const deliveryIds=["delivery-term","shipping-method","delivery-country","delivery-region","delivery-city","delivery-postal","delivery-address","contact-name","contact-email","contact-phone"];
+  deliveryIds.forEach(id=>root.querySelector("#"+id).addEventListener("input",()=>{state.delivery[id]=root.querySelector("#"+id).value;updateArrivalEstimate();updateProgress();}));
+  const updateArrivalEstimate=()=>{const country=root.querySelector("#delivery-country").value.trim(),city=root.querySelector("#delivery-city").value.trim();const complete=country&&city;root.querySelector("#delivery-window").textContent=complete?"Manufacturing + route estimate pending":"Awaiting destination details";root.querySelector("#delivery-window-note").textContent=complete?"Destination captured. A verified carrier and port route is required before calculating a reliable arrival date.":"Enter destination country and city to begin the delivery estimate.";root.querySelector("#ocean-estimate").textContent=complete?"Carrier schedule required":"Route required";};
+  const buildConfirmation=()=>{const v=state.vehicle;const vehicle=[v.make,v.model,v.year,v.generation,v.trim].filter(Boolean).join(" ");const spec=state.specPath==="oem"?"OEM reference":state.specPath==="upgrade"?"ANVERA upgrade reference":"Custom specification";const address=["delivery-address","delivery-city","delivery-region","delivery-postal","delivery-country"].map(id=>root.querySelector("#"+id).value.trim()).filter(Boolean).join(", ");const val=id=>root.querySelector("#"+id).value.trim()||"Not supplied";root.querySelector("#document-reference").textContent=state.reference;root.querySelector("#document-date").textContent=new Date().toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"});root.querySelector("#document-design").textContent=state.product?.title||"—";root.querySelector("#document-construction").textContent=state.product?.construction||"—";root.querySelector("#document-vehicle").textContent=vehicle||"—";root.querySelector("#document-vehicle-detail").textContent="Market: "+v.region;root.querySelector("#document-spec-type").textContent=spec;root.querySelector("#document-spec-details").textContent=state.specPath==="custom"?"Front: "+val("custom-front")+" / Rear: "+val("custom-rear"):"Reference values to be confirmed against verified vehicle fitment data.";root.querySelector("#document-delivery").textContent=val("delivery-term")+" / "+(val("shipping-method")==="sea"?"Sea freight":"Air freight");root.querySelector("#document-address").textContent=address;root.querySelector("#document-arrival").textContent="Estimated delivery date pending verified route calculation.";root.querySelector("#document-contact").textContent=val("contact-name");root.querySelector("#document-email").textContent=val("contact-email");root.querySelector("#document-phone").textContent=val("contact-phone");};
+  root.querySelector("#download-pdf").addEventListener("click",()=>window.print());
+  root.querySelector("#submit-configuration").addEventListener("click",()=>{root.querySelector("#submit-status").textContent="This preview currently stores the configuration as a local draft only. Server-side submission and order tracking will be enabled after the configuration data model and API are implemented.";});
+  const originalSetStep=setStep;
+  next.addEventListener("click",()=>{if(state.step===5&&canContinue())buildConfirmation();});
+  root.querySelector("#completion-reference").textContent=state.reference;
+  updateProgress();
+  loadMakes();
+</script>
+
+<style is:global>
+@media print{body{background:#fff!important}.site-header,.site-footer,.studio-heading,.studio-progress,.studio-controls,.step-heading,.confirmation-actions,.studio-note{display:none!important}.studio-shell{padding:0!important;background:#fff!important}.studio-step{display:none!important}.studio-step[data-step="6"]{display:block!important}.confirmation-document{box-shadow:none!important;max-width:none!important}}
+</style>
