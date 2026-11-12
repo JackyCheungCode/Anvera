@@ -397,8 +397,8 @@ function setupDocumentIsSubmittable(document: Record<string, unknown>) {
     construction.constructionTypes,
     specification.diameterRange, specification.widthRange, specification.boltPatterns
   ];
-  const supportedConstructions = inputString(construction.constructionTypes, 1000).split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean);
-  const materialGrades = inputString(material.materialGrade, 2000).split(/[\\n,;]+/).map((value) => value.trim()).filter(Boolean);
+  const supportedConstructions = inputString(construction.constructionTypes, 1000).split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean);
+  const materialGrades = inputString(material.materialGrade, 2000).split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean);
   const validProducts = products.length > 0 && products.every((product) => {
     const selectedConstruction = inputString(product?.construction, 40);
     const selectedMaterial = inputString(product?.materialProfile, 200);
