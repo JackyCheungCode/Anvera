@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "anvera-preview",
-  "main": "./src/worker.ts",
+  "main": "./dist/_worker.js/index.js",
   "compatibility_date": "2026-11-12",
   "compatibility_flags": ["nodejs_compat"],
   "d1_databases": [{
