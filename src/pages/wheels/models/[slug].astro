@@ -18,7 +18,7 @@ const modelCode = String(data.model_code ?? "");
 <Base title={product ? title : "Wheel design unavailable"} description={description || "Explore an ANVERA forged wheel design and discuss a vehicle-specific configuration."}>
   {product ? <>
     <section class="wheel-product-hero">
-      <div class="wheel-product-visual">{heroImage ? <Image image={heroImage} width={1600} height={1200} priority /> : <div class="wheel-product-visual-placeholder"><span>ANVERA / FORGED</span></div>}</div>
+      <div class="wheel-product-visual">{heroImage ? <Image image={heroImage as any} width={1600} height={1200} priority /> : <div class="wheel-product-visual-placeholder"><span>ANVERA / FORGED</span></div>}</div>
       <div class="wheel-product-intro">
         <p class="eyebrow">ANVERA / WHEEL DESIGN</p>
         <p class="wheel-product-code">{modelCode || "BESPOKE DESIGN"}{construction ? ` / ${construction.toUpperCase()}` : ""}</p>
@@ -31,7 +31,7 @@ const modelCode = String(data.model_code ?? "");
     {finishes.length > 0 && <section class="wheel-product-finishes"><p class="section-kicker">Finish library</p><h2>Make it<br />your own.</h2><div class="wheel-finish-grid">{finishes.map((finish: any) => <article><h3>{String(finish.data?.title ?? "Finish")}</h3><p>{String(finish.data?.finish_description ?? "")}</p>{finish.data?.finish_code && <span>{String(finish.data.finish_code)}</span>}</article>)}</div></section>}
     {data.design_story && <section class="wheel-product-story">
       <p class="section-kicker">Design perspective</p>
-      <div class="wheel-product-richtext"><PortableText value={data.design_story} /></div>
+      <div class="wheel-product-richtext"><PortableText value={data.design_story as any} /></div>
     </section>}
     {data.technical_disclaimer && <p class="wheel-product-disclaimer">{String(data.technical_disclaimer)}</p>}
     <section class="wheel-product-end"><p class="section-kicker">Configure around your vehicle</p><h2>The right specification<br />starts with your brief.</h2><a class="cds-btn cds-btn--primary" href={`/custom-inquiry?model=${encodeURIComponent(modelCode || title)}`}>Start a project <span aria-hidden="true">↗</span></a></section>
