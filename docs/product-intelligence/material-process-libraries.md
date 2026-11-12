@@ -82,3 +82,16 @@ Preview migration: `migrations/0004_product_intelligence_finish_library.sql`.
 Product Definition now stores the selected approved Material Profile ID and Forging Process ID, not just free-text grade or process labels. The server validates those references against approved library records before a global setup can be submitted. In environments where the normalized library migration is not installed, the existing legacy text fields remain the compatibility path.
 
 Product finish mappings are separately stored and reviewed. Selecting an approved finish does not automatically approve the product mapping.
+
+## Construction capability matrix
+
+The Construction & Engineering step now manages one governed capability record for each construction architecture:
+- Monoblock
+- Two-piece
+- Three-piece
+
+Each record captures capability scope, assembly method, fastener requirements, quality processes, structural limitations and evidence reference. Records must pass engineering review before they become selectable by product profiles.
+
+Product Definition uses the approved construction matrix when the normalized schema is installed. The server rechecks construction approval before a global setup can be submitted. The previous free-text construction list remains a compatibility fallback only when the normalized Preview migration is absent.
+
+Preview migration: `migrations/0005_product_intelligence_construction_capabilities.sql`.
