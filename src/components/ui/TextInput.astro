@@ -1,0 +1,29 @@
+---
+interface Props {
+  id: string;
+  name: string;
+  label: string;
+  type?: "text" | "email" | "tel" | "number" | "url";
+  value?: string;
+  placeholder?: string;
+  required?: boolean;
+  autocomplete?: string;
+  helpText?: string;
+}
+const { id, name, label, type = "text", value, placeholder, required = false, autocomplete, helpText } = Astro.props;
+---
+<div class="cds-field">
+  <label class="cds-label" for={id}>{label}{required && <span aria-hidden="true"> *</span>}</label>
+  <input
+    class="cds-input"
+    id={id}
+    name={name}
+    type={type}
+    value={value}
+    placeholder={placeholder}
+    required={required}
+    autocomplete={autocomplete}
+    aria-describedby={helpText ? `${id}-help` : undefined}
+  />
+  {helpText && <span class="cds-helper" id={`${id}-help`}>{helpText}</span>}
+</div>
