@@ -8,11 +8,11 @@ const regions = [
   { value: "rus", label: "Russia & CIS" },
   { value: "jdm", label: "Japan" },
   { value: "chdm", label: "China" },
-  { value: "ksdm", label: "South Korea" },
+  { value: "skdm", label: "South Korea" },
   { value: "sam", label: "Southeast Asia" },
-  { value: "me", label: "Middle East" },
+  { value: "medm", label: "Middle East" },
   { value: "nadm", label: "North Africa" },
-  { value: "sad", label: "South Africa" },
+  { value: "sadm", label: "South Africa" },
   { value: "audm", label: "Oceania" }
 ];
 ---
@@ -27,7 +27,7 @@ const regions = [
     </div>
     <form class="vehicle-finder-form" id="vehicle-finder-form">
       <div class="vehicle-finder-grid">
-        <label class="vehicle-finder-field"><span>Market region</span><select name="region" id="vf-region" required>{regions.map((region) => <option value={region.value} selected={region.value === "usdm"}>{region.label}</option>)}</select></label>
+        <label class="vehicle-finder-field"><span>Market region</span><select name="region" id="vf-region" required>{regions.map((region) => <option value={region.value} selected={region.value === "sam"}>{region.label}</option>)}</select></label>
         <label class="vehicle-finder-field"><span>Make</span><select name="make" id="vf-make" required><option value="">Select make</option></select></label>
         <label class="vehicle-finder-field"><span>Model</span><select name="model" id="vf-model" required disabled><option value="">Select model</option></select></label>
         <label class="vehicle-finder-field"><span>Year</span><select name="year" id="vf-year" disabled><option value="">Select year</option></select></label>
