@@ -39,4 +39,5 @@ jobs:
         run: pnpm typecheck
 
       - name: Build website
+        if: always()
         run: pnpm build
