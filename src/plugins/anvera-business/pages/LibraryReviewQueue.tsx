@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 
 type ReviewItem = {
-  id: string; entity_type: "material" | "forging_process"; code: string; name: string;
+  id: string; entity_type: "material" | "forging_process" | "finish_profile"; code: string; name: string;
   detail: string; status: string; revision: number; updated_at: string;
 };
 type QueueResponse = { available: boolean; reason?: string; items?: ReviewItem[] };
@@ -64,7 +64,7 @@ export function LibraryReviewQueue() {
       loading ? <div className="api-review-queue-empty"><strong>Loading review queue…</strong></div> :
       items.length ? <div className="api-review-queue-list">{items.map((item) => <article key={item.id}>
         <div className="api-review-queue-record">
-          <span>{item.entity_type === "material" ? "MATERIAL PROFILE" : "FORGING PROCESS"} · REVISION {item.revision}</span>
+          <span>{item.entity_type === "material" ? "MATERIAL PROFILE" : item.entity_type === "forging_process" ? "FORGING PROCESS" : "FINISH PROFILE"} · REVISION {item.revision}</span>
           <strong>{item.code} · {item.name}</strong>
           <small>{item.detail}</small>
         </div>
