@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS anvera_pi_product_finish_mappings (
   product_code TEXT NOT NULL,
   finish_profile_id TEXT NOT NULL REFERENCES anvera_pi_finish_profiles(id) ON DELETE RESTRICT,
   mapping_status TEXT NOT NULL DEFAULT 'pending_review'
-    CHECK (mapping_status IN ('pending_review', 'approved', 'restricted', 'superseded')),
+    CHECK (mapping_status IN ('pending_review', 'approved', 'needs_revision', 'restricted', 'superseded')),
   restrictions TEXT,
   revision INTEGER NOT NULL DEFAULT 1 CHECK (revision > 0),
   created_by_user_id TEXT NOT NULL,
