@@ -47,7 +47,12 @@ jobs:
       - name: Inspect Astro Worker output and adapter resolution
         run: |
           echo "=== Astro server output ==="
-          find dist/server -maxdepth 3 -type f -print | sort | head -100
+          echo "=== Complete Astro dist tree ==="
+          find dist -maxdepth 4 -type f -print | sort | head -240
+          echo "=== Dist root ==="
+          ls -la dist
+          echo "=== Server root ==="
+          ls -la dist/server
           echo "=== Adapter package path ==="
           node -e "const fs=require('node:fs'); const p=require.resolve('@astrojs/cloudflare/entrypoints/server'); console.log('entrypoint:',p); console.log('exists:',fs.existsSync(p)); console.log('realpath:',fs.realpathSync(p)); console.log('package:',require.resolve('@astrojs/cloudflare/package.json'));"
           echo "=== pnpm linker ==="
