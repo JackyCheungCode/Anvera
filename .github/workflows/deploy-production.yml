@@ -51,6 +51,42 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
+      - name: Apply Material and Forging library schema to production D1
+        run: pnpm exec wrangler d1 execute anvera --remote --file migrations/0002_product_intelligence_material_process_library.sql --config wrangler.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Apply Product Intelligence review schema to production D1
+        run: pnpm exec wrangler d1 execute anvera --remote --file migrations/0003_product_intelligence_library_reviews.sql --config wrangler.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Apply Product Intelligence finish schema to production D1
+        run: pnpm exec wrangler d1 execute anvera --remote --file migrations/0004_product_intelligence_finish_library.sql --config wrangler.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Apply construction capability schema to production D1
+        run: pnpm exec wrangler d1 execute anvera --remote --file migrations/0005_product_intelligence_construction_capabilities.sql --config wrangler.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Upgrade Product Intelligence review and mapping constraints in production D1
+        run: pnpm exec wrangler d1 execute anvera --remote --file migrations/0006_product_intelligence_review_mapping_constraint_upgrade.sql --config wrangler.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Apply normalized wheel specification schema to production D1
+        run: pnpm exec wrangler d1 execute anvera --remote --file migrations/0007_product_intelligence_wheel_specifications.sql --config wrangler.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
       - name: Inspect custom Worker vehicle route handlers
         run: |
           node --input-type=module <<'NODE'
