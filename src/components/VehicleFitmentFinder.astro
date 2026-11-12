@@ -208,14 +208,14 @@ const safeProducts = products.map((product) => ({
     try { const rows = await catalog("makes", { region: values.region }); dropdowns.make.setOptions(rows, "Select manufacturer"); status.textContent = rows.length ? "Select a manufacturer to begin." : "No manufacturers are available for this market."; }
     catch { status.textContent = "Could not load the vehicle catalogue. Please try again."; dropdowns.make.reset("Catalogue unavailable", true); }
   };
-  document.querySelector('[data-dropdown="region"]').addEventListener("vf-change", (event) => { values.region = event.detail.value; notifyVehicleChange(); resetAfter("make"); loadMakes(); });
+  document.querySelector('[data-dropdown="region"]').addEventListener("vf-change", (event) => { values.region = event.detail.value; selectedMakeLabel = ""; selectedModelLabel = ""; resetAfter("make"); notifyVehicleChange(); loadMakes(); });
   document.querySelector('[data-dropdown="make"]').addEventListener("vf-change", async (event) => {
-    values.make = event.detail.value; selectedMakeLabel = event.detail.item?.label ?? event.detail.value; notifyVehicleChange(); resetAfter("model"); dropdowns.model.reset("Loading models", true);
+    values.make = event.detail.value; selectedMakeLabel = event.detail.item?.label ?? event.detail.value; selectedModelLabel = ""; resetAfter("model"); notifyVehicleChange(); dropdowns.model.reset("Loading models", true);
     try { const rows = await catalog("models", { region: values.region, make: values.make }); dropdowns.model.setOptions(rows, "Select model"); status.textContent = "Choose a model, then select its year or generation."; }
     catch { dropdowns.model.reset("Models unavailable", true); status.textContent = "Could not load models for this manufacturer."; }
   });
   document.querySelector('[data-dropdown="model"]').addEventListener("vf-change", async (event) => {
-    values.model = event.detail.value; selectedModelLabel = event.detail.item?.label ?? event.detail.value; notifyVehicleChange(); resetAfter("year");
+    values.model = event.detail.value; selectedModelLabel = event.detail.item?.label ?? event.detail.value; resetAfter("year"); notifyVehicleChange();
     for (const key of ["year","generation"]) dropdowns[key].reset("Loading…", true);
     const params = { region: values.region, make: values.make, model: values.model };
     try {
@@ -235,7 +235,7 @@ const safeProducts = products.map((product) => ({
   };
   for (const key of ["year","generation"]) document.querySelector('[data-dropdown="' + key + '"]').addEventListener("vf-change", (event) => {
     values[key] = event.detail.value;
-    notifyVehicleChange(); resetAfter(key); loadModifications();
+    resetAfter(key); notifyVehicleChange(); loadModifications();
   });
   document.querySelector('[data-dropdown="modification"]').addEventListener("vf-change", (event) => { values.modification = event.detail.value; notifyVehicleChange(); });
   document.querySelector('[data-dropdown="region"]').dispatchEvent(new CustomEvent("vf-initialize"));
