@@ -801,7 +801,7 @@ async function syncProductFinishMappings(db: D1Database, sessionId: string, docu
     const current = existingByKey.get(key);
     if (current) {
       const nextStatus = valid ? "pending_review" : "restricted";
-      if (current.mapping_status !== nextStatus && current.mapping_status !== "superseded") {
+      if (current.mapping_status !== nextStatus) {
         statements.push(db.prepare("UPDATE anvera_pi_product_finish_mappings SET mapping_status = ?, revision = revision + 1, updated_by_user_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND revision = ?")
           .bind(nextStatus, actorId, current.id, current.revision));
         statements.push(db.prepare("INSERT INTO anvera_pi_finish_events (id, entity_type, entity_id, event_type, actor_user_id, revision, summary) VALUES (?, 'product_finish_mapping', ?, 'mapping_updated', ?, ?, ?)")
