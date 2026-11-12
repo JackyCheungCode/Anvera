@@ -895,6 +895,12 @@ async function saveConstructionCapability(ctx: AdminContext) {
   if (!["Monoblock", "Two-piece", "Three-piece"].includes(value.constructionType) || !value.status) {
     return { saved: false, reason: "invalid_input" };
   }
+  if (value.status === "pending_review" && (
+    !value.capabilityScope || !value.qualityProcesses || !value.evidenceRef ||
+    (["Two-piece", "Three-piece"].includes(value.constructionType) && (!value.assemblyMethod || !value.fastenerRequirements))
+  )) {
+    return { saved: false, reason: "engineering_evidence_required" };
+  }
   const actorId = ctx.user!.id;
   const nextRevision = revision + 1;
   try {
