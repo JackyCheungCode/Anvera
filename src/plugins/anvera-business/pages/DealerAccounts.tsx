@@ -25,6 +25,8 @@ export function DealerAccounts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [available, setAvailable] = useState(false);
+  const [confirmId, setConfirmId] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -47,6 +49,26 @@ export function DealerAccounts() {
     }
   }, []);
 
+  const suspend = async (id: string) => {
+    setSaving(true);
+    setError("");
+    try {
+      const response = await apiFetch("/_emdash/api/plugins/anvera-business/dealers/suspend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, note: "Suspended from ANVERA Business admin." })
+      });
+      const result = await parseApiResponse<{ suspended: boolean }>(response, "Unable to suspend dealer.");
+      if (!result.suspended) throw new Error("This dealer account is not active or could not be found.");
+      setConfirmId("");
+      await load();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to suspend dealer.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   useEffect(() => { void load(); }, [load]);
 
   return (
@@ -66,20 +88,18 @@ export function DealerAccounts() {
         <article><span>LOADED RECORDS</span><strong>{available ? items.length : "—"}</strong></article>
         <article><span>ACCESS CONTROL</span><strong>SERVER-SIDE</strong></article>
       </section>
+      {error ? <p className="anvera-inline-message" role="alert">{error}</p> : null}
       <section className="anvera-panel">
         <div className="anvera-panel-heading">
           <h2>Dealer network</h2>
-          <button className="anvera-refresh" type="button" onClick={() => void load()} disabled={loading}>
-            {loading ? "Loading…" : "Refresh"}
-          </button>
+          <button className="anvera-refresh" type="button" onClick={() => void load()} disabled={loading}>{loading ? "Loading…" : "Refresh"}</button>
         </div>
-        {error ? <p className="anvera-inline-message" role="status">{error}</p> : null}
         {loading ? (
           <div className="anvera-empty"><h3>Loading dealer accounts</h3><p>Connecting to the secured business workspace.</p></div>
         ) : items.length ? (
           <div className="anvera-table-wrap">
             <table className="anvera-data-table">
-              <thead><tr><th>COMPANY</th><th>COUNTRY</th><th>EMDASH USER</th><th>APPLICATION</th><th>STATUS</th><th>ACTIVATED</th></tr></thead>
+              <thead><tr><th>COMPANY</th><th>COUNTRY</th><th>EMDASH USER</th><th>APPLICATION</th><th>STATUS</th><th>ACTIVATED</th><th>ACTION</th></tr></thead>
               <tbody>{items.map((item) => (
                 <tr key={item.id}>
                   <td><strong>{item.legal_company_name}</strong></td>
@@ -88,6 +108,11 @@ export function DealerAccounts() {
                   <td>{item.application_id}</td>
                   <td><span className="anvera-record-status">{item.status}</span></td>
                   <td>{new Date(item.activated_at).toLocaleDateString()}</td>
+                  <td>{item.status === "active" ? (
+                    confirmId === item.id ? (
+                      <span className="anvera-confirm-actions"><button className="anvera-action-button anvera-action-button--danger" type="button" disabled={saving} onClick={() => void suspend(item.id)}>{saving ? "Saving…" : "Confirm"}</button><button className="anvera-link-button" type="button" onClick={() => setConfirmId("")}>Cancel</button></span>
+                    ) : <button className="anvera-link-button anvera-link-button--danger" type="button" onClick={() => setConfirmId(item.id)}>Suspend</button>
+                  ) : <span className="anvera-muted">—</span>}</td>
                 </tr>
               ))}</tbody>
             </table>
