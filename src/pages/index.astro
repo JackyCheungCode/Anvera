@@ -1,31 +1,75 @@
 ---
-import { getEmDashCollection, getSiteSettings } from "emdash";
-import { Image } from "emdash/ui";
 import Base from "../layouts/Base.astro";
-import { resolveStarterSiteIdentity } from "../utils/site-identity";
-
-const { entries: posts, cacheHint } = await getEmDashCollection("posts", {
-  orderBy: { published_at: "desc" },
-  limit: 10,
-});
-const { siteTitle, siteTagline } = resolveStarterSiteIdentity(await getSiteSettings());
-if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
 ---
-<Base title={siteTitle} description={siteTagline}>
-  <h1>Latest from Anvera</h1>
-  {posts.length === 0 ? (
-    <p>No posts yet. <a href="/_emdash/admin/content/posts/new">Create one</a>.</p>
-  ) : (
-    <ul>
-      {posts.map((post) => (
-        <li>
-          <a href={`/posts/${post.id}`}>
-            {post.data.featured_image && <div {...post.edit.featured_image}><Image image={post.data.featured_image} /></div>}
-            <h2 {...post.edit.title}>{post.data.title}</h2>
-          </a>
-          {post.data.excerpt && <p {...post.edit.excerpt}>{post.data.excerpt}</p>}
-        </li>
-      ))}
-    </ul>
-  )}
+<Base
+  title="Premium Forged Wheels"
+  description="ANVERA creates premium forged wheels shaped by engineering precision, material integrity and individual expression."
+>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-wheel" aria-hidden="true"></div>
+    <div class="hero-inner">
+      <p class="eyebrow">Premium forged wheels · Engineered to order</p>
+      <h1 id="hero-title">Forged to<br /><span>move</span> you.</h1>
+      <p class="hero-copy">
+        Precision forged. Individually considered. ANVERA brings engineering discipline and uncompromising design to every wheel.
+      </p>
+      <div class="hero-cta">
+        <a class="cds-btn cds-btn--primary" href="/wheels">Explore the collection <span aria-hidden="true">↗</span></a>
+        <a class="cds-btn cds-btn--secondary" href="/custom-inquiry">Configure your vision <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="design-title">
+    <div class="section-inner">
+      <p class="section-kicker">The ANVERA standard</p>
+      <h2 class="section-title" id="design-title">More than a wheel.<br />A point of view.</h2>
+      <p class="section-lead">
+        Every proportion has a purpose. Every surface has a reason. We unite design intent, material knowledge and manufacturing precision to create wheels that feel unmistakably yours.
+      </p>
+      <div class="statement-grid">
+        <article class="statement-card">
+          <span class="statement-number">01 / ENGINEERING</span>
+          <h3>Precision in every detail</h3>
+          <p>Considered geometry and disciplined engineering from concept through final inspection.</p>
+        </article>
+        <article class="statement-card">
+          <span class="statement-number">02 / MATERIAL</span>
+          <h3>Strength, refined</h3>
+          <p>Forged aluminium and carefully controlled processes form the foundation of every commission.</p>
+        </article>
+        <article class="statement-card">
+          <span class="statement-number">03 / INDIVIDUALITY</span>
+          <h3>Made to be yours</h3>
+          <p>Fitment, finish and design details are brought together around your vehicle and vision.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="split-feature" id="craftsmanship" aria-labelledby="craft-title">
+    <div class="split-visual" role="img" aria-label="Abstract metallic forged wheel detail"></div>
+    <div class="split-copy">
+      <p class="section-kicker">Craftsmanship / 01</p>
+      <h2 id="craft-title">Form follows<br />function.</h2>
+      <p>
+        A wheel is a study in balance: structure and lightness, strength and elegance, precision and character. Explore the thinking and process behind the ANVERA approach.
+      </p>
+      <a class="cds-btn cds-btn--secondary" href="/craftsmanship">Discover our craft <span aria-hidden="true">↗</span></a>
+    </div>
+  </section>
+
+  <section class="section inquiry-band" aria-labelledby="inquiry-title">
+    <div class="section-inner">
+      <p class="eyebrow">Your vision. Our engineering.</p>
+      <h2 class="section-title" id="inquiry-title">The right fit is<br />never off the shelf.</h2>
+      <p class="section-lead" style="color:rgba(255,255,255,.82)">
+        Tell us about your vehicle, preferred specifications and finish. Our team will work with you on a tailored solution.
+      </p>
+      <div class="hero-cta">
+        <a class="cds-btn cds-btn--secondary" href="/custom-inquiry">Start your inquiry <span aria-hidden="true">↗</span></a>
+        <a class="cds-btn cds-btn--secondary" href="/dealers/apply">Become a dealer <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </section>
 </Base>
