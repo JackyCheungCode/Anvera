@@ -477,6 +477,53 @@ async function validateProductCapabilityReferences(db: D1Database, document: Rec
   }
 }
 
+async function syncWheelSpecifications(db: D1Database, sessionId: string, document: Record<string, unknown>, actorId: string) {
+  const products = Array.isArray(document.products) ? document.products.map(inputRecord).filter(Boolean) : [];
+  for (const product of products) {
+    const productCode = inputString(product?.productCode, 80);
+    if (!productCode) continue;
+    const rows = Array.isArray(product?.specifications) ? product.specifications.map(inputRecord).filter(Boolean) : [];
+    const existing = await db.prepare("SELECT specification_id, position, diameter, width, bolt_count, pcd, offset, center_bore, load_rating, status, revision FROM anvera_pi_wheel_specifications WHERE setup_session_id = ? AND product_code = ?")
+      .bind(sessionId, productCode).all<{ specification_id: string; position: string; diameter: number; width: number; bolt_count: number; pcd: number; offset: number; center_bore: number; load_rating: number | null; status: string; revision: number }>();
+    const existingById = new Map(existing.results.map((row) => [row.specification_id, row]));
+    const activeIds = new Set<string>();
+    for (const row of rows) {
+      const id = inputString(row?.id, 128);
+      const position = inputString(row?.role, 24);
+      const diameter = Number(row?.diameter);
+      const width = Number(row?.width);
+      const boltCount = Number(row?.boltCount);
+      const pcd = Number(row?.pcd);
+      const offset = Number(row?.offset);
+      const centerBore = Number(row?.centerBore);
+      const loadRating = row?.loadRating === undefined || row?.loadRating === "" ? null : Number(row.loadRating);
+      if (!id || !["Front", "Rear", "Front & Rear"].includes(position) || ![diameter, width, boltCount, pcd, offset, centerBore].every(Number.isFinite)) continue;
+      activeIds.add(id);
+      const previous = existingById.get(id);
+      const unchanged = previous && previous.position === position && previous.diameter === diameter && previous.width === width &&
+        previous.bolt_count === boltCount && previous.pcd === pcd && previous.offset === offset &&
+        previous.center_bore === centerBore && previous.load_rating === loadRating;
+      const requested = inputString(row?.status, 32);
+      const nextStatus = unchanged && previous?.status === "approved" ? "approved" :
+        requested === "Engineering Review" ? "pending_review" :
+        requested === "Factory Supported" ? "factory_supported" : "draft";
+      if (!previous) {
+        await db.prepare("INSERT INTO anvera_pi_wheel_specifications (id, setup_session_id, product_code, specification_id, position, diameter, width, bolt_count, pcd, offset, center_bore, load_rating, status, created_by_user_id, updated_by_user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+          .bind(crypto.randomUUID(), sessionId, productCode, id, position, diameter, width, boltCount, pcd, offset, centerBore, loadRating, nextStatus, actorId, actorId).run();
+      } else if (!unchanged || previous.status !== nextStatus) {
+        await db.prepare("UPDATE anvera_pi_wheel_specifications SET position = ?, diameter = ?, width = ?, bolt_count = ?, pcd = ?, offset = ?, center_bore = ?, load_rating = ?, status = ?, revision = revision + 1, updated_by_user_id = ?, updated_at = CURRENT_TIMESTAMP WHERE setup_session_id = ? AND product_code = ? AND specification_id = ?")
+          .bind(position, diameter, width, boltCount, pcd, offset, centerBore, loadRating, nextStatus, actorId, sessionId, productCode, id).run();
+      }
+    }
+    for (const previous of existing.results) {
+      if (!activeIds.has(previous.specification_id) && previous.status !== "superseded") {
+        await db.prepare("UPDATE anvera_pi_wheel_specifications SET status = 'superseded', revision = revision + 1, updated_by_user_id = ?, updated_at = CURRENT_TIMESTAMP WHERE setup_session_id = ? AND product_code = ? AND specification_id = ?")
+          .bind(actorId, sessionId, productCode, previous.specification_id).run();
+      }
+    }
+  }
+}
+
 async function loadProductSetup(ctx: AdminContext) {
   if (ctx.request.method !== "GET") return { available: false, reason: "method_not_allowed" };
   const access = await getProductSetupDatabase(ctx);
@@ -497,10 +544,18 @@ async function loadProductSetup(ctx: AdminContext) {
   let stepState: Record<string, unknown> = {};
   try { document = JSON.parse(session.document_json) as Record<string, unknown>; } catch { document = {}; }
   try { stepState = JSON.parse(session.step_state_json) as Record<string, unknown>; } catch { stepState = {}; }
+  let specificationStatuses: Record<string, string> = {};
+  try {
+    const specifications = await access.db.prepare("SELECT specification_id, status FROM anvera_pi_wheel_specifications WHERE setup_session_id = ? AND status != 'superseded'")
+      .bind(session.id).all<{ specification_id: string; status: string }>();
+    specificationStatuses = Object.fromEntries(specifications.results.map((row) => [row.specification_id, row.status]));
+  } catch (cause) {
+    if (!String(cause).toLowerCase().includes("no such table")) throw cause;
+  }
   return {
     available: true,
     session: { id: session.id, status: session.status, revision: session.revision, updated_at: session.updated_at },
-    document, stepState, events: events.results, versions: versions.results
+    document, stepState, events: events.results, versions: versions.results, specificationStatuses
   };
 }
 
@@ -565,6 +620,7 @@ async function saveProductSetup(ctx: AdminContext) {
     }
     await access.db.batch(statements);
     const mappingWarning = await trySyncProductFinishMappings(access.db, id, document, actorId);
+    await syncWheelSpecifications(access.db, id, document, actorId);
     return { saved: true, sessionId: id, revision: nextRevision, status: nextStatus, mappingWarning };
   }
 
@@ -581,6 +637,7 @@ async function saveProductSetup(ctx: AdminContext) {
   const result = await access.db.batch(statements);
   if ((result[0]?.meta?.changes ?? 0) === 0) return { saved: false, reason: "revision_conflict", revision: nowRevision };
   const mappingWarning = await trySyncProductFinishMappings(access.db, existing.id, document, actorId);
+  await syncWheelSpecifications(access.db, existing.id, document, actorId);
   return { saved: true, sessionId: existing.id, revision: nextRevision, status: nextStatus, mappingWarning };
 }
 
@@ -934,12 +991,13 @@ async function listProductLibraryReviewQueue(ctx: AdminContext) {
   const access = await getProductLibraryDatabase(ctx);
   if ("error" in access) return access.error;
   try {
-    const [materials, forgingProcesses, finishes, finishMappings, constructions] = await Promise.all([
+    const [materials, forgingProcesses, finishes, finishMappings, constructions, wheelSpecifications] = await Promise.all([
       access.db.prepare("SELECT id, code, name, grade AS detail, status, revision, updated_at FROM anvera_pi_material_profiles WHERE status = 'pending_review' ORDER BY updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>(),
       access.db.prepare("SELECT id, code, name, process_type AS detail, status, revision, updated_at FROM anvera_pi_forging_processes WHERE status = 'pending_review' ORDER BY updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>(),
       access.db.prepare("SELECT id, code, name, finish_type AS detail, status, revision, updated_at FROM anvera_pi_finish_profiles WHERE status = 'pending_review' ORDER BY updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>(),
       access.db.prepare("SELECT m.id, m.product_code AS code, f.name, f.finish_type AS detail, m.mapping_status AS status, m.revision, m.updated_at FROM anvera_pi_product_finish_mappings m JOIN anvera_pi_finish_profiles f ON f.id = m.finish_profile_id WHERE m.mapping_status = 'pending_review' ORDER BY m.updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>(),
-      access.db.prepare("SELECT id, construction_type AS code, construction_type AS name, capability_scope AS detail, status, revision, updated_at FROM anvera_pi_construction_capabilities WHERE status = 'pending_review' ORDER BY updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>()
+      access.db.prepare("SELECT id, construction_type AS code, construction_type AS name, capability_scope AS detail, status, revision, updated_at FROM anvera_pi_construction_capabilities WHERE status = 'pending_review' ORDER BY updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>(),
+      access.db.prepare("SELECT id, product_code AS code, product_code || ' · ' || position AS name, diameter || ' × ' || width || ' in · ' || bolt_count || '×' || pcd || ' PCD · ET' || offset AS detail, status, revision, updated_at FROM anvera_pi_wheel_specifications WHERE status = 'pending_review' ORDER BY updated_at ASC").all<{ id: string; code: string; name: string; detail: string; status: string; revision: number; updated_at: string }>()
     ]);
     return {
       available: true,
@@ -948,7 +1006,8 @@ async function listProductLibraryReviewQueue(ctx: AdminContext) {
         ...forgingProcesses.results.map((item) => ({ ...item, entity_type: "forging_process" })),
         ...finishes.results.map((item) => ({ ...item, entity_type: "finish_profile" })),
         ...finishMappings.results.map((item) => ({ ...item, entity_type: "product_finish_mapping" })),
-        ...constructions.results.map((item) => ({ ...item, entity_type: "construction_capability" }))
+        ...constructions.results.map((item) => ({ ...item, entity_type: "construction_capability" })),
+        ...wheelSpecifications.results.map((item) => ({ ...item, entity_type: "wheel_specification" }))
       ].sort((a, b) => String(a.updated_at).localeCompare(String(b.updated_at)))
     };
   } catch (cause) {
@@ -967,21 +1026,21 @@ async function reviewProductLibraryRecord(ctx: AdminContext) {
   const revision = Math.max(0, Math.floor(Number(body?.revision) || 0));
   const decision = inputString(body?.decision, 32);
   const note = inputString(body?.note, 2000);
-  if (!id || revision < 1 || !["material", "forging_process", "finish_profile", "product_finish_mapping", "construction_capability"].includes(entityType) || !["approved", "needs_revision", "restricted"].includes(decision)) {
+  if (!id || revision < 1 || !["material", "forging_process", "finish_profile", "product_finish_mapping", "construction_capability", "wheel_specification"].includes(entityType) || !["approved", "needs_revision", "restricted"].includes(decision)) {
     return { reviewed: false, reason: "invalid_input" };
   }
   const isMapping = entityType === "product_finish_mapping";
   const table = entityType === "material" ? "anvera_pi_material_profiles" :
     entityType === "forging_process" ? "anvera_pi_forging_processes" :
-    entityType === "finish_profile" ? "anvera_pi_finish_profiles" : entityType === "product_finish_mapping" ? "anvera_pi_product_finish_mappings" : "anvera_pi_construction_capabilities";
+    entityType === "finish_profile" ? "anvera_pi_finish_profiles" : entityType === "product_finish_mapping" ? "anvera_pi_product_finish_mappings" : entityType === "wheel_specification" ? "anvera_pi_wheel_specifications" : "anvera_pi_construction_capabilities";
   const statusColumn = isMapping ? "mapping_status" : "status";
-  const codeColumn = isMapping ? "product_code" : entityType === "construction_capability" ? "construction_type" : "code";
+  const codeColumn = isMapping ? "product_code" : entityType === "construction_capability" ? "construction_type" : entityType === "wheel_specification" ? "product_code" : "code";
   const current = await access.db.prepare(`SELECT ${codeColumn} AS code, ${statusColumn} AS status, revision FROM ${table} WHERE id = ? LIMIT 1`)
     .bind(id).first<{ code: string; status: string; revision: number }>();
   if (!current) return { reviewed: false, reason: "not_found" };
   if (current.status !== "pending_review") return { reviewed: false, reason: "not_pending_review", status: current.status };
   if (current.revision !== revision) return { reviewed: false, reason: "revision_conflict", revision: current.revision };
-  const nextStatus = decision === "approved" ? "approved" : decision === "restricted" ? "restricted" : isMapping ? "needs_revision" : "draft";
+  const nextStatus = decision === "approved" ? "approved" : decision === "restricted" ? "restricted" : isMapping ? "needs_revision" : entityType === "wheel_specification" ? "draft" : "draft";
   const nextRevision = current.revision + 1;
   const actorId = ctx.user!.id;
   const statements = [
