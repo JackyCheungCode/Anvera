@@ -339,7 +339,8 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
     if(!state.serverReady||!state.accessToken){status.textContent="The secure order service is not available yet. Your local draft remains saved on this device.";return;}
     const customerName=root.querySelector("#contact-name").value.trim(),email=root.querySelector("#contact-email").value.trim(),phone=root.querySelector("#contact-phone").value.trim();
     if(!customerName||!email){status.textContent="Enter your contact name and email before submitting.";return;}
-    const turnstile=(window as any).turnstile;const turnstileToken=(turnstile&&turnstile.getResponse)?turnstile.getResponse():"";
+    // @ts-ignore Cloudflare Turnstile is injected by its external script.
+    const turnstile=window.turnstile;const turnstileToken=(turnstile&&turnstile.getResponse)?turnstile.getResponse():"";
     if(!turnstileToken){status.textContent="Complete the security verification before submitting.";return;}
     button.disabled=true;status.textContent="Submitting your configuration securely…";
     try{
@@ -352,7 +353,8 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
       root.querySelector("#completion-status").textContent=payload.status==="custom_review"?"Your custom specification has been submitted for engineering review. ANVERA will respond within 1 business day.":"Your configuration has been submitted. ANVERA will review fitment and confirm the quotation and delivery schedule.";
       status.textContent="Configuration submitted successfully.";
       saveDraft();setStep(7);
-    }catch(error){const reason=error instanceof Error?error.message:"";status.textContent=reason==="verification_not_configured"?"Secure verification is not configured on the server yet. Please contact ANVERA.":"Submission could not be completed. Your draft is still saved; please try again.";const turnstile=(window as any).turnstile;if(turnstile?.reset)turnstile.reset();}
+    }catch(error){const reason=error instanceof Error?error.message:"";status.textContent=reason==="verification_not_configured"?"Secure verification is not configured on the server yet. Please contact ANVERA.":"Submission could not be completed. Your draft is still saved; please try again.";// @ts-ignore Cloudflare Turnstile is injected by its external script.
+      const turnstile=window.turnstile;if(turnstile?.reset)turnstile.reset();}
     finally{button.disabled=false;}
   });
   root.querySelector("#completion-reference").textContent=state.reference;
