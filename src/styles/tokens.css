@@ -26,22 +26,11 @@
   --border-subtle: #d8dde2;
   --border-strong: #8d969f;
 
-  /* Carbon interaction semantics */
-  --cds-interactive: #0f62fe;
-  --cds-interactive-hover: #0353e9;
-  --cds-focus: #0f62fe;
-  --cds-text-primary: #161616;
-  --cds-text-secondary: #525252;
-  --cds-text-on-color: #ffffff;
-  --cds-layer-01: #f4f4f4;
-  --cds-layer-02: #e8e8e8;
-  --cds-field: #ffffff;
-  --cds-border-subtle: #c6c6c6;
-  --cds-border-strong: #8d8d8d;
-  --cds-support-success: #198038;
-  --cds-support-warning: #f1c21b;
-  --cds-support-error: #da1e28;
-  --cds-support-info: #0043ce;
+  /* BMW M control semantics */
+  --control-bg: #1a2027;
+  --control-border: rgba(222,231,240,.32);
+  --control-focus: #5eb9ff;
+  --control-height: 50px;
 
   /* Typography */
   --font-display: "Arial Narrow", "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;

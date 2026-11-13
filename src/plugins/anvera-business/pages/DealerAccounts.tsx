@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Button as CarbonButton } from "@carbon/react";
+import { Button as CarbonButton } from "../../../components/bmw-m/Controls";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 
 type Dealer = {

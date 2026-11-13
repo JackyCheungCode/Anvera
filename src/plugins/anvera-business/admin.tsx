@@ -1,5 +1,5 @@
 import type { PluginAdminExports } from "emdash";
-import "../../styles/carbon.scss";
+import "../../styles/bmw-m.css";
 import "./admin.css";
 import { InquiryInbox } from "./pages/InquiryInbox";
 import { DealerApplications } from "./pages/DealerApplications";

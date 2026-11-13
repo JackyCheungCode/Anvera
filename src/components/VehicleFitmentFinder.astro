@@ -47,7 +47,7 @@ const safeProducts = products.map((product) => ({
   // @ts-nocheck
   import React from "react";
   import { createRoot } from "react-dom/client";
-  import { ButtonControl, DynamicComboBoxControl, FilterComboBoxControl } from "./carbon/Controls";
+  import { ButtonControl, DynamicComboBoxControl, FilterComboBoxControl } from "./bmw-m/SharedControls";
   const sectionRoot = document.querySelector(".vehicle-finder-section");
   const regionOptions = JSON.parse(sectionRoot?.getAttribute("data-region-options") || "[]");
   const anveraProducts = JSON.parse(sectionRoot?.getAttribute("data-products") || "[]");
@@ -161,7 +161,7 @@ const safeProducts = products.map((product) => ({
     const key = host.dataset.dropdown;
     const placeholder = host.dataset.placeholder || "Select";
     const label = host.dataset.label || key;
-    host.classList.add("cds--g100", "anvera-carbon-field");
+    host.classList.add("bmw-m-dark", "anvera-carbon-field");
     const reactRoot = createRoot(host);
     let options = [];
     let isDisabled = key !== "region";
@@ -362,7 +362,7 @@ const safeProducts = products.map((product) => ({
     const filterRoots = [];
     const createFilter = (key, label, options) => {
       const host = document.createElement("div");
-      host.className = "vf-product-filter cds--g100";
+      host.className = "vf-product-filter bmw-m-dark";
       const root = createRoot(host);
       filterRoots.push(root);
       const items = options.filter(Boolean).map((value) => ({ value, label: value }));
@@ -520,7 +520,7 @@ const safeProducts = products.map((product) => ({
 .vf-product-card a{display:inline-block;margin-top:14px;color:#161616;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid #999;padding-bottom:4px}
 .vf-product-empty{padding:20px;background:#f4f4f4;color:#6f6f6f;font-size:13px}
 @media(max-width:760px){.vehicle-finder-heading,.vf-results-heading,.vf-products-heading{display:block}.vehicle-finder-heading>p,.vf-results-heading p,.vf-products-heading p{margin-top:16px}.vehicle-finder-grid{grid-template-columns:1fr 1fr}.vf-spec-grid,.vf-fitment-spec-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.vf-product-grid{grid-template-columns:1fr 1fr}.vf-product-filters{grid-template-columns:1fr 1fr}}
-@media(max-width:480px){.vehicle-finder-form,.vf-products{padding:18px}.vehicle-finder-grid,.vf-product-grid,.vf-product-filters{grid-template-columns:1fr}.vehicle-finder-actions{align-items:flex-start;flex-direction:column}.vehicle-finder-actions .cds-btn{width:100%}.vf-fitment-group-heading{display:block}.vf-fitment-group-heading p{margin-top:6px}.vf-fitment-card{padding:14px}.vf-fitment-card-top{align-items:flex-start;flex-direction:column}.vf-fitment-spec-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.vehicle-finder-form,.vf-products{padding:18px}.vehicle-finder-grid,.vf-product-grid,.vf-product-filters{grid-template-columns:1fr}.vehicle-finder-actions{align-items:flex-start;flex-direction:column}.vehicle-finder-actions .m-button{width:100%}.vf-fitment-group-heading{display:block}.vf-fitment-group-heading p{margin-top:6px}.vf-fitment-card{padding:14px}.vf-fitment-card-top{align-items:flex-start;flex-direction:column}.vf-fitment-spec-grid{grid-template-columns:1fr 1fr}}
 /* Carbon Design System v11 interaction and data table treatment */
 .vf-select-trigger,.vf-mini-trigger{min-height:48px;padding:0 16px;border:0;border-bottom:1px solid #8d8d8d;background:#f4f4f4;color:#161616;font-family:inherit;font-size:14px;font-weight:400;letter-spacing:0;text-transform:none;transition:background 120ms,border-color 120ms}
 .vf-select-trigger:hover,.vf-mini-trigger:hover{background:#e8e8e8}
@@ -641,10 +641,10 @@ const safeProducts = products.map((product) => ({
 
 /* Dynamic vehicle selectors are rendered by IBM Carbon ComboBox. */
 .vehicle-finder-field>.anvera-carbon-field{min-width:0;width:100%}
-.vehicle-finder-field .cds--combo-box,.vehicle-finder-field .cds--list-box{width:100%}
-.vehicle-finder-field .cds--label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
-.vehicle-finder-section--compact .anvera-carbon-field .cds--label{color:#a7adb4}
-.vehicle-finder-section--compact .anvera-carbon-field .cds--text-input,
-.vehicle-finder-section--compact .anvera-carbon-field .cds--list-box__field{background:#202328}
-.vehicle-finder-section--compact .anvera-carbon-field .cds--list-box__field{border-bottom-color:#69717a}
+.vehicle-finder-field .m-combo,.vehicle-finder-field .m-combo__list{width:100%}
+.vehicle-finder-field .m-field__label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.vehicle-finder-section--compact .anvera-carbon-field .m-field__label{color:#a7adb4}
+.vehicle-finder-section--compact .anvera-carbon-field .m-input,
+.vehicle-finder-section--compact .anvera-carbon-field .m-combo__field{background:#202328}
+.vehicle-finder-section--compact .anvera-carbon-field .m-combo__field{border-bottom-color:#69717a}
 </style>
