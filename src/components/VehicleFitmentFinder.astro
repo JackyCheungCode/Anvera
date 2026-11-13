@@ -47,7 +47,7 @@ const safeProducts = products.map((product) => ({
   // @ts-nocheck
   import React from "react";
   import { createRoot } from "react-dom/client";
-  import { DynamicComboBoxControl } from "./carbon/Controls";
+  import { DynamicComboBoxControl, FilterComboBoxControl } from "./carbon/Controls";
   const sectionRoot = document.querySelector(".vehicle-finder-section");
   const regionOptions = JSON.parse(sectionRoot?.getAttribute("data-region-options") || "[]");
   const anveraProducts = JSON.parse(sectionRoot?.getAttribute("data-products") || "[]");
@@ -188,7 +188,7 @@ const safeProducts = products.map((product) => ({
     dropdowns[key] = {
       setOptions(items, text = placeholder, disabled = false) {
         options = (items || []).map((item) => ({
-          value: slugOf(item), label: labelOf(item), raw: item
+          value: slugOf(item), label: labelOf(item), raw: item, logo: key === "make" ? (() => { const rawLogo = item?.logo ?? item?.logo_url ?? item?.image_url ?? item?.image ?? item?.icon; const supplied = typeof rawLogo === "string" ? rawLogo : rawLogo?.url ?? rawLogo?.src; const slug = makeLogoSlugs[labelOf(item).toLowerCase()]; return supplied || (slug ? iconBase + slug + ".svg" : undefined); })() : undefined
         })).filter((item) => item.value && item.label);
         isDisabled = disabled;
         if (!options.some((item) => item.value === values[key])) values[key] = "";
@@ -358,16 +358,22 @@ const safeProducts = products.map((product) => ({
     const controls = document.createElement("div"); controls.className = "vf-product-filters";
     const filtered = { construction: "", diameter: "", width: "", pcd: "", offset: "", finish: "" };
     const productRows = anveraProducts.map((product) => ({...product, specs: product.specs || {}}));
+    const filterRoots = [];
     const createFilter = (key, label, options) => {
-      const wrap = document.createElement("label"); wrap.className = "vf-product-filter"; const caption = document.createElement("span"); caption.textContent = label; const host = document.createElement("div"); host.className = "vf-mini-select";
-      const button = document.createElement("button"); button.type = "button"; button.className = "vf-mini-trigger";
-      const value = document.createElement("span"); value.className = "vf-mini-value"; value.textContent = "All " + label.toLowerCase() + "s";
-      const chevron = document.createElement("span"); chevron.className = "vf-select-chevron"; chevron.setAttribute("aria-hidden", "true"); chevron.textContent = "⌄";
-      button.append(value, chevron);
-      const menu = document.createElement("div"); menu.className = "vf-mini-menu"; menu.hidden = true;
-      const choices = ["All",...options.filter(Boolean)];
-      choices.forEach((choice) => { const option = document.createElement("button"); option.type = "button"; option.textContent = choice; option.addEventListener("click", () => { filtered[key] = choice === "All" ? "" : choice; value.textContent = choice === "All" ? "All " + label.toLowerCase() + "s" : choice; menu.hidden = true; button.setAttribute("aria-expanded","false"); paint(); }); menu.append(option); });
-      button.setAttribute("aria-haspopup","listbox"); button.setAttribute("aria-expanded","false"); menu.setAttribute("role","listbox"); button.addEventListener("click", () => { menu.hidden = !menu.hidden; button.setAttribute("aria-expanded",String(!menu.hidden)); }); host.append(button,menu); wrap.append(caption,host); controls.append(wrap);
+      const host = document.createElement("div");
+      host.className = "vf-product-filter cds--g100";
+      const root = createRoot(host);
+      filterRoots.push(root);
+      const items = options.filter(Boolean).map((value) => ({ value, label: value }));
+      const renderFilter = () => root.render(React.createElement(FilterComboBoxControl, {
+        id: "vf-filter-" + key,
+        label,
+        items,
+        selectedItem: filtered[key] ? { value: filtered[key], label: filtered[key] } : null,
+        onChange: (item) => { filtered[key] = item?.value ?? ""; paint(); }
+      }));
+      renderFilter();
+      controls.append(host);
     };
     const unique = (key) => [...new Set(productRows.flatMap((product) => productValues(product,key)))].sort();
     createFilter("construction","Construction",unique(["construction","construction_type"]));
