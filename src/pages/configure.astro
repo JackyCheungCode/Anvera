@@ -5,6 +5,7 @@ import { Image } from "emdash/ui";
 import { wheelDevelopmentProducts } from "../data/wheel-products";
 import VehicleFitmentFinder from "../components/VehicleFitmentFinder.astro";
 import TextInput from "../components/ui/TextInput.astro";
+import Button from "../components/ui/Button.astro";
 
 const turnstileSiteKey = "0x4AAAAAAF-OqItFi-JleERp";
 
@@ -72,11 +73,11 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
 <div class="design-filter-field"><div class="carbon-dropdown cds--g100" data-carbon-dropdown data-label="PCD"><input type="hidden" id="filter-pcd" value="" /></div></div><span class="design-filter-count" id="design-filter-count">All designs</span></div>
 <div class="design-grid" id="design-grid">
           {products.map((product, index) => (
-            <button class="design-card" type="button" data-product={product.slug} aria-pressed="false">
+            <Button className="design-card" productKey={product.slug} ariaPressed={false} variant="ghost" type="button">
               <span class="design-art">{product.image ? <Image image={product.image} width={900} height={675} /> : <span class:list={["wheel-render", `design-wheel-${index % 5}`]}></span>}<i>{String(index + 1).padStart(2, "0")}</i></span>
               <span class="design-meta"><b>{product.title}</b><small>{product.code} / {product.construction.toUpperCase()}</small><small>{product.diameter || "Vehicle-specific sizing"}</small></span>
               <span class="design-check" aria-hidden="true">✓</span>
-            </button>
+            </Button>
           ))}
         </div>
       </section>
@@ -94,12 +95,12 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
           <div class="finish-selection" id="finish-selection"><div class="finish-field"><div class="carbon-dropdown cds--g100" data-carbon-dropdown data-label="Surface treatment"><input type="hidden" id="wheel-finish" value="brushed" /></div></div><div class="finish-field"><div class="carbon-dropdown cds--g100" data-carbon-dropdown data-label="Colour"><input type="hidden" id="wheel-colour" value="satin-black" /></div></div></div>
           <section class="custom-spec-entry" aria-labelledby="custom-spec-heading">
             <div><p class="step-kicker">OPTIONAL / BESPOKE SETUP</p><h3 id="custom-spec-heading">Custom Specification</h3><p>Keep the selected fitment as your baseline, or enter different front and rear dimensions for engineering review.</p></div>
-            <button type="button" class="carbon-button carbon-button--secondary" id="custom-spec-toggle" aria-expanded="false">Customize dimensions <span aria-hidden="true">＋</span></button>
+            <Button id="custom-spec-toggle" className="carbon-button carbon-button--secondary" variant="secondary" ariaExpanded={false} type="button">Customize dimensions <span aria-hidden="true">＋</span></Button>
           </section>
           <div class="custom-spec-fields" id="custom-spec-fields" hidden><input type="hidden" id="custom-front" /><input type="hidden" id="custom-rear" />
             <div class="custom-wheel-side"><h4>FRONT WHEEL</h4><label>Diameter <input id="custom-front-diameter" placeholder="20 in" /></label><label>Width / J <input id="custom-front-width" placeholder="9.0J" /></label><label>PCD <input id="custom-front-pcd" placeholder="Vehicle-specific PCD" readonly /></label><label>Offset / ET <input id="custom-front-offset" placeholder="ET25" /></label><label>Centre bore <input id="custom-front-bore" placeholder="Vehicle-specific" readonly /></label></div>
             <div class="custom-wheel-side"><h4>REAR WHEEL</h4><label>Diameter <input id="custom-rear-diameter" placeholder="20 in" /></label><label>Width / J <input id="custom-rear-width" placeholder="10.5J" /></label><label>PCD <input id="custom-rear-pcd" placeholder="Vehicle-specific PCD" readonly /></label><label>Offset / ET <input id="custom-rear-offset" placeholder="ET35" /></label><label>Centre bore <input id="custom-rear-bore" placeholder="Vehicle-specific" readonly /></label></div>
-            <div class="pcd-change-request"><p>PCD and centre bore are determined by the selected vehicle. To request a change, use the engineering override below. Changes may affect hub compatibility, fastener seating and vehicle safety.</p><button type="button" id="request-pcd-change" class="carbon-button carbon-button--ghost">Request PCD / bore change</button></div>
+            <div class="pcd-change-request"><p>PCD and centre bore are determined by the selected vehicle. To request a change, use the engineering override below. Changes may affect hub compatibility, fastener seating and vehicle safety.</p><Button id="request-pcd-change" className="carbon-button carbon-button--ghost" variant="ghost" type="button">Request PCD / bore change</Button></div>
             <label>Additional engineering notes <textarea id="custom-notes" rows="3" placeholder="Brake package, suspension, tyre size or other requirements…"></textarea></label><label class="upload-field">Vehicle / wheel reference photos <input id="custom-files" type="file" accept="image/*,.pdf" multiple /></label><p class="custom-response">Our engineering team will review your custom specifications and respond within <strong>1 business day</strong> after submission.</p></div>
         </div>
       </section>
@@ -166,7 +167,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
           <footer class="document-footer"><b>ANVERA</b><span>CONFIGURATION RECORD · NO PRICING · SUBJECT TO REVIEW</span></footer>
         </article>
         {<div class="cf-turnstile" data-sitekey={turnstileSiteKey}></div>}
-        <div class="confirmation-actions"><button class="carbon-button carbon-button--secondary" id="download-pdf" type="button">Export PDF ↓</button><button class="carbon-button carbon-button--primary" id="submit-configuration" type="button">Submit configuration ↗</button></div>
+        <div class="confirmation-actions"><Button id="download-pdf" className="carbon-button carbon-button--secondary" variant="secondary" type="button">Export PDF ↓</Button><Button id="submit-configuration" className="carbon-button carbon-button--primary" type="button">Submit configuration ↗</Button></div>
         <p class="studio-note" id="submit-status" role="status">Submitting creates a review request. ANVERA will confirm fitment, quotation and final delivery schedule separately.</p>
       </section>
 
@@ -182,9 +183,9 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
     </main>
 
     <footer class="studio-controls" id="studio-controls">
-      <button class="carbon-button carbon-button--ghost" id="previous-step" type="button" disabled>← Previous</button>
+      <Button id="previous-step" className="carbon-button carbon-button--ghost" variant="ghost" type="button" disabled>← Previous</Button>
       <span id="control-hint">Choose a wheel design to continue.</span>
-      <button class="carbon-button carbon-button--primary" id="next-step" type="button" disabled>Next step →</button>
+      <Button id="next-step" className="carbon-button carbon-button--primary" type="button" disabled>Next step →</Button>
     </footer>
   </section>
 </Base>
