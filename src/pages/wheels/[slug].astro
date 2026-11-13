@@ -1,5 +1,6 @@
 ---
 import Base from "../../layouts/Base.astro";
+import Button from "../../components/ui/Button.astro";
 import { getEmDashCollection } from "emdash";
 import { Image } from "emdash/ui";
 import { wheelDevelopmentProducts } from "../../data/wheel-products";
@@ -45,7 +46,7 @@ const familyProducts = cmsFamilyProducts.length ? cmsFamilyProducts : wheelDevel
       <p class="family-detail-type">{family.eyebrow}</p>
       <h1 set:html={family.headline}></h1>
       <p class="family-detail-intro">{family.intro}</p>
-      <a class="cds-btn cds-btn--primary" href="/custom-inquiry?construction={slug}">Discuss your configuration <span aria-hidden="true">↗</span></a>
+      <Button href="/custom-inquiry?construction={slug}" variant="primary">Discuss your configuration <span aria-hidden="true">↗</span></Button>
     </div>
   </section>
 
@@ -75,6 +76,6 @@ const familyProducts = cmsFamilyProducts.length ? cmsFamilyProducts : wheelDevel
     <p class="section-kicker">Your vehicle defines the brief</p>
     <h2>Designed around<br />the right fitment.</h2>
     <p>Wheel diameter, width, offset, PCD, centre bore, brake clearance and intended use are reviewed together. No fitment is represented as confirmed until the technical review is complete.</p>
-    <a class="cds-btn cds-btn--primary" href={`/custom-inquiry?construction=${slug}`}>Start your fitment inquiry <span aria-hidden="true">↗</span></a>
+    <Button href={`/custom-inquiry?construction=${slug}`} variant="primary">Start your fitment inquiry <span aria-hidden="true">↗</span></Button>
   </section>
 </Base>
