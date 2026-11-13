@@ -1,6 +1,8 @@
 ---
 import Base from "../layouts/Base.astro";
 import TextInput from "../components/ui/TextInput.astro";
+import TextArea from "../components/ui/TextArea.astro";
+import Button from "../components/ui/Button.astro";
 import Dropdown from "../components/ui/Dropdown.astro";
 import { getEmDashCollection } from "emdash";
 const selectedModel = Astro.url.searchParams.get("model") ?? "";
@@ -57,7 +59,7 @@ const fallbackFinishOptions = [{value:"gloss-black",label:"Gloss black"},{value:
       </div>
       <div class="cds-field brief-notes">
         <label class="cds-label" for="project-notes">Project notes</label>
-        <textarea class="cds-textarea" id="project-notes" name="projectNotes" rows="5" placeholder="Tell us about the look, intended use, brake package, references or any details that matter."></textarea>
+        <TextArea id="project-notes" name="projectNotes" label="Project notes" rows={5} placeholder="Tell us about the look, intended use, brake package, references or any details that matter." />
       </div>
       <div class="cds-field brief-notes">
         <label class="cds-label" for="project-attachments">Reference files</label>
@@ -65,9 +67,9 @@ const fallbackFinishOptions = [{value:"gloss-black",label:"Gloss black"},{value:
         <p class="cds-help-text">Up to 5 files · 8 MB each · 20 MB total. JPG, PNG, WebP or PDF.</p>
       </div>
       <div class="brief-actions">
-        <button class="cds-btn cds-btn--carbon" type="submit" id="submit-project-brief">Send project inquiry <span aria-hidden="true">↗</span></button>
-        <button class="brief-reset" type="button" id="copy-project-brief">Copy project brief</button>
-        <button class="brief-reset" type="reset">Clear all fields</button>
+        <Button id="submit-project-brief" type="submit">Send project inquiry <span aria-hidden="true">↗</span></Button>
+        <Button id="copy-project-brief" type="button" variant="secondary">Copy project brief</Button>
+        <Button type="reset" variant="ghost">Clear all fields</Button>
       </div>
       <div class="cf-turnstile" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || ""}></div>
       <p class="brief-feedback" id="brief-feedback" role="status" aria-live="polite">Complete the verification and submit your project brief securely. Required verification and database services must be configured before submissions can be accepted.</p>
