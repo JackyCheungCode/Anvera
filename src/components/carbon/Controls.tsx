@@ -35,21 +35,23 @@ type TextInputControlProps = {
   id: string;
   name: string;
   label: string;
-  type?: "text" | "email" | "tel" | "number" | "url";
+  type?: "text" | "email" | "tel" | "number" | "url" | "search" | "password";
   value?: string;
   placeholder?: string;
   required?: boolean;
   autocomplete?: string;
   helpText?: string;
+  className?: string;
 };
 
 export function TextInputControl({
-  id, name, label, type = "text", value, placeholder, required = false, autocomplete, helpText
+  id, name, label, type = "text", value, placeholder, required = false, autocomplete, helpText, className
 }: TextInputControlProps) {
   return (
     <CarbonTextInput
       id={id}
       name={name}
+      className={className}
       labelText={label}
       type={type}
       value={value}
