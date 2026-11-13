@@ -212,15 +212,17 @@ type TextAreaControlProps = {
   rows?: number;
   required?: boolean;
   helpText?: string;
+  className?: string;
 };
 
 export function TextAreaControl({
-  id, name, label, value, placeholder, rows = 4, required = false, helpText
+  id, name, label, value, placeholder, rows = 4, required = false, helpText, className
 }: TextAreaControlProps) {
   return (
     <CarbonTextArea
       id={id}
       name={name}
+      className={className}
       labelText={label}
       value={value}
       placeholder={placeholder}
