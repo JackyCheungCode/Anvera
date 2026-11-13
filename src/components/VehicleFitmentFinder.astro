@@ -160,6 +160,7 @@ const safeProducts = products.map((product) => ({
     const key = host.dataset.dropdown;
     const placeholder = host.dataset.placeholder || "Select";
     const label = host.parentElement?.querySelector("span")?.textContent?.trim() || key;
+    host.classList.add("cds--g100", "anvera-carbon-field");
     const reactRoot = createRoot(host);
     let options = [];
     let isDisabled = key !== "region";
@@ -178,7 +179,7 @@ const safeProducts = products.map((product) => ({
           if (key === "model") selectedModelLabel = item?.label ?? "";
           host.dispatchEvent(new CustomEvent("vf-change", {
             bubbles: true,
-            detail: { key, value: values[key], item: item?.raw ?? null }
+            detail: { key, value: values[key], item: item ? { value: item.value, label: item.label, raw: item.raw } : null }
           }));
         }
       }));
