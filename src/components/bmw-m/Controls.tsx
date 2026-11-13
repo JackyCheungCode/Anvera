@@ -31,15 +31,66 @@ export function InlineNotification({kind="info",title,subtitle,children}:Notific
 }
 type Item = {value:string;label:string;logo?:string;raw?:unknown;};
 type ComboProps = CommonProps & { [key:string]: any; helperText?:React.ReactNode; items:Item[];selectedItem?:Item|null;initialSelectedItem?:Item|null;onChange?:(arg:{selectedItem:Item|null})=>void;itemToString?:(item:Item|null)=>string;itemToElement?:(item:Item)=>React.ReactNode;titleText?:string;placeholder?:string;disabled?:boolean;size?:"sm"|"md"|"lg";shouldFilterItem?:(arg:{item:Item;inputValue:string;itemToString?:(item:Item|null)=>string})=>boolean;};
-export function ComboBox({id,items,selectedItem,initialSelectedItem,onChange,itemToString,titleText="",placeholder="Select",disabled,size="md",itemToElement,shouldFilterItem,className=""}:ComboProps){
+export function ComboBox({
+ id, items, selectedItem, initialSelectedItem, onChange, itemToString, titleText="", placeholder="Select", disabled, size="md", itemToElement, shouldFilterItem, className="", helperText, required
+}:ComboProps){
  const [selected,setSelected]=useState<Item|null>(selectedItem??initialSelectedItem??null);
  const [query,setQuery]=useState("");
  const [open,setOpen]=useState(false);
  const root=useRef<HTMLDivElement>(null);
  useEffect(()=>{setSelected(selectedItem??initialSelectedItem??null)},[selectedItem,initialSelectedItem]);
- useEffect(()=>{const close=(e:MouseEvent)=>{if(!root.current?.contains(e.target as Node))setOpen(false)};document.addEventListener("mousedown",close);return()=>document.removeEventListener("mousedown",close)},[]);
+ useEffect(()=>{
+  const close=(event:MouseEvent)=>{if(!root.current?.contains(event.target as Node))setOpen(false)};
+  document.addEventListener("mousedown",close);
+  return()=>document.removeEventListener("mousedown",close);
+ },[]);
  const text=(item:Item|null)=>itemToString?itemToString(item):item?.label??"";
- const filtered=useMemo(()=>items.filter(item=>shouldFilterItem?shouldFilterItem({item,inputValue:query,itemToString:text}):text(item).toLowerCase().includes(query.toLowerCase())),[items,query]);
+ const filtered=useMemo(()=>items.filter(item=>shouldFilterItem
+  ? shouldFilterItem({item,inputValue:query,itemToString:text})
+  : text(item).toLowerCase().includes(query.toLowerCase())),[items,query]);
  const choose=(item:Item)=>{setSelected(item);setQuery("");setOpen(false);onChange?.({selectedItem:item})};
- return <div className={`m-combo ${className}`} ref={root}><label className="m-field__label" htmlFor={id}>{titleText}</label><div className="m-combo__field"><input id={id} className={`m-input m-input--${size}`} role="combobox" aria-autocomplete="list" aria-expanded={open} aria-controls={`${id}-listbox`} value={open?query:text(selected)} placeholder={placeholder} disabled={disabled} onFocus={()=>{setOpen(true);setQuery("")}} onChange={e=>{setQuery(e.target.value);setOpen(true)}} onKeyDown={e=>{if(e.key==="Escape")setOpen(false);if(e.key==="Enter"&&filtered[0]){e.preventDefault();choose(filtered[0])}}}/>{selected&&!open?<button type="button" className="m-combo__clear" aria-label="Clear selection" onClick={()=>{setSelected(null);onChange?.({selectedItem:null})}}>×</button>:null}<span className="m-combo__chevron" aria-hidden="true">⌄</span></div>{open?<ul id={`${id}-listbox`} className="m-combo__list" role="listbox">{filtered.length?filtered.map(item=><li key={item.value} role="option" aria-selected={selected?.value===item.value}><button type="button" onClick={()=>choose(item)}>{itemToElement?itemToElement(item):<>{item.logo?<img src={item.logo} alt="" loading="lazy"/>:null}<span>{item.label}</span>}</button></li>):<li className="m-combo__empty">No matching options</li>}</ul>:null}</div>;
+ return (
+  <div className={`m-combo ${className}`} ref={root}>
+   <label className="m-field__label" htmlFor={id}>{titleText}</label>
+   <div className="m-combo__field">
+    <input
+     id={id}
+     className={`m-input m-input--${size}`}
+     role="combobox"
+     aria-autocomplete="list"
+     aria-expanded={open}
+     aria-controls={`${id}-listbox`}
+     value={open?query:text(selected)}
+     placeholder={placeholder}
+     disabled={disabled}
+     required={required}
+     onFocus={()=>{setOpen(true);setQuery("")}}
+     onChange={event=>{setQuery(event.target.value);setOpen(true)}}
+     onKeyDown={event=>{
+      if(event.key==="Escape") setOpen(false);
+      if(event.key==="Enter"&&filtered[0]){event.preventDefault();choose(filtered[0])}
+     }}
+    />
+    {selected&&!open ? <button type="button" className="m-combo__clear" aria-label="Clear selection" onClick={()=>{setSelected(null);onChange?.({selectedItem:null})}}>×</button> : null}
+    <span className="m-combo__chevron" aria-hidden="true">⌄</span>
+   </div>
+   {helperText ? <small className="m-field__help">{helperText}</small> : null}
+   {open ? (
+    <ul id={`${id}-listbox`} className="m-combo__list" role="listbox">
+     {filtered.length ? filtered.map(item=>(
+      <li key={item.value} role="option" aria-selected={selected?.value===item.value}>
+       <button type="button" onClick={()=>choose(item)}>
+        {itemToElement ? itemToElement(item) : (
+         <>
+          {item.logo ? <img src={item.logo} alt="" loading="lazy"/> : null}
+          <span>{item.label}</span>
+         </>
+        )}
+       </button>
+      </li>
+     )) : <li className="m-combo__empty">No matching options</li>}
+    </ul>
+   ) : null}
+  </div>
+ );
 }
