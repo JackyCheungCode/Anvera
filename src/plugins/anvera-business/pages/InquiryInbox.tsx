@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { Button as CarbonButton } from "@carbon/react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 
 type Inquiry = {
@@ -203,9 +204,9 @@ export function InquiryInbox() {
       <section className="anvera-panel">
         <div className="anvera-panel-heading">
           <h2>All inquiries</h2>
-          <button className="anvera-refresh" type="button" onClick={() => void load()} disabled={loading}>
+          <CarbonButton kind="ghost" className="anvera-refresh" type="button" onClick={() => void load()} disabled={loading}>
             {loading ? "Loading…" : "Refresh"}
-          </button>
+          </CarbonButton>
         </div>
         {loading ? (
           <div className="anvera-empty"><h3>Loading inquiry records</h3><p>Connecting to the secured business workspace.</p></div>
@@ -215,7 +216,7 @@ export function InquiryInbox() {
               <thead><tr><th>REFERENCE</th><th>CUSTOMER</th><th>VEHICLE</th><th>MARKET</th><th>STATUS</th><th>RECEIVED</th></tr></thead>
               <tbody>{items.map((item) => (
                 <tr key={item.id} className={selectedId === item.id ? "anvera-row-selected" : ""}>
-                  <td><button className="anvera-link-button" type="button" onClick={() => void openInquiry(item.id)}>{item.reference_code}</button></td>
+                  <td><CarbonButton kind="ghost" className="anvera-link-button" type="button" onClick={() => void openInquiry(item.id)}>{item.reference_code}</CarbonButton></td>
                   <td><strong>{item.customer_name}</strong><small>{item.email}</small></td>
                   <td>{[item.vehicle_make, item.vehicle_model, item.vehicle_year].filter(Boolean).join(" ")}</td>
                   <td>{item.country || "—"}</td>
@@ -237,7 +238,7 @@ export function InquiryInbox() {
         <section className="anvera-detail-panel">
           <div className="anvera-panel-heading">
             <h2>Inquiry details</h2>
-            <button className="anvera-refresh anvera-refresh--light" type="button" onClick={() => { setSelectedId(""); setSelected(null); setEvents([]); setAttachments([]); }}>Close</button>
+            <CarbonButton kind="ghost" className="anvera-refresh anvera-refresh--light" type="button" onClick={() => { setSelectedId(""); setSelected(null); setEvents([]); setAttachments([]); }}>Close</CarbonButton>
           </div>
           {detailLoading ? <div className="anvera-empty"><p>Loading project details…</p></div> : selected ? (
             <div className="anvera-detail-content">
@@ -263,9 +264,9 @@ export function InquiryInbox() {
                     {attachments.map((attachment) => (
                       <li key={attachment.id}>
                         <div><strong>{attachment.original_filename}</strong><small>{attachment.content_type} · {(attachment.byte_size / 1024 / 1024).toFixed(2)} MB</small></div>
-                        <button className="anvera-action-button" type="button" disabled={downloadingId === attachment.id} onClick={() => void downloadAttachment(attachment)}>
+                        <CarbonButton kind="ghost" className="anvera-action-button" type="button" disabled={downloadingId === attachment.id} onClick={() => void downloadAttachment(attachment)}>
                           {downloadingId === attachment.id ? "Preparing…" : "Download"}
-                        </button>
+                        </CarbonButton>
                       </li>
                     ))}
                   </ul>
@@ -275,9 +276,9 @@ export function InquiryInbox() {
                 <h3>Update status</h3>
                 <div className="anvera-action-row">
                   {(nextStatuses[selected.status] ?? []).map((status) => (
-                    <button key={status} className="anvera-action-button" type="button" disabled={saving} onClick={() => void updateStatus(status)}>
+                    <CarbonButton kind="ghost" key={status} className="anvera-action-button" type="button" disabled={saving} onClick={() => void updateStatus(status)}>
                       {statusLabels[status]}
-                    </button>
+                    </CarbonButton>
                   ))}
                   {!(nextStatuses[selected.status] ?? []).length ? <span className="anvera-muted">No further status transitions are available.</span> : null}
                 </div>
@@ -285,7 +286,7 @@ export function InquiryInbox() {
               <div className="anvera-action-section">
                 <h3>Internal notes</h3>
                 <textarea className="anvera-note-input" value={note} onChange={(event) => setNote(event.target.value)} maxLength={4000} placeholder="Add an internal note for the team…" />
-                <button className="anvera-refresh" type="button" disabled={saving || !note.trim()} onClick={() => void addNote()}>{saving ? "Saving…" : "Add note"}</button>
+                <CarbonButton kind="ghost" className="anvera-refresh" type="button" disabled={saving || !note.trim()} onClick={() => void addNote()}>{saving ? "Saving…" : "Add note"}</CarbonButton>
               </div>
               <div className="anvera-action-section">
                 <h3>Activity timeline</h3>
