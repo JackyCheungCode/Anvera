@@ -1070,3 +1070,11 @@ main:focus { outline: 0; }
 .legacy-carbon-btn--tertiary:hover { color: #fff; background: #4c4c4c; }
 .legacy-carbon-btn--ghost { color: inherit; background: transparent; }
 .legacy-carbon-btn--ghost:hover { background: rgba(127,127,127,.16); }
+
+
+/* Dropdown reliability: keep the active Carbon list above neighboring fields and
+   let clicks on the visual chevron reach the input trigger. */
+.m-combo:focus-within { z-index: 1200; }
+.m-combo__chevron { pointer-events: none; }
+.m-combo__list { z-index: 1201; }
+.studio-shell .m-combo:focus-within { z-index: 1200; }

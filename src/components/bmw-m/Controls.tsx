@@ -65,10 +65,12 @@ export function ComboBox({
      disabled={disabled}
      required={required}
      onFocus={()=>{setOpen(true);setQuery("")}}
+     onClick={()=>{if(!disabled)setOpen(true)}}
      onChange={event=>{setQuery(event.target.value);setOpen(true)}}
      onKeyDown={event=>{
-      if(event.key==="Escape") setOpen(false);
-      if(event.key==="Enter"&&filtered[0]){event.preventDefault();choose(filtered[0])}
+      if(event.key==="Escape"){setOpen(false);return;}
+      if((event.key==="ArrowDown"||event.key==="ArrowUp")&&!open){event.preventDefault();setOpen(true);return;}
+      if(event.key==="Enter"&&open&&filtered[0]){event.preventDefault();choose(filtered[0])}
      }}
     />
     {selected&&!open ? <button type="button" className="m-combo__clear" aria-label="Clear selection" onClick={()=>{setSelected(null);onChange?.({selectedItem:null})}}>×</button> : null}
