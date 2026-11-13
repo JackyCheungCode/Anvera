@@ -126,7 +126,7 @@ export function NotificationControl({
   );
 }
 
-type DropdownOption = { value: string; label: string };
+type DropdownOption = { value: string; label: string; logo?: string };
 type DropdownControlProps = {
   id: string;
   name: string;
@@ -170,7 +170,7 @@ export function DropdownControl({
 }
 
 
-export type CarbonVehicleOption = { value: string; label: string; raw: unknown };
+export type CarbonVehicleOption = { value: string; label: string; raw: unknown; logo?: string };
 type DynamicComboBoxControlProps = {
   id: string;
   label: string;
@@ -262,6 +262,30 @@ export function FileUploaderControl({
       labelDescription={description}
       buttonKind="secondary"
       size="md"
+    />
+  );
+}
+
+
+type FilterComboBoxControlProps = {
+  id: string;
+  label: string;
+  items: Array<{ value: string; label: string }>;
+  selectedItem: { value: string; label: string } | null;
+  onChange: (item: { value: string; label: string } | null) => void;
+};
+
+export function FilterComboBoxControl({ id, label, items, selectedItem, onChange }: FilterComboBoxControlProps) {
+  return (
+    <ComboBox
+      id={id}
+      titleText={label}
+      placeholder={`All ${label.toLowerCase()}s`}
+      items={items}
+      selectedItem={selectedItem}
+      itemToString={(item) => item?.label ?? ""}
+      onChange={({ selectedItem: next }) => onChange(next ?? null)}
+      size="lg"
     />
   );
 }
