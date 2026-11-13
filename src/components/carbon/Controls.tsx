@@ -19,6 +19,8 @@ type ButtonControlProps = {
   className?: string;
   filterKey?: string;
   ariaPressed?: boolean;
+  ariaExpanded?: boolean;
+  productKey?: string;
 };
 
 export function ButtonControl({
@@ -30,11 +32,13 @@ export function ButtonControl({
   id,
   className,
   filterKey,
-  ariaPressed
+  ariaPressed,
+  ariaExpanded,
+  productKey
 }: ButtonControlProps) {
   const kind = variant === "dark" ? "tertiary" : variant === "ghost" ? "ghost" : variant;
   return (
-    <CarbonButton id={id} className={className} data-wheel-filter={filterKey} aria-pressed={ariaPressed} kind={kind} size="lg" type={type} href={disabled ? undefined : href} disabled={disabled}>
+    <CarbonButton id={id} className={className} data-wheel-filter={filterKey} data-product={productKey} aria-pressed={ariaPressed} aria-expanded={ariaExpanded} kind={kind} size="lg" type={type} href={disabled ? undefined : href} disabled={disabled}>
       {children}
     </CarbonButton>
   );
