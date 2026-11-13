@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Button as CarbonButton } from "@carbon/react";
+import { Button as CarbonButton, TextArea as CarbonTextArea } from "@carbon/react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 
 type Inquiry = {
@@ -285,7 +285,7 @@ export function InquiryInbox() {
               </div>
               <div className="anvera-action-section">
                 <h3>Internal notes</h3>
-                <textarea className="anvera-note-input" value={note} onChange={(event) => setNote(event.target.value)} maxLength={4000} placeholder="Add an internal note for the team…" />
+                <CarbonTextArea id="inquiry-internal-note" className="anvera-note-input" labelText="Internal note" value={note} onChange={(event) => setNote(event.target.value)} maxLength={4000} placeholder="Add an internal note for the team…" rows={4} />
                 <CarbonButton kind="ghost" className="anvera-refresh" type="button" disabled={saving || !note.trim()} onClick={() => void addNote()}>{saving ? "Saving…" : "Add note"}</CarbonButton>
               </div>
               <div className="anvera-action-section">
