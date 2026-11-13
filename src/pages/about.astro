@@ -1,5 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
+import Button from "../components/ui/Button.astro";
 ---
 <Base title="About ANVERA" description="Discover the ANVERA philosophy: forged wheel design shaped by engineering discipline and individual expression.">
   <section class="about-hero"><div class="about-hero-inner"><p class="eyebrow">ANVERA / OUR PERSPECTIVE</p><h1>Driven by<br /><span>intention.</span></h1><p>We believe a wheel should do more than complete a vehicle. It should express its character, respect its engineering and reflect the person behind the brief.</p></div></section>
@@ -9,5 +10,5 @@ import Base from "../layouts/Base.astro";
     <article><span>02 / DISCIPLINE</span><h3>Precision over claims</h3><p>Technical details are reviewed, validated and communicated responsibly. We do not substitute marketing language for engineering evidence.</p></article>
     <article><span>03 / COLLABORATION</span><h3>Made around you</h3><p>We work from your requirements to define a considered configuration, with feasibility and fitment confirmed before production.</p></article>
   </section>
-  <section class="about-cta"><div><p class="section-kicker">The next step</p><h2>Tell us what<br />moves you.</h2></div><a class="cds-btn cds-btn--primary" href="/custom-inquiry">Start a conversation <span aria-hidden="true">↗</span></a></section>
+  <section class="about-cta"><div><p class="section-kicker">The next step</p><h2>Tell us what<br />moves you.</h2></div><Button href="/custom-inquiry" variant="primary">Start a conversation <span aria-hidden="true">↗</span></Button></section>
 </Base>
