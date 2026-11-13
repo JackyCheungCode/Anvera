@@ -3,6 +3,7 @@ import {
   Button as CarbonButton,
   Checkbox as CarbonCheckbox,
   ComboBox,
+  FileUploader as CarbonFileUploader,
   InlineNotification as CarbonInlineNotification,
   TextArea as CarbonTextArea,
   TextInput as CarbonTextInput
@@ -226,6 +227,37 @@ export function TextAreaControl({
       rows={rows}
       required={required}
       helperText={helpText}
+    />
+  );
+}
+
+
+type FileUploaderControlProps = {
+  id: string;
+  name: string;
+  label: string;
+  accept: string[];
+  multiple?: boolean;
+  description?: string;
+  buttonLabel?: string;
+};
+
+export function FileUploaderControl({
+  id, name, label, accept, multiple = true, description, buttonLabel = "Add files"
+}: FileUploaderControlProps) {
+  return (
+    <CarbonFileUploader
+      id={id}
+      name={name}
+      accept={accept}
+      multiple={multiple}
+      filenameStatus="edit"
+      buttonLabel={buttonLabel}
+      iconDescription="Remove file"
+      labelTitle={label}
+      labelDescription={description}
+      buttonKind="secondary"
+      size="md"
     />
   );
 }
