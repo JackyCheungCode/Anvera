@@ -5,6 +5,7 @@ import { Image } from "emdash/ui";
 import { wheelDevelopmentProducts } from "../data/wheel-products";
 import VehicleFitmentFinder from "../components/VehicleFitmentFinder.astro";
 import TextInput from "../components/ui/TextInput.astro";
+import TextArea from "../components/ui/TextArea.astro";
 import Button from "../components/ui/Button.astro";
 
 const turnstileSiteKey = "0x4AAAAAAF-OqItFi-JleERp";
@@ -98,10 +99,22 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
             <Button id="custom-spec-toggle" className="carbon-button carbon-button--secondary" variant="secondary" ariaExpanded={false} type="button">Customize dimensions <span aria-hidden="true">＋</span></Button>
           </section>
           <div class="custom-spec-fields" id="custom-spec-fields" hidden><input type="hidden" id="custom-front" /><input type="hidden" id="custom-rear" />
-            <div class="custom-wheel-side"><h4>FRONT WHEEL</h4><label>Diameter <input id="custom-front-diameter" placeholder="20 in" /></label><label>Width / J <input id="custom-front-width" placeholder="9.0J" /></label><label>PCD <input id="custom-front-pcd" placeholder="Vehicle-specific PCD" readonly /></label><label>Offset / ET <input id="custom-front-offset" placeholder="ET25" /></label><label>Centre bore <input id="custom-front-bore" placeholder="Vehicle-specific" readonly /></label></div>
-            <div class="custom-wheel-side"><h4>REAR WHEEL</h4><label>Diameter <input id="custom-rear-diameter" placeholder="20 in" /></label><label>Width / J <input id="custom-rear-width" placeholder="10.5J" /></label><label>PCD <input id="custom-rear-pcd" placeholder="Vehicle-specific PCD" readonly /></label><label>Offset / ET <input id="custom-rear-offset" placeholder="ET35" /></label><label>Centre bore <input id="custom-rear-bore" placeholder="Vehicle-specific" readonly /></label></div>
+            <div class="custom-wheel-side"><h4>FRONT WHEEL</h4>
+              <TextInput id="custom-front-diameter" name="frontDiameter" label="Diameter" placeholder="20 in" className="cds--g100" />
+              <TextInput id="custom-front-width" name="frontWidth" label="Width / J" placeholder="9.0J" className="cds--g100" />
+              <TextInput id="custom-front-pcd" name="frontPcd" label="PCD" placeholder="Vehicle-specific PCD" readOnly className="cds--g100" />
+              <TextInput id="custom-front-offset" name="frontOffset" label="Offset / ET" placeholder="ET25" className="cds--g100" />
+              <TextInput id="custom-front-bore" name="frontBore" label="Centre bore" placeholder="Vehicle-specific" readOnly className="cds--g100" />
+            </div>
+            <div class="custom-wheel-side"><h4>REAR WHEEL</h4>
+              <TextInput id="custom-rear-diameter" name="rearDiameter" label="Diameter" placeholder="20 in" className="cds--g100" />
+              <TextInput id="custom-rear-width" name="rearWidth" label="Width / J" placeholder="10.5J" className="cds--g100" />
+              <TextInput id="custom-rear-pcd" name="rearPcd" label="PCD" placeholder="Vehicle-specific PCD" readOnly className="cds--g100" />
+              <TextInput id="custom-rear-offset" name="rearOffset" label="Offset / ET" placeholder="ET35" className="cds--g100" />
+              <TextInput id="custom-rear-bore" name="rearBore" label="Centre bore" placeholder="Vehicle-specific" readOnly className="cds--g100" />
+            </div>
             <div class="pcd-change-request"><p>PCD and centre bore are determined by the selected vehicle. To request a change, use the engineering override below. Changes may affect hub compatibility, fastener seating and vehicle safety.</p><Button id="request-pcd-change" className="carbon-button carbon-button--ghost" variant="ghost" type="button">Request PCD / bore change</Button></div>
-            <label>Additional engineering notes <textarea id="custom-notes" rows="3" placeholder="Brake package, suspension, tyre size or other requirements…"></textarea></label><label class="upload-field">Vehicle / wheel reference photos <input id="custom-files" type="file" accept="image/*,.pdf" multiple /></label><p class="custom-response">Our engineering team will review your custom specifications and respond within <strong>1 business day</strong> after submission.</p></div>
+            <TextArea id="custom-notes" name="customNotes" label="Additional engineering notes" rows={3} placeholder="Brake package, suspension, tyre size or other requirements…" /><label class="upload-field">Vehicle / wheel reference photos <input id="custom-files" type="file" accept="image/*,.pdf" multiple /></label><p class="custom-response">Our engineering team will review your custom specifications and respond within <strong>1 business day</strong> after submission.</p></div>
         </div>
       </section>
 
