@@ -4,6 +4,7 @@ import {
   Checkbox as CarbonCheckbox,
   ComboBox,
   InlineNotification as CarbonInlineNotification,
+  TextArea as CarbonTextArea,
   TextInput as CarbonTextInput
 } from "@carbon/react";
 
@@ -182,6 +183,35 @@ export function DynamicComboBoxControl({
         const label = toString?.(item) ?? "";
         return label.toLocaleLowerCase().includes((inputValue ?? "").toLocaleLowerCase());
       }}
+    />
+  );
+}
+
+
+type TextAreaControlProps = {
+  id: string;
+  name: string;
+  label: string;
+  value?: string;
+  placeholder?: string;
+  rows?: number;
+  required?: boolean;
+  helpText?: string;
+};
+
+export function TextAreaControl({
+  id, name, label, value, placeholder, rows = 4, required = false, helpText
+}: TextAreaControlProps) {
+  return (
+    <CarbonTextArea
+      id={id}
+      name={name}
+      labelText={label}
+      value={value}
+      placeholder={placeholder}
+      rows={rows}
+      required={required}
+      helperText={helpText}
     />
   );
 }
