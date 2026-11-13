@@ -196,6 +196,10 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
 .carbon-dropdown-menu button:hover,.carbon-dropdown-menu button:focus-visible,.carbon-dropdown-menu button[aria-selected=true]{background:#343b45;color:#fff;outline:0;}
 .carbon-dropdown-menu button[aria-selected=true]:after{content:"✓";margin-left:auto;flex:0 0 auto;color:#78a9ff;}
 .carbon-dropdown-menu[hidden]{display:none!important;}
+.carbon-dropdown-search{position:sticky;top:0;z-index:1;display:block;width:100%;min-height:44px;padding:11px 14px;border:0;border-bottom:1px solid #414851!important;border-radius:0!important;background:#1b1f24!important;color:#f4f4f4!important;font-size:12px!important;outline:0;}
+.carbon-dropdown-search::placeholder{color:#8d96a0;}
+.carbon-dropdown-search:focus{border-bottom-color:#78a9ff!important;box-shadow:inset 0 -1px #78a9ff;}
+.carbon-dropdown-menu [data-dropdown-option][hidden]{display:none!important;}
 .dropdown-flag{display:inline-flex;align-items:center;justify-content:center;flex:0 0 22px;min-width:22px;font-size:18px;line-height:1;}
 .dropdown-brand-logo{display:block;width:22px;height:22px;object-fit:contain;flex:0 0 22px;background:transparent;border-radius:0;padding:0;}
 .carbon-dropdown-trigger [data-dropdown-label]{display:flex;align-items:center;gap:9px;min-width:0;}
