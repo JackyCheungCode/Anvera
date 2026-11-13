@@ -161,7 +161,7 @@ const safeProducts = products.map((product) => ({
     const key = host.dataset.dropdown;
     const placeholder = host.dataset.placeholder || "Select";
     const label = host.dataset.label || key;
-    host.classList.add("bmw-m-dark", "anvera-carbon-field");
+    host.classList.add("anvera-carbon-field");
     const reactRoot = createRoot(host);
     let options = [];
     let isDisabled = key !== "region";
