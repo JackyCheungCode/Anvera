@@ -207,16 +207,148 @@ body { color: #17191b; background: #f7f7f5; }
 .craft-source-note>span { color:#353b3f; }
 .craft-source-note a { color:#1769aa; }
 
-/* Keep the dedicated configuration studio a focused dark technical workspace. */
-.studio-shell { color-scheme:dark; }
-.studio-shell .m-field__label { color:#c6c6c6; }
-.studio-shell .m-input { color:#f4f4f4; border-color:#525252; background:#262626; }
-.studio-shell .m-input:hover { background:#393939; }
-.studio-shell .m-input:focus { border-color:#4589ff; background:#262626; }
-.studio-shell .m-checkbox { color:#f4f4f4; }
-.studio-shell .m-combo__list { border-color:#525252; background:#262626; }
-.studio-shell .m-combo__list li button { color:#f4f4f4; background:#262626; }
-.studio-shell .m-combo__list li button:hover,.studio-shell .m-combo__list li[aria-selected=true] button { color:#fff; background:#393939; }
-.studio-shell .m-button--primary { color:#fff; border-color:#0f62fe; background:#0f62fe; }
-.studio-shell .m-button--secondary,.studio-shell .m-button--tertiary { color:#f4f4f4; border-color:#6f6f6f; background:#393939; }
-.studio-shell .m-notice { color:#f4f4f4; background:#262626; }
+/* Configuration studio — bright, precise design atelier; no full-black page canvas. */
+#configuration-studio.studio-shell { color-scheme:light; color:#17191b!important; background:#f3f4f1!important; }
+#configuration-studio .studio-heading h1,
+#configuration-studio .studio-step h2,
+#configuration-studio .studio-step h3,
+#configuration-studio .studio-step h4 { color:#17191b!important; }
+#configuration-studio .studio-heading h1 span,
+#configuration-studio .studio-step h2 span { color:#1769aa!important; }
+#configuration-studio .studio-eyebrow,
+#configuration-studio .step-kicker { color:#667078!important; }
+#configuration-studio .studio-intro,
+#configuration-studio .step-heading p:not(.step-kicker),
+#configuration-studio .studio-note { color:#596168!important; }
+#configuration-studio .reference-panel { color:#17191b!important; background:#fff!important; border-left-color:#1769aa!important; box-shadow:0 8px 30px rgba(25,30,34,.06); }
+#configuration-studio .reference-panel span,
+#configuration-studio .reference-panel small { color:#6c7479!important; }
+#configuration-studio .studio-progress { color:#17191b!important; background:rgba(247,247,245,.97)!important; border-bottom:1px solid #dfe2df!important; backdrop-filter:blur(14px); }
+#configuration-studio .progress-track { background:#d9ddda!important; }
+#configuration-studio .progress-track span { background:#1769aa!important; }
+#configuration-studio .studio-progress li { color:#7a8287!important; }
+#configuration-studio .studio-progress li.is-current,
+#configuration-studio .studio-progress li.is-complete { color:#17191b!important; }
+#configuration-studio .studio-progress li.is-current span,
+#configuration-studio .progress-caption span:first-child { color:#1769aa!important; }
+#configuration-studio .progress-caption { color:#626a6f!important; }
+#configuration-studio .design-intro h2 { color:#17191b!important; }
+#configuration-studio .atelier-intro .step-kicker { color:#1769aa!important; }
+#configuration-studio .atelier-intro h2 em { color:#727b80!important; }
+#configuration-studio .atelier-intro-main>p:last-child { color:#596168!important; }
+#configuration-studio .atelier-intro-note { border-left-color:#cbd0cd!important; }
+#configuration-studio .atelier-intro-note>span,
+#configuration-studio .atelier-intro-note>small,
+#configuration-studio .atelier-intro-note>i { color:#6d767b!important; }
+#configuration-studio .atelier-intro-note>b { color:#17191b!important; }
+#configuration-studio .construction-selector { background:#d9ddda!important; }
+#configuration-studio .construction-choice {
+  color:#17191b!important; background:linear-gradient(145deg,#fff,#eceeeb)!important;
+}
+#configuration-studio .construction-choice:hover { background:#e3e7e5!important; }
+#configuration-studio .construction-choice-top i,
+#configuration-studio .construction-choice-top small { color:#6a7378!important; }
+#configuration-studio .construction-choice>em { color:#626a6f!important; }
+#configuration-studio .construction-choice>strong { color:#17191b0b!important; }
+#configuration-studio .construction-choice.is-active { color:#fff!important; background:linear-gradient(145deg,#303a42,#20272d)!important; box-shadow:inset 0 -3px #1769aa!important; }
+#configuration-studio .construction-choice.is-active .construction-choice-top i,
+#configuration-studio .construction-choice.is-active .construction-choice-top small,
+#configuration-studio .construction-choice.is-active>em { color:#eef2f3!important; }
+#configuration-studio .design-filter-bar { background:#e7e9e6!important; border:1px solid #d9ddda!important; }
+#configuration-studio .design-filter-field,
+#configuration-studio .design-filter-count { color:#424a4f!important; }
+#configuration-studio .carbon-dropdown-trigger { color:#17191b!important; background:#fff!important; border:1px solid #c8cecb!important; }
+#configuration-studio .carbon-dropdown-trigger:hover { background:#f4f6f4!important; border-color:#8e9898!important; }
+#configuration-studio .carbon-dropdown-menu { color:#17191b!important; background:#fff!important; border:1px solid #d8dcda!important; box-shadow:0 12px 28px rgba(20,25,28,.12)!important; }
+#configuration-studio .carbon-dropdown-menu button { color:#17191b!important; background:#fff!important; }
+#configuration-studio .carbon-dropdown-menu button:hover,
+#configuration-studio .carbon-dropdown-menu button[aria-selected=true] { background:#edf1f3!important; }
+#configuration-studio .design-grid { background:#dfe3e0!important; }
+#configuration-studio .design-card { color:#17191b!important; background:#fff!important; border:1px solid #e0e3e0!important; }
+#configuration-studio .design-card:hover { background:#f2f4f2!important; }
+#configuration-studio .design-card[aria-pressed=true] { background:#e8eff3!important; border-color:#1769aa!important; }
+#configuration-studio .design-art { background:radial-gradient(ellipse at 50% 48%,#fff 0,#e6e9e6 50%,#d4d9d6 100%)!important; }
+#configuration-studio .design-art:after { background:#68737a38!important; }
+#configuration-studio .design-art i { color:#525d63!important; }
+#configuration-studio .design-meta { color:#17191b!important; }
+#configuration-studio .design-meta small,
+#configuration-studio .design-meta-top small { color:#6d767b!important; }
+#configuration-studio .design-view-mark { color:#fff!important; background:#20272dcc!important; }
+#configuration-studio .design-check { color:#fff!important; background:#1769aa!important; }
+#configuration-studio .reference-image-credit { color:#737c81!important; }
+#configuration-studio .reference-image-credit a { color:#1769aa!important; }
+#configuration-studio .vehicle-preview,
+#configuration-studio .spec-detail,
+#configuration-studio .route-estimate,
+#configuration-studio .completion-reference { color:#17191b!important; background:#fff!important; border:1px solid #e0e3e0; }
+#configuration-studio .vehicle-preview-art,
+#configuration-studio .route-map-placeholder { background:linear-gradient(135deg,#e5e9e7,#d4dad8)!important; }
+#configuration-studio .vehicle-silhouette { color:#9ba4a8!important; }
+#configuration-studio .vehicle-image-credit { color:#fff!important; background:#20272dcc!important; }
+#configuration-studio .vehicle-preview p:last-child,
+#configuration-studio .fitment-status,
+#configuration-studio .locked-fitment-note,
+#configuration-studio .spec-path p,
+#configuration-studio .custom-spec-entry p:not(.step-kicker) { color:#5f686d!important; }
+#configuration-studio .spec-path,
+#configuration-studio .fitment-option,
+#configuration-studio .spec-columns>div,
+#configuration-studio .route-stage,
+#configuration-studio .manufacturing-node { color:#17191b!important; background:#fff!important; border:1px solid #e0e3e0!important; }
+#configuration-studio .spec-path:hover,
+#configuration-studio .spec-path[aria-pressed=true],
+#configuration-studio .fitment-option[aria-pressed=true] { background:#edf2f4!important; border-color:#1769aa!important; }
+#configuration-studio .path-label,
+#configuration-studio .fitment-option small,
+#configuration-studio .spec-columns dt,
+#configuration-studio .manufacturing-node p,
+#configuration-studio .route-stage small,
+#configuration-studio .route-stage em { color:#687177!important; }
+#configuration-studio .path-action,
+#configuration-studio .spec-columns>div>b,
+#configuration-studio .manufacturing-node i { color:#1769aa!important; }
+#configuration-studio .custom-spec-entry,
+#configuration-studio .custom-response { color:#17191b!important; background:#e9ece9!important; border-left-color:#1769aa!important; }
+#configuration-studio .custom-wheel-side { background:#fff!important; border:1px solid #e0e3e0; padding:18px; }
+#configuration-studio .custom-wheel-side h4,
+#configuration-studio .delivery-form-grid label,
+#configuration-studio .custom-spec-fields label,
+#configuration-studio .delivery-field { color:#424a4f!important; }
+#configuration-studio .delivery-form-grid input,
+#configuration-studio .custom-spec-fields input,
+#configuration-studio .custom-spec-fields textarea { color:#17191b!important; background:#fff!important; border:1px solid #c5cac8!important; }
+#configuration-studio .delivery-form-grid input:focus,
+#configuration-studio .custom-spec-fields input:focus,
+#configuration-studio .custom-spec-fields textarea:focus { outline:2px solid #1769aa!important; }
+#configuration-studio .manufacturing-summary { color:#17191b!important; background:#fff!important; border:1px solid #e0e3e0; }
+#configuration-studio .manufacturing-summary span,
+#configuration-studio .manufacturing-summary p,
+#configuration-studio .manufacturing-summary strong small,
+#configuration-studio .arrival-estimate span,
+#configuration-studio .arrival-estimate small { color:#687177!important; }
+#configuration-studio .manufacturing-node:after { background:#1769aa!important; }
+#configuration-studio .route-tag,
+#configuration-studio .review-status { color:#76520b!important; background:#f8efd6!important; }
+#configuration-studio .route-dot,
+#configuration-studio .map-pin { color:#fff!important; background:#1769aa!important; }
+#configuration-studio .map-leg { background:repeating-linear-gradient(90deg,#1769aa 0 8px,transparent 8px 14px)!important; }
+#configuration-studio .route-map-placeholder p { color:#596168!important; }
+#configuration-studio .studio-controls { border-color:#d9ddda!important; }
+#configuration-studio .studio-controls>span { color:#626a6f!important; }
+#configuration-studio .completion-copy { color:#596168!important; }
+#configuration-studio .completion-reference small,
+#configuration-studio .completion-reference span { color:#687177!important; }
+#configuration-studio .carbon-button--primary { color:#fff!important; background:#1769aa!important; }
+#configuration-studio .carbon-button--primary:hover { background:#0f548c!important; }
+#configuration-studio .carbon-button--secondary { color:#17191b!important; background:#fff!important; border:1px solid #aeb4b5!important; }
+#configuration-studio .carbon-button--ghost { color:#1769aa!important; border:1px solid #aeb4b5!important; }
+#configuration-studio .carbon-button--secondary:hover,
+#configuration-studio .carbon-button--ghost:hover { background:#edf1f3!important; }
+#configuration-studio .m-field__label { color:#424a4f!important; }
+#configuration-studio .m-input { color:#17191b!important; background:#fff!important; border:1px solid #c5cac8!important; }
+#configuration-studio .m-input::placeholder { color:#777f84!important; }
+#configuration-studio .m-checkbox { color:#353b3f!important; }
+#configuration-studio .m-combo__list { background:#fff!important; border-color:#d8dcda!important; }
+#configuration-studio .m-combo__list li button { color:#17191b!important; background:#fff!important; }
+#configuration-studio .m-combo__list li button:hover,
+#configuration-studio .m-combo__list li[aria-selected=true] button { background:#edf1f3!important; }
