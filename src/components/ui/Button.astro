@@ -1,4 +1,5 @@
 ---
+import { ButtonControl } from "../carbon/Controls";
 interface Props {
   href?: string;
   variant?: "primary" | "secondary" | "dark";
@@ -6,14 +7,7 @@ interface Props {
   disabled?: boolean;
 }
 const { href, variant = "primary", type = "button", disabled = false } = Astro.props;
-const className = `cds-btn cds-btn--${variant}`;
 ---
-{href ? (
-  <a class={className} href={href} aria-disabled={disabled ? "true" : undefined}>
-    <slot />
-  </a>
-) : (
-  <button class={className} type={type} disabled={disabled}>
-    <slot />
-  </button>
-)}
+<ButtonControl href={href} variant={variant} type={type} disabled={disabled}>
+  <slot />
+</ButtonControl>
