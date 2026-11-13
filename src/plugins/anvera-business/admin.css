@@ -311,3 +311,27 @@
 .anvera-order-timeline article b{font-size:10px;color:#161616}
 .anvera-order-timeline article small,.anvera-order-timeline article p{font-size:9px;color:#6f6f6f;margin:0}
 @media(max-width:760px){.anvera-order-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.anvera-toolbar{padding:12px}.anvera-filter-list{width:100%}.anvera-filter-list button{flex:1}}
+
+
+/* BMW M-inspired EmDash workspace surfaces and controls */
+.anvera-workspace{color:var(--m-white);background:var(--m-black);padding:clamp(18px,3vw,36px);max-width:1600px}
+.anvera-page-header h1,.anvera-panel-heading h2,.anvera-panel h2,.anvera-panel h3{color:var(--m-white)}
+.anvera-eyebrow,.anvera-description,.anvera-muted{color:var(--m-muted)}
+.anvera-status{background:#202a33;color:#c6d3df;border:1px solid var(--m-line)}
+.anvera-status--ready{background:#12372c;color:#a5e3c7}
+.anvera-metrics{gap:1px;background:#303944}
+.anvera-metrics article,.anvera-panel,.anvera-detail-panel{background:var(--m-carbon);color:var(--m-white)}
+.anvera-metrics article span,.anvera-panel-heading span{color:var(--m-muted)}
+.anvera-panel-heading{border-color:var(--m-line)}
+.anvera-data-table th{background:#252d36;color:#c5d0da}
+.anvera-data-table td{border-color:var(--m-line);color:#e8edf1}
+.anvera-data-table tr:hover td{background:#1d2731}
+.anvera-record-status{background:#28333e;color:#dbe5ed}
+.anvera-refresh{background:linear-gradient(110deg,#075da8,#147fc3 65%,#e6323a);color:#fff;border:0}
+.anvera-refresh--light{background:#2a333d;color:#fff;border:1px solid var(--m-line-strong)}
+.anvera-inline-message{background:#3b2024;color:#ffb8bc}
+.anvera-empty-mark{background:linear-gradient(135deg,#0875c5,#16a6d7 60%,#e6323a)}
+.anvera-workspace .m-input{background:#1b2229;color:#f4f6f8}
+.anvera-workspace .m-field__label{color:#b8c2cc}
+.anvera-workspace .m-button--ghost{color:#eaf0f5}
+.anvera-workspace .m-button--ghost:hover{background:#27313b}
