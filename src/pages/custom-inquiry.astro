@@ -58,8 +58,7 @@ const fallbackFinishOptions = [{value:"gloss-black",label:"Gloss black"},{value:
         <Dropdown id="finish" name="finish" label="Preferred finish" placeholder="Select a direction" options={finishOptions.length ? finishOptions : fallbackFinishOptions} />
         <Dropdown id="quantity" name="quantity" label="Quantity" placeholder="Select quantity" options={[{value:"4",label:"4 wheels"},{value:"5",label:"5 wheels"},{value:"other",label:"Other / discuss"}]} />
       </div>
-      <div class="cds-field brief-notes">
-        <label class="cds-label" for="project-notes">Project notes</label>
+      <div class="brief-notes">
         <TextArea id="project-notes" name="projectNotes" label="Project notes" rows={5} placeholder="Tell us about the look, intended use, brake package, references or any details that matter." />
       </div>
       <div class="cds-field brief-notes">
