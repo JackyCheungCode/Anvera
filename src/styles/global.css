@@ -985,3 +985,89 @@ main:focus { outline: 0; }
 .m-notice--success{border-left-color:#24a148;background:#defbe6}.m-notice--warning{border-left-color:#f1c21b;background:#fcf4d6}.m-notice--error{border-left-color:#da1e28;background:#fff1f1}
 .m-upload__button{min-height:48px;padding:12px 16px;border:1px dashed #8d8d8d;border-radius:0;color:#0f62fe;background:#f4f4f4}
 .m-upload__button:hover{background:#e8e8e8;border-color:#0f62fe}
+
+
+/* Carbon control system — final override for every shared control component. */
+:root {
+  --cds-interactive: #0f62fe;
+  --cds-interactive-hover: #0353e9;
+  --cds-focus: #0f62fe;
+  --cds-layer-01: #f4f4f4;
+  --cds-layer-02: #e8e8e8;
+  --cds-field: #f4f4f4;
+  --cds-border-subtle: #c6c6c6;
+  --cds-border-strong: #8d8d8d;
+  --cds-text-primary: #161616;
+  --cds-text-secondary: #525252;
+}
+.m-button,
+.m-button:hover {
+  transform: none;
+  border-radius: 0;
+  font-family: var(--font-body, Arial, sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  box-shadow: none;
+}
+.m-button::before { content: none !important; display: none !important; }
+.m-button--primary { color: #fff; border: 0; background: #0f62fe; }
+.m-button--primary:hover { color: #fff; background: #0353e9; }
+.m-button--secondary { color: #0f62fe; border: 1px solid #0f62fe; background: transparent; }
+.m-button--secondary:hover { color: #0043ce; border-color: #0043ce; background: #e8efff; }
+.m-button--tertiary { color: #fff; border: 0; background: #393939; }
+.m-button--tertiary:hover { color: #fff; background: #4c4c4c; }
+.m-button--ghost { color: #161616; border: 0; background: transparent; }
+.m-button--ghost:hover { color: #161616; background: #e8e8e8; }
+.m-button:focus-visible,
+.m-input:focus-visible,
+.m-combo__field:focus-within {
+  outline: 2px solid #0f62fe;
+  outline-offset: 2px;
+}
+.m-field__label { color: #393939; font-size: 12px; font-weight: 600; letter-spacing: 0; text-transform: none; }
+.m-input {
+  min-height: 48px;
+  border: 0;
+  border-bottom: 1px solid #8d8d8d;
+  border-radius: 0;
+  color: #161616;
+  background: #f4f4f4;
+  box-shadow: none;
+  font: 14px/1.4 var(--font-body, Arial, sans-serif);
+}
+.m-input:hover { border-bottom-color: #161616; background: #e8e8e8; }
+.m-input:focus { outline: 2px solid #0f62fe; outline-offset: -2px; border-bottom-color: #0f62fe; background: #fff; }
+.m-input::placeholder { color: #6f6f6f; }
+.m-input:disabled, .m-input[readonly] { color: #8d8d8d; background: #e0e0e0; }
+.m-field__help { color: #525252; font-size: 12px; }
+.m-field__error { color: #da1e28; font-size: 12px; }
+.m-checkbox { color: #161616; font-size: 14px; }
+.m-checkbox input { accent-color: #0f62fe; }
+.m-combo__list { border: 1px solid #c6c6c6; border-radius: 0; background: #fff; box-shadow: 0 4px 12px #0002; }
+.m-combo__list li button { color: #161616; background: #fff; border-radius: 0; font: 14px/1.35 var(--font-body, Arial, sans-serif); }
+.m-combo__list li button:hover,
+.m-combo__list li[aria-selected="true"] button { background: #e8efff; }
+.m-notice { border-radius: 0; color: #161616; background: #edf5ff; }
+.m-upload__button { border-radius: 0; color: #0f62fe; background: #f4f4f4; }
+.m-upload__button:hover { background: #e8e8e8; border-color: #0f62fe; }
+
+/* Carbon G100 treatment for controls inside the dark configure workspace. */
+.studio-shell .m-field__label { color: #c6c6c6; }
+.studio-shell .m-input {
+  color: #f4f4f4;
+  border-bottom-color: #6f6f6f;
+  background: #262626;
+}
+.studio-shell .m-input:hover { background: #393939; border-bottom-color: #f4f4f4; }
+.studio-shell .m-input:focus { outline-color: #4589ff; border-bottom-color: #4589ff; background: #262626; }
+.studio-shell .m-input::placeholder { color: #a8a8a8; }
+.studio-shell .m-field__help { color: #c6c6c6; }
+.studio-shell .m-checkbox { color: #f4f4f4; }
+.studio-shell .m-combo__list { border-color: #525252; background: #262626; }
+.studio-shell .m-combo__list li button { color: #f4f4f4; background: #262626; }
+.studio-shell .m-combo__list li button:hover,
+.studio-shell .m-combo__list li[aria-selected="true"] button { color: #fff; background: #393939; }
+.studio-shell .m-upload__button { color: #78a9ff; border-color: #8d8d8d; background: #262626; }
+.studio-shell .m-upload__button:hover { background: #393939; border-color: #4589ff; }
