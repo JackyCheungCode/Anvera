@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { Button as CarbonButton } from "@carbon/react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 
 type Dealer = {
@@ -92,7 +93,7 @@ export function DealerAccounts() {
       <section className="anvera-panel">
         <div className="anvera-panel-heading">
           <h2>Dealer network</h2>
-          <button className="anvera-refresh" type="button" onClick={() => void load()} disabled={loading}>{loading ? "Loading…" : "Refresh"}</button>
+          <CarbonButton kind="ghost" className="anvera-refresh" type="button" onClick={() => void load()} disabled={loading}>{loading ? "Loading…" : "Refresh"}</CarbonButton>
         </div>
         {loading ? (
           <div className="anvera-empty"><h3>Loading dealer accounts</h3><p>Connecting to the secured business workspace.</p></div>
@@ -110,8 +111,8 @@ export function DealerAccounts() {
                   <td>{new Date(item.activated_at).toLocaleDateString()}</td>
                   <td>{item.status === "active" ? (
                     confirmId === item.id ? (
-                      <span className="anvera-confirm-actions"><button className="anvera-action-button anvera-action-button--danger" type="button" disabled={saving} onClick={() => void suspend(item.id)}>{saving ? "Saving…" : "Confirm"}</button><button className="anvera-link-button" type="button" onClick={() => setConfirmId("")}>Cancel</button></span>
-                    ) : <button className="anvera-link-button anvera-link-button--danger" type="button" onClick={() => setConfirmId(item.id)}>Suspend</button>
+                      <span className="anvera-confirm-actions"><CarbonButton kind="ghost" className="anvera-action-button anvera-action-button--danger" type="button" disabled={saving} onClick={() => void suspend(item.id)}>{saving ? "Saving…" : "Confirm"}</CarbonButton><CarbonButton kind="ghost" className="anvera-link-button" type="button" onClick={() => setConfirmId("")}>Cancel</CarbonButton></span>
+                    ) : <CarbonButton kind="ghost" className="anvera-link-button anvera-link-button--danger" type="button" onClick={() => setConfirmId(item.id)}>Suspend</CarbonButton>
                   ) : <span className="anvera-muted">—</span>}</td>
                 </tr>
               ))}</tbody>

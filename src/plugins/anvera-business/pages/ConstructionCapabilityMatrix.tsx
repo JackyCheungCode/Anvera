@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { Button as CarbonButton, TextArea as CarbonTextArea } from "@carbon/react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 
 type ConstructionType = "Monoblock" | "Two-piece" | "Three-piece";
@@ -24,9 +25,9 @@ const blankForm = (constructionType: ConstructionType = "Monoblock"): FormState 
 function Field({ label, value, onChange, placeholder }: {
   label: string; value: string; onChange: (value: string) => void; placeholder?: string;
 }) {
-  return <label className="api-library-field api-library-field--wide"><span>{label}</span>
-    <textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={3} />
-  </label>;
+  return <div className="api-library-field api-library-field--wide">
+    <CarbonTextArea id={`construction-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`} labelText={label} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={3} />
+  </div>;
 }
 
 export function ConstructionCapabilityMatrix({ onCatalogChange }: {
@@ -96,13 +97,13 @@ export function ConstructionCapabilityMatrix({ onCatalogChange }: {
   return <section className="api-library">
     <div className="api-library-heading">
       <div><p className="anvera-eyebrow">FACTORY ARCHITECTURE CONTROL</p><h3>Construction Capability Matrix</h3><p>Record Monoblock, Two-piece and Three-piece as separate factory capabilities. Product construction options are restricted to approved capability records.</p></div>
-      <button type="button" className="anvera-refresh anvera-refresh--light" onClick={() => void load()} disabled={loading}>Refresh matrix</button>
+      <CarbonButton kind="ghost" type="button" className="anvera-refresh anvera-refresh--light" onClick={() => void load()} disabled={loading}>Refresh matrix</CarbonButton>
     </div>
     {error ? <p className="anvera-inline-message" role="alert">{error}</p> : null}
     {notice ? <p className="api-success-message" role="status">{notice}</p> : null}
     {editing ? <div className="api-library-editor">
       <div className="api-library-form-grid">
-        <div className="api-library-construction-picker"><span>CONSTRUCTION TYPE</span><div>{TYPES.map((type) => <button type="button" key={type} disabled={Boolean(form.id) || (existingTypes.has(type) && form.constructionType !== type)} className={form.constructionType === type ? "is-active" : ""} onClick={() => setForm((current) => ({ ...current, constructionType: type }))}>{type}</button>)}</div></div>
+        <div className="api-library-construction-picker"><span>CONSTRUCTION TYPE</span><div>{TYPES.map((type) => <CarbonButton kind="ghost" type="button" key={type} disabled={Boolean(form.id) || (existingTypes.has(type) && form.constructionType !== type)} className={form.constructionType === type ? "is-active" : ""} onClick={() => setForm((current) => ({ ...current, constructionType: type }))}>{type}</CarbonButton>)}</div></div>
         <Field label="Capability scope" value={form.capabilityScope} onChange={(value) => setForm((current) => ({ ...current, capabilityScope: value }))} placeholder="Supported product scope, size limits and ownership" />
         <Field label="Assembly method" value={form.assemblyMethod} onChange={(value) => setForm((current) => ({ ...current, assemblyMethod: value }))} placeholder="Required assembly steps, joining and inspection" />
         <Field label="Fastener requirements" value={form.fastenerRequirements} onChange={(value) => setForm((current) => ({ ...current, fastenerRequirements: value }))} placeholder="Fastener grade, size, torque source and traceability" />
@@ -111,15 +112,15 @@ export function ConstructionCapabilityMatrix({ onCatalogChange }: {
         <Field label="Evidence reference" value={form.evidenceRef} onChange={(value) => setForm((current) => ({ ...current, evidenceRef: value }))} placeholder="Work instruction, equipment list, test report or drawing reference" />
       </div>
       <div className="api-library-actions">
-        <button type="button" className="anvera-action-button anvera-action-button--quiet" onClick={() => setEditing(false)}>Cancel</button>
-        <button type="button" className="anvera-action-button anvera-action-button--quiet" disabled={saving} onClick={() => void save("draft")}>Save draft</button>
-        <button type="button" className="anvera-action-button" disabled={saving || !reviewReady} onClick={() => void save("pending_review")}>{saving ? "Saving…" : "Submit for review"}</button>
+        <CarbonButton kind="ghost" type="button" className="anvera-action-button anvera-action-button--quiet" onClick={() => setEditing(false)}>Cancel</CarbonButton>
+        <CarbonButton kind="ghost" type="button" className="anvera-action-button anvera-action-button--quiet" disabled={saving} onClick={() => void save("draft")}>Save draft</CarbonButton>
+        <CarbonButton kind="ghost" type="button" className="anvera-action-button" disabled={saving || !reviewReady} onClick={() => void save("pending_review")}>{saving ? "Saving…" : "Submit for review"}</CarbonButton>
       </div>
-    </div> : <div className="api-library-actions"><button type="button" className="anvera-action-button" disabled={!newTypes.length} onClick={() => { setForm(blankForm(newTypes[0])); setEditing(true); }}>＋ Add construction capability</button></div>}
+    </div> : <div className="api-library-actions"><CarbonButton kind="ghost" type="button" className="anvera-action-button" disabled={!newTypes.length} onClick={() => { setForm(blankForm(newTypes[0])); setEditing(true); }}>＋ Add construction capability</CarbonButton></div>}
     <div className="api-library-list">
       {loading ? <p className="anvera-muted">Loading construction matrix…</p> : items.length ? items.map((item) => <article key={item.id}>
         <div><strong>{item.construction_type}</strong><span>{item.capability_scope || "Capability scope not documented"}</span><small>{item.structural_limitations || item.assembly_method || "No limitations recorded."}</small></div>
-        <div className="api-library-row-actions"><em className={`api-library-status api-library-status--${item.status}`}>{item.status.replaceAll("_", " ")}</em><button type="button" disabled={!["draft", "pending_review"].includes(item.status)} onClick={() => edit(item)}>Edit</button></div>
+        <div className="api-library-row-actions"><em className={`api-library-status api-library-status--${item.status}`}>{item.status.replaceAll("_", " ")}</em><CarbonButton kind="ghost" type="button" disabled={!["draft", "pending_review"].includes(item.status)} onClick={() => edit(item)}>Edit</CarbonButton></div>
       </article>) : <p className="anvera-muted">No construction capability records have been created.</p>}
     </div>
   </section>;

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Button as CarbonButton, TextInput as CarbonTextInput, TextArea as CarbonTextArea } from "@carbon/react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 
 type Order = {
@@ -97,16 +98,16 @@ export function ConfigurationOrders() {
     </section>
     {error ? <p className="anvera-inline-message" role="alert">{error}</p> : null}
     <section className="anvera-panel">
-      <div className="anvera-panel-heading"><h2>Customer configurations</h2><button className="anvera-refresh" type="button" onClick={() => void load()} disabled={loading}>Refresh</button></div>
+      <div className="anvera-panel-heading"><h2>Customer configurations</h2><CarbonButton kind="ghost" className="anvera-refresh" type="button" onClick={() => void load()} disabled={loading}>Refresh</CarbonButton></div>
       <div className="anvera-toolbar">
-        <input aria-label="Search orders" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search reference, customer, vehicle…" />
+        <CarbonTextInput id="configuration-order-search" labelText="Search orders" hideLabel size="md" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search reference, customer, vehicle…" />
         <div className="anvera-filter-list">{["", "submitted", "custom_review", "quoted", "confirmed", "in_production", "in_transit", "completed"].map(value =>
-          <button key={value || "all"} type="button" className={filter === value ? "is-active" : ""} onClick={() => setFilter(value)}>{value ? labels[value] : "All"}</button>)}</div>
+          <CarbonButton kind="ghost" key={value || "all"} type="button" className={filter === value ? "is-active" : ""} onClick={() => setFilter(value)}>{value ? labels[value] : "All"}</CarbonButton>)}</div>
       </div>
       {loading ? <div className="anvera-empty"><h3>Loading configuration orders</h3><p>Connecting to the secure order database.</p></div> : items.length ? <div className="anvera-table-wrap">
         <table className="anvera-data-table"><thead><tr><th>REFERENCE</th><th>CUSTOMER</th><th>VEHICLE</th><th>SPEC PATH</th><th>STATUS</th><th>SUBMITTED</th></tr></thead>
           <tbody>{items.map(item => <tr key={item.id} className={selected?.id === item.id ? "anvera-row-selected" : ""}>
-            <td><button className="anvera-link-button" type="button" onClick={() => void open(item.id)}>{item.reference_code}</button></td>
+            <td><CarbonButton kind="ghost" className="anvera-link-button" type="button" onClick={() => void open(item.id)}>{item.reference_code}</CarbonButton></td>
             <td><strong>{item.customer_name || "Draft"}</strong><small>{item.email || "—"}</small></td>
             <td>{[item.vehicle_make, item.vehicle_model, item.vehicle_year].filter(Boolean).join(" ") || "—"}</td>
             <td>{item.specification_path || "—"}</td><td><span className="anvera-record-status">{labels[item.status] ?? item.status}</span></td>
@@ -123,8 +124,8 @@ export function ConfigurationOrders() {
       </div>
       <details className="anvera-order-config"><summary>Full configuration record</summary><pre>{JSON.stringify(selected.configuration ?? {}, null, 2)}</pre></details>
       <div className="anvera-status-update"><h3>Update customer-visible progress</h3>
-        <textarea value={note} onChange={event => setNote(event.target.value)} placeholder="Optional update note for the order timeline…" rows={3} />
-        <div className="anvera-action-row">{next.map(status => <button key={status} className="anvera-action-button" type="button" disabled={saving} onClick={() => void changeStatus(status)}>{labels[status]}</button>)}</div>
+        <CarbonTextArea id="configuration-order-note" labelText="Progress update note" hideLabel value={note} onChange={event => setNote(event.target.value)} placeholder="Optional update note for the order timeline…" rows={3} />
+        <div className="anvera-action-row">{next.map(status => <CarbonButton kind="ghost" key={status} className="anvera-action-button" type="button" disabled={saving} onClick={() => void changeStatus(status)}>{labels[status]}</CarbonButton>)}</div>
       </div>
       <div className="anvera-order-timeline"><h3>Order history</h3>{events.length ? events.map(event => {
         let detail: any = {}; try { detail = JSON.parse(event.event_json || "{}"); } catch {}

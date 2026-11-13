@@ -1,0 +1,14 @@
+---
+import { FileUploaderControl } from "../carbon/Controls";
+interface Props {
+  id: string;
+  name: string;
+  label: string;
+  accept: string[];
+  multiple?: boolean;
+  description?: string;
+  buttonLabel?: string;
+}
+const props = Astro.props;
+---
+<FileUploaderControl {...props} client:load />

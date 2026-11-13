@@ -1,5 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
+import TextInput from "../../components/ui/TextInput.astro";
+import Button from "../../components/ui/Button.astro";
 import { getEmDashCollection } from "emdash";
 import { Image } from "emdash/ui";
 import { wheelDevelopmentProducts } from "../../data/wheel-products";
@@ -39,7 +41,7 @@ const products = cmsProducts.length ? cmsProducts : wheelDevelopmentProducts.map
       <p class="eyebrow">ANVERA / THE COLLECTION</p>
       <h1>Built around<br /><span>your vision.</span></h1>
       <p>Forged wheels, considered from the first line to the final specification. Explore the collection and discover a design direction for your vehicle.</p>
-      <a class="cds-btn cds-btn--primary" href="#wheel-models">Explore wheel designs <span aria-hidden="true">↓</span></a>
+      <Button href="#wheel-models" variant="primary">Explore wheel designs <span aria-hidden="true">↓</span></Button>
     </div>
     <div class="collection-hero-index">10 DESIGNS <span>3 CONSTRUCTION FAMILIES</span></div>
   </section>
@@ -73,12 +75,12 @@ const products = cmsProducts.length ? cmsProducts : wheelDevelopmentProducts.map
         <p class="section-lead">Explore each design by construction, then open its product page for design details, available finishes and specification planning.</p>
       </div>
       <div class="wheel-catalog-tools">
-        <label class="wheel-search-wrap"><span class="sr-only">Search wheel designs</span><input id="wheel-search" class="wheel-search" type="search" placeholder="Search model or design…" autocomplete="off" /></label>
+        <div class="wheel-search-wrap"><TextInput id="wheel-search" name="wheelSearch" className="wheel-search" type="search" label="Search wheel designs" placeholder="Search model or design…" autocomplete="off" /></div>
         <div class="wheel-filter-group" role="group" aria-label="Filter by construction">
-          <button type="button" class="wheel-filter is-active" data-wheel-filter="all" aria-pressed="true">All designs <span>10</span></button>
-          <button type="button" class="wheel-filter" data-wheel-filter="monoblock" aria-pressed="false">Monoblock</button>
-          <button type="button" class="wheel-filter" data-wheel-filter="two-piece" aria-pressed="false">Two-piece</button>
-          <button type="button" class="wheel-filter" data-wheel-filter="three-piece" aria-pressed="false">Three-piece</button>
+          <Button className="wheel-filter is-active" filterKey="all" ariaPressed={true} variant="secondary">All designs <span>10</span></Button>
+          <Button className="wheel-filter" filterKey="monoblock" ariaPressed={false} variant="secondary">Monoblock</Button>
+          <Button className="wheel-filter" filterKey="two-piece" ariaPressed={false} variant="secondary">Two-piece</Button>
+          <Button className="wheel-filter" filterKey="three-piece" ariaPressed={false} variant="secondary">Three-piece</Button>
         </div>
         <p class="wheel-results-count" id="wheel-results-count" aria-live="polite">Showing {products.length} designs</p>
       </div>
@@ -105,7 +107,7 @@ const products = cmsProducts.length ? cmsProducts : wheelDevelopmentProducts.map
 
   <section class="collection-cta">
     <div><p class="section-kicker">A considered fit starts here</p><h2>Tell us what<br />you drive.</h2><p>Share your vehicle and design direction. Our team will help define the right specification.</p></div>
-    <a class="cds-btn cds-btn--primary" href="/custom-inquiry">Request a consultation <span aria-hidden="true">↗</span></a>
+    <Button href="/custom-inquiry" variant="primary">Request a consultation <span aria-hidden="true">↗</span></Button>
   </section>
 </Base>
 <script>

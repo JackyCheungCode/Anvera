@@ -1,5 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
+import Button from "../components/ui/Button.astro";
 const stages = [
   { n:"01", title:"The vehicle", copy:"Start with the vehicle make, model, year and brake package. These details establish the fitment envelope." },
   { n:"02", title:"The specification", copy:"Define diameter, width, PCD, offset, centre bore and front-to-rear requirements. Unknown values can be reviewed with our team." },
@@ -14,7 +15,7 @@ const stages = [
       <p class="eyebrow">ANVERA / MADE TO YOUR BRIEF</p>
       <h1>Personal<br />by design.</h1>
       <p>A custom wheel project is a collaboration between your vision, your vehicle and our engineering process. Start with the details that matter. We will help shape the rest.</p>
-      <a class="cds-btn cds-btn--primary" href="/custom-inquiry">Begin your inquiry <span aria-hidden="true">↗</span></a>
+      <Button href="/custom-inquiry" variant="primary">Begin your inquiry <span aria-hidden="true">↗</span></Button>
     </div>
   </section>
   <section class="section custom-process">
@@ -40,6 +41,6 @@ const stages = [
     <p class="section-kicker">Your vehicle. Your direction.</p>
     <h2>Let's define<br />your specification.</h2>
     <p>Send us your vehicle details and the direction you have in mind. Our team will follow up to review the project.</p>
-    <a class="cds-btn cds-btn--primary" href="/custom-inquiry">Start a custom inquiry <span aria-hidden="true">↗</span></a>
+    <Button href="/custom-inquiry" variant="primary">Start a custom inquiry <span aria-hidden="true">↗</span></Button>
   </section>
 </Base>

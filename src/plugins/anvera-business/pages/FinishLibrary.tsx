@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Button as CarbonButton, TextInput as CarbonTextInput, TextArea as CarbonTextArea } from "@carbon/react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 
 type FinishProfile = {
@@ -23,11 +24,12 @@ const blankForm = (): FinishForm => ({
 function Field({ label, value, onChange, placeholder, multiline = false }: {
   label: string; value: string; onChange: (value: string) => void; placeholder?: string; multiline?: boolean;
 }) {
-  return <label className={`api-library-field ${multiline ? "api-library-field--wide" : ""}`}>
-    <span>{label}</span>
-    {multiline ? <textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={3} /> :
-      <input value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />}
-  </label>;
+  const id = `finish-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  return <div className={`api-library-field ${multiline ? "api-library-field--wide" : ""}`}>
+    {multiline
+      ? <CarbonTextArea id={id} labelText={label} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={3} />
+      : <CarbonTextInput id={id} labelText={label} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />}
+  </div>;
 }
 
 export function FinishLibrary({ onCatalogChange }: {
@@ -106,7 +108,7 @@ export function FinishLibrary({ onCatalogChange }: {
   return <section className="api-library">
     <div className="api-library-heading">
       <div><p className="anvera-eyebrow">CONTROLLED SURFACE DATA</p><h3>Finish Library</h3><p>Define finishes by process, appearance reference, supported wheel construction and documented restrictions. Only approved finishes can be mapped to products.</p></div>
-      <button className="anvera-refresh anvera-refresh--light" type="button" onClick={() => void load()} disabled={loading}>Refresh finishes</button>
+      <CarbonButton kind="ghost" className="anvera-refresh anvera-refresh--light" type="button" onClick={() => void load()} disabled={loading}>Refresh finishes</CarbonButton>
     </div>
     {error ? <p className="anvera-inline-message" role="alert">{error}</p> : null}
     {notice ? <p className="api-success-message" role="status">{notice}</p> : null}
@@ -120,20 +122,20 @@ export function FinishLibrary({ onCatalogChange }: {
         <Field label="Restrictions" value={form.restrictions} onChange={(value) => setForm((current) => ({ ...current, restrictions: value }))} placeholder="Construction, substrate, size or usage limitations" multiline />
         <Field label="Evidence reference" value={form.evidenceRef} onChange={(value) => setForm((current) => ({ ...current, evidenceRef: value }))} placeholder="Process spec, sample approval or inspection record" />
       </div>
-      <div className="api-library-construction-picker"><span>SUPPORTED CONSTRUCTIONS</span><div>{["Monoblock", "Two-piece", "Three-piece"].map((value) => <button type="button" key={value} className={form.supportedConstructions.includes(value) ? "is-active" : ""} onClick={() => toggleConstruction(value)}>{value}</button>)}</div></div>
+      <div className="api-library-construction-picker"><span>SUPPORTED CONSTRUCTIONS</span><div>{["Monoblock", "Two-piece", "Three-piece"].map((value) => <CarbonButton kind="ghost" type="button" key={value} className={form.supportedConstructions.includes(value) ? "is-active" : ""} onClick={() => toggleConstruction(value)}>{value}</CarbonButton>)}</div></div>
       <div className="api-library-actions">
-        <button type="button" className="anvera-action-button anvera-action-button--quiet" onClick={() => { setEditing(false); setForm(blankForm()); }}>Cancel</button>
-        <button type="button" className="anvera-action-button anvera-action-button--quiet" disabled={saving || !form.code.trim() || !form.name.trim() || !form.finishType.trim() || !form.supportedConstructions.length} onClick={() => void save("draft")}>Save draft</button>
-        <button type="button" className="anvera-action-button" disabled={saving || !form.code.trim() || !form.name.trim() || !form.finishType.trim() || !form.supportedConstructions.length} onClick={() => void save("pending_review")}>{saving ? "Saving…" : "Submit for review"}</button>
+        <CarbonButton kind="ghost" type="button" className="anvera-action-button anvera-action-button--quiet" onClick={() => { setEditing(false); setForm(blankForm()); }}>Cancel</CarbonButton>
+        <CarbonButton kind="ghost" type="button" className="anvera-action-button anvera-action-button--quiet" disabled={saving || !form.code.trim() || !form.name.trim() || !form.finishType.trim() || !form.supportedConstructions.length} onClick={() => void save("draft")}>Save draft</CarbonButton>
+        <CarbonButton kind="ghost" type="button" className="anvera-action-button" disabled={saving || !form.code.trim() || !form.name.trim() || !form.finishType.trim() || !form.supportedConstructions.length} onClick={() => void save("pending_review")}>{saving ? "Saving…" : "Submit for review"}</CarbonButton>
       </div>
-    </div> : <div className="api-library-actions"><button type="button" className="anvera-action-button" onClick={() => { setForm(blankForm()); setEditing(true); }}>＋ Add finish profile</button></div>}
+    </div> : <div className="api-library-actions"><CarbonButton kind="ghost" type="button" className="anvera-action-button" onClick={() => { setForm(blankForm()); setEditing(true); }}>＋ Add finish profile</CarbonButton></div>}
     <div className="api-library-list">
       {loading ? <p className="anvera-muted">Loading finish profiles…</p> : items.length ? items.map((item) => {
         let supported: string[] = [];
         try { supported = JSON.parse(item.supported_constructions_json) as string[]; } catch { supported = []; }
         return <article key={item.id}>
           <div><strong>{item.code} · {item.name}</strong><span>{item.finish_type} · {supported.join(" / ")}</span><small>{item.restrictions || item.process_description || "No additional restrictions recorded."}</small></div>
-          <div className="api-library-row-actions"><em className={`api-library-status api-library-status--${item.status}`}>{item.status.replaceAll("_", " ")}</em><button type="button" disabled={!["draft", "pending_review"].includes(item.status)} onClick={() => edit(item)}>Edit</button></div>
+          <div className="api-library-row-actions"><em className={`api-library-status api-library-status--${item.status}`}>{item.status.replaceAll("_", " ")}</em><CarbonButton kind="ghost" type="button" disabled={!["draft", "pending_review"].includes(item.status)} onClick={() => edit(item)}>Edit</CarbonButton></div>
         </article>;
       }) : <p className="anvera-muted">No finish profiles have been created.</p>}
     </div>
@@ -149,7 +151,7 @@ export function ProductFinishMapping({ finishes, construction, selected, onChang
   return <section className="api-product-finish-mapping">
     <div><p className="anvera-eyebrow">PRODUCT FINISH MAPPING</p><h3>Approved finish options</h3><p>Choose only approved finish profiles compatible with this product's construction. Product mappings remain pending engineering review.</p></div>
     {finishes === undefined ? <p className="anvera-muted">Open the Finish & Customization step to load the approved finish catalog.</p> : finishes === null ? <p className="anvera-muted">Finish library is not installed in this environment. Finish mapping will be available after the Preview schema is applied.</p> :
-      compatible.length ? <div className="api-product-finish-options">{compatible.map((item) => <button key={item.id} type="button" className={selected.includes(item.id) ? "is-active" : ""} aria-pressed={selected.includes(item.id)} onClick={() => onChange(selected.includes(item.id) ? selected.filter((id) => id !== item.id) : [...selected, item.id])}><span>{selected.includes(item.id) ? "✓" : "+"}</span><strong>{item.code}</strong><small>{item.name} · {item.finish_type}</small></button>)}</div> :
+      compatible.length ? <div className="api-product-finish-options">{compatible.map((item) => <CarbonButton kind="ghost" key={item.id} type="button" className={selected.includes(item.id) ? "is-active" : ""} aria-pressed={selected.includes(item.id)} onClick={() => onChange(selected.includes(item.id) ? selected.filter((id) => id !== item.id) : [...selected, item.id])}><span>{selected.includes(item.id) ? "✓" : "+"}</span><strong>{item.code}</strong><small>{item.name} · {item.finish_type}</small></CarbonButton>)}</div> :
       <p className="anvera-muted">No approved finish profiles support the selected construction yet.</p>}
     {incompatible.length ? <p className="anvera-inline-message" role="alert">Some selected finishes do not support {construction}: {incompatible.map((id) => selectedLabels.get(id) ?? id).join(", ")}. Remove them before continuing.</p> : null}
     <p className="anvera-muted">{selected.length} finish profile(s) selected. Each new product mapping requires engineering review.</p>

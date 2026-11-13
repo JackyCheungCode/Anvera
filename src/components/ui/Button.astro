@@ -1,19 +1,20 @@
 ---
+import { ButtonControl } from "../carbon/Controls";
 interface Props {
   href?: string;
-  variant?: "primary" | "secondary" | "dark";
+  variant?: "primary" | "secondary" | "dark" | "ghost";
   type?: "button" | "submit" | "reset";
   disabled?: boolean;
+  id?: string;
+  className?: string;
+  filterKey?: string;
+  ariaPressed?: boolean;
+  ariaExpanded?: boolean;
+  productKey?: string;
+  ariaControls?: string;
 }
-const { href, variant = "primary", type = "button", disabled = false } = Astro.props;
-const className = `cds-btn cds-btn--${variant}`;
+const { href, variant = "primary", type = "button", disabled = false, id, className, filterKey, ariaPressed, ariaExpanded, productKey, ariaControls } = Astro.props;
 ---
-{href ? (
-  <a class={className} href={href} aria-disabled={disabled ? "true" : undefined}>
-    <slot />
-  </a>
-) : (
-  <button class={className} type={type} disabled={disabled}>
-    <slot />
-  </button>
-)}
+<ButtonControl id={id} className={className} filterKey={filterKey} ariaPressed={ariaPressed} ariaExpanded={ariaExpanded} productKey={productKey} ariaControls={ariaControls} href={href} variant={variant} type={type} disabled={disabled}>
+  <slot />
+</ButtonControl>

@@ -1,4 +1,5 @@
 ---
+import { CheckboxControl } from "../carbon/Controls";
 interface Props {
   id: string;
   name: string;
@@ -8,8 +9,6 @@ interface Props {
 }
 const { id, name, value = "on", checked = false, required = false } = Astro.props;
 ---
-<label class="cds-checkbox" for={id}>
-  <input id={id} name={name} type="checkbox" value={value} checked={checked} required={required} />
-  <span class="cds-checkbox-box" aria-hidden="true"></span>
-  <span class="cds-checkbox-label"><slot /></span>
-</label>
+<CheckboxControl id={id} name={name} value={value} checked={checked} required={required}>
+  <slot />
+</CheckboxControl>

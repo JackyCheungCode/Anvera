@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Button as CarbonButton, ComboBox as CarbonComboBox, TextArea as CarbonTextArea, TextInput as CarbonTextInput } from "@carbon/react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 import { MaterialProcessLibrary } from "./MaterialProcessLibrary";
 import { LibraryReviewQueue } from "./LibraryReviewQueue";
@@ -248,35 +249,40 @@ function stepHasAnyValue(step: StepDefinition, document: SetupDocument, productI
 }
 
 function CustomSelect({ value, options, onChange, label }: { value: string; options: Array<string | SelectOption>; onChange: (value: string) => void; label: string }) {
-  const [open, setOpen] = useState(false);
-  const selected = options.find((option) => (typeof option === "string" ? option : option.value) === value);
-  const selectedLabel = selected ? (typeof selected === "string" ? selected : selected.label) : value;
+  const items = options.map((option) => ({
+    value: typeof option === "string" ? option : option.value,
+    label: typeof option === "string" ? option : option.label
+  }));
+  const selectedItem = items.find((item) => item.value === value) ?? null;
+  const itemToString = (item: { value: string; label: string } | null) => item?.label ?? "";
+  const id = `product-intelligence-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
-    <div className="api-select">
-      <button className="api-select-trigger" type="button" aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen(!open)}>
-        <span>{selectedLabel || `Select ${label.toLowerCase()}`}</span><span className="api-select-chevron">⌄</span>
-      </button>
-      {open ? <div className="api-select-menu" role="listbox" aria-label={label}>
-        {options.map((option) => {
-          const optionValue = typeof option === "string" ? option : option.value;
-          const optionLabel = typeof option === "string" ? option : option.label;
-          return <button key={optionValue} type="button" role="option" aria-selected={value === optionValue} className={value === optionValue ? "is-selected" : ""} onClick={() => { onChange(optionValue); setOpen(false); }}>{optionLabel}</button>;
-        })}
-      </div> : null}
-    </div>
+    <CarbonComboBox
+      id={id}
+      titleText={label}
+      items={items}
+      itemToString={itemToString}
+      selectedItem={selectedItem}
+      placeholder={`Select ${label.toLowerCase()}`}
+      size="md"
+      onChange={({ selectedItem: nextItem }) => onChange(nextItem?.value ?? "")}
+      shouldFilterItem={({ item, inputValue, itemToString: toString }) =>
+        (toString?.(item) ?? "").toLocaleLowerCase().includes((inputValue ?? "").toLocaleLowerCase())
+      }
+    />
   );
 }
 
 function Field({ field, value, onChange, error }: { field: FieldDefinition; value: string; onChange: (value: string) => void; error?: boolean }) {
+  const id = `product-intelligence-field-${field.key}`;
   return (
-    <label className={`api-field ${field.type === "textarea" ? "api-field--wide" : ""}`}>
-      <span className="api-field-label">{field.label}{field.required ? <i>Required</i> : null}</span>
+    <div className={`api-field ${field.type === "textarea" ? "api-field--wide" : ""}`}>
       {field.type === "select" ? <CustomSelect label={field.label} value={value} options={field.options ?? []} onChange={onChange} /> :
-        field.type === "textarea" ? <textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={field.placeholder} rows={4} /> :
-        <input type={field.type === "number" ? "number" : "text"} value={value} onChange={(event) => onChange(event.target.value)} placeholder={field.placeholder} aria-invalid={error || undefined} />}
+        field.type === "textarea" ? <CarbonTextArea id={id} labelText={field.label} value={value} onChange={(event) => onChange(event.target.value)} placeholder={field.placeholder} rows={4} required={field.required} /> :
+        <CarbonTextInput id={id} labelText={field.label} type={field.type === "number" ? "number" : "text"} value={value} onChange={(event) => onChange(event.target.value)} placeholder={field.placeholder} required={field.required} invalid={error} />}
       {field.help ? <small>{field.help}</small> : null}
       {error ? <small className="api-field-error">This field is required to complete this step.</small> : null}
-    </label>
+    </div>
   );
 }
 
@@ -453,7 +459,7 @@ export function ProductIntelligence() {
         </div>
         <div className="api-header-actions">
           <span className={available ? "anvera-status anvera-status--ready" : "anvera-status"}>{available ? status.replaceAll("_", " ").toUpperCase() : "STORAGE NOT READY"}</span>
-          <button className="anvera-refresh anvera-refresh--light" type="button" onClick={() => void load()} disabled={loading}>Refresh</button>
+          <CarbonButton kind="ghost" className="anvera-refresh anvera-refresh--light" type="button" onClick={() => void load()} disabled={loading}>Refresh</CarbonButton>
         </div>
       </header>
 
@@ -473,10 +479,10 @@ export function ProductIntelligence() {
             {steps.map((step, index) => {
               const complete = isStepComplete(step, document, productIndex) && step.id !== "review" && (!step.optional || stepHasAnyValue(step, document, productIndex));
               const current = index === activeStep;
-              return <button key={step.id} type="button" className={`api-step ${current ? "is-current" : ""} ${complete ? "is-complete" : ""}`} onClick={() => { if (index <= activeStep || complete) { setActiveStep(index); setError(""); } }} aria-current={current ? "step" : undefined}>
+              return <CarbonButton kind="ghost" key={step.id} type="button" className={`api-step ${current ? "is-current" : ""} ${complete ? "is-complete" : ""}`} onClick={() => { if (index <= activeStep || complete) { setActiveStep(index); setError(""); } }} aria-current={current ? "step" : undefined}>
                 <span className="api-step-number">{complete ? "✓" : step.number}</span>
                 <span className="api-step-copy"><strong>{step.title}</strong><small>{step.subtitle}</small></span>
-              </button>;
+              </CarbonButton>;
             })}
           </nav>
 
@@ -488,8 +494,8 @@ export function ProductIntelligence() {
               </div>
 
               {active.id === "products" ? <div className="api-product-switcher">
-                <div className="api-product-list">{(document.products ?? []).map((product, index) => <button key={index} type="button" className={productIndex === index ? "is-active" : ""} onClick={() => setProductIndex(index)}><span>{String(index + 1).padStart(2, "0")}</span>{typeof product.productCode === "string" && product.productCode ? product.productCode : typeof product.productName === "string" && product.productName ? product.productName : "Untitled product"}</button>)}</div>
-                <button className="api-add-product" type="button" onClick={addProduct}>＋ Add product profile</button>
+                <div className="api-product-list">{(document.products ?? []).map((product, index) => <CarbonButton kind="ghost" key={index} type="button" className={productIndex === index ? "is-active" : ""} onClick={() => setProductIndex(index)}><span>{String(index + 1).padStart(2, "0")}</span>{typeof product.productCode === "string" && product.productCode ? product.productCode : typeof product.productName === "string" && product.productName ? product.productName : "Untitled product"}</CarbonButton>)}</div>
+                <CarbonButton kind="ghost" className="api-add-product" type="button" onClick={addProduct}>＋ Add product profile</CarbonButton>
               </div> : null}
 
               <div className="api-field-grid">
@@ -531,23 +537,23 @@ export function ProductIntelligence() {
               /> : null}
 
               {active.id === "products" ? <section className="api-spec-editor">
-                <div className="api-spec-heading"><div><p className="anvera-eyebrow">PRODUCT SPECIFICATIONS</p><h3>Specification Matrix</h3><p>Each row is a specific, reviewable wheel specification. Do not enter a range in place of a confirmed combination.</p></div><button className="api-add-product" type="button" onClick={() => setDocument((current) => addSpecification(current, productIndex))}>＋ Add specification</button></div>
+                <div className="api-spec-heading"><div><p className="anvera-eyebrow">PRODUCT SPECIFICATIONS</p><h3>Specification Matrix</h3><p>Each row is a specific, reviewable wheel specification. Do not enter a range in place of a confirmed combination.</p></div><CarbonButton kind="ghost" className="api-add-product" type="button" onClick={() => setDocument((current) => addSpecification(current, productIndex))}>＋ Add specification</CarbonButton></div>
                 <div className="api-spec-table-wrap"><table className="api-spec-table">
                   <thead><tr><th>POSITION</th><th>DIAMETER</th><th>WIDTH</th><th>BOLT COUNT</th><th>PCD (MM)</th><th>OFFSET (MM)</th><th>CENTER BORE (MM)</th><th>LOAD (KG)</th><th>EVIDENCE REFERENCE</th><th>ENGINEERING STATUS</th><th></th></tr></thead>
                   <tbody>{(document.products?.[productIndex]?.specifications ?? []).map((row) => <tr key={row.id}>
                     <td><CustomSelect label="Position" value={row.role} options={["Front", "Rear", "Front & Rear"]} onChange={(value) => setDocument((current) => updateSpecification(current, productIndex, row.id, "role", value))} /></td>
-                    <td><input aria-label="Diameter in inches" type="number" min="1" step="0.5" value={row.diameter} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "diameter", event.target.value))} /></td>
-                    <td><input aria-label="Width in inches" type="number" min="1" step="0.5" value={row.width} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "width", event.target.value))} /></td>
-                    <td><input aria-label="Bolt count" type="number" min="1" step="1" value={row.boltCount} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "boltCount", event.target.value))} /></td>
-                    <td><input aria-label="PCD in millimeters" type="number" min="1" step="0.1" value={row.pcd} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "pcd", event.target.value))} /></td>
-                    <td><input aria-label="Offset in millimeters" type="number" step="0.5" value={row.offset} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "offset", event.target.value))} /></td>
-                    <td><input aria-label="Center bore in millimeters" type="number" min="1" step="0.1" value={row.centerBore} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "centerBore", event.target.value))} /></td>
-                    <td><input aria-label="Load rating in kilograms" type="number" min="1" step="1" value={row.loadRating} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "loadRating", event.target.value))} /></td>
-                    <td><input aria-label="Specification evidence reference" type="text" value={row.evidenceRef ?? ""} placeholder="Drawing / test report ID" onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "evidenceRef", event.target.value))} /></td>
+                    <td><CarbonTextInput id={`spec-${row.id}-diameter`} labelText="Diameter in inches" hideLabel size="sm" type="number" min={1} step={0.5} value={row.diameter} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "diameter", event.target.value))} /></td>
+                    <td><CarbonTextInput id={`spec-${row.id}-width`} labelText="Width in inches" hideLabel size="sm" type="number" min={1} step={0.5} value={row.width} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "width", event.target.value))} /></td>
+                    <td><CarbonTextInput id={`spec-${row.id}-bolt-count`} labelText="Bolt count" hideLabel size="sm" type="number" min={1} step={1} value={row.boltCount} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "boltCount", event.target.value))} /></td>
+                    <td><CarbonTextInput id={`spec-${row.id}-pcd`} labelText="PCD in millimeters" hideLabel size="sm" type="number" min={1} step={0.1} value={row.pcd} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "pcd", event.target.value))} /></td>
+                    <td><CarbonTextInput id={`spec-${row.id}-offset`} labelText="Offset in millimeters" hideLabel size="sm" type="number" step={0.5} value={row.offset} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "offset", event.target.value))} /></td>
+                    <td><CarbonTextInput id={`spec-${row.id}-center-bore`} labelText="Center bore in millimeters" hideLabel size="sm" type="number" min={1} step={0.1} value={row.centerBore} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "centerBore", event.target.value))} /></td>
+                    <td><CarbonTextInput id={`spec-${row.id}-load-rating`} labelText="Load rating in kilograms" hideLabel size="sm" type="number" min={1} step={1} value={row.loadRating} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "loadRating", event.target.value))} /></td>
+                    <td><CarbonTextInput id={`spec-${row.id}-evidence-ref`} labelText="Specification evidence reference" hideLabel size="sm" value={row.evidenceRef ?? ""} placeholder="Drawing / test report ID" onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "evidenceRef", event.target.value))} /></td>
                     <td>{["Engineering Approved", "Restricted"].includes(row.status) ?
                       <span className={`api-library-status api-library-status--${row.status === "Engineering Approved" ? "approved" : "restricted"}`}>{row.status}</span> :
                       <CustomSelect label="Specification status" value={row.status || "Draft"} options={["Draft", "Factory Supported", "Engineering Review"]} onChange={(value) => setDocument((current) => updateSpecification(current, productIndex, row.id, "status", value))} />}</td>
-                    <td><button className="api-remove-spec" type="button" aria-label="Remove specification row" onClick={() => setDocument((current) => removeSpecification(current, productIndex, row.id))}>×</button></td>
+                    <td><CarbonButton kind="ghost" className="api-remove-spec" type="button" aria-label="Remove specification row" onClick={() => setDocument((current) => removeSpecification(current, productIndex, row.id))}>×</CarbonButton></td>
                   </tr>)}</tbody>
                 </table></div>
                 {missing.some((field) => field.key === "specifications") ? <p className="api-field-error">Add at least one complete specification row before continuing.</p> : null}
@@ -560,7 +566,7 @@ export function ProductIntelligence() {
                   const missingFields = validateStep(step, document, productIndex);
                   const hasValue = stepHasAnyValue(step, document, productIndex);
                   const state = missingFields.length ? (step.optional && !hasValue ? "pending" : "missing") : (step.optional && !hasValue ? "pending" : "passed");
-                  return <div key={step.id} className="api-review-row"><span>{step.number}</span><strong>{step.title}</strong><em className={`api-validation api-validation--${state}`}>{state.toUpperCase()}</em><button type="button" onClick={() => setActiveStep(steps.findIndex((item) => item.id === step.id))}>Review</button></div>;
+                  return <div key={step.id} className="api-review-row"><span>{step.number}</span><strong>{step.title}</strong><em className={`api-validation api-validation--${state}`}>{state.toUpperCase()}</em><CarbonButton kind="ghost" type="button" onClick={() => setActiveStep(steps.findIndex((item) => item.id === step.id))}>Review</CarbonButton></div>;
                 })}
                 <p className="anvera-muted">Submitting creates an immutable review snapshot. It does not publish products or alter public website data.</p>
                 <div className="api-history">
@@ -572,11 +578,11 @@ export function ProductIntelligence() {
               {active.id === "review" ? <LibraryReviewQueue /> : null}
 
               <div className="api-step-footer">
-                <button className="anvera-action-button anvera-action-button--quiet" type="button" onClick={() => void save("draft")} disabled={saving || !available}>{saving ? "Saving…" : "Save draft"}</button>
+                <CarbonButton kind="ghost" className="anvera-action-button anvera-action-button--quiet" type="button" onClick={() => void save("draft")} disabled={saving || !available}>{saving ? "Saving…" : "Save draft"}</CarbonButton>
                 <div className="api-step-footer-right">
-                  {activeStep > 0 ? <button className="anvera-action-button anvera-action-button--quiet" type="button" onClick={() => { setActiveStep((current) => current - 1); setError(""); }}>Back</button> : null}
-                  {activeStep < steps.length - 1 ? <button className="anvera-action-button" type="button" onClick={goNext}>Save & continue <span>→</span></button> :
-                    <button className="anvera-action-button" type="button" onClick={() => void save("submit")} disabled={saving || !available || !finalReady || status === "in_review" || status === "approved" || status === "active"}>{saving ? "Submitting…" : "Submit for review"}</button>}
+                  {activeStep > 0 ? <CarbonButton kind="ghost" className="anvera-action-button anvera-action-button--quiet" type="button" onClick={() => { setActiveStep((current) => current - 1); setError(""); }}>Back</CarbonButton> : null}
+                  {activeStep < steps.length - 1 ? <CarbonButton kind="ghost" className="anvera-action-button" type="button" onClick={goNext}>Save & continue <span>→</span></CarbonButton> :
+                    <CarbonButton kind="ghost" className="anvera-action-button" type="button" onClick={() => void save("submit")} disabled={saving || !available || !finalReady || status === "in_review" || status === "approved" || status === "active"}>{saving ? "Submitting…" : "Submit for review"}</CarbonButton>}
                 </div>
               </div>
             </div>
@@ -594,7 +600,7 @@ export function ProductIntelligence() {
                 "Review the completeness, evidence and outstanding exceptions before requesting approval."}</p>
               <div className="api-rule"><strong>Governance rule</strong><span>{active.optional ? "This step may remain pending for a draft. Missing data must never be presented as verified." : "Required fields must be completed before the workflow can advance or be submitted."}</span></div>
               <div className="api-context-meta"><span>WORKSPACE STATUS</span><strong>{status.replaceAll("_", " ")}</strong><span>LAST SAVED REVISION</span><strong>{revision || "Not saved"}</strong></div>
-              <button className="api-text-button" type="button" onClick={() => void save("draft")} disabled={saving || !available}>Save current progress ↗</button>
+              <CarbonButton kind="ghost" className="api-text-button" type="button" onClick={() => void save("draft")} disabled={saving || !available}>Save current progress ↗</CarbonButton>
             </aside>
           </section>
           {events?.length ? <section className="api-event-strip"><span>RECENT ACTIVITY</span>{events.slice(0, 3).map((event) => <p key={event.id}>{event.event_type.replaceAll("_", " ")} · R{event.revision} · {new Date(event.created_at).toLocaleString()}</p>)}</section> : null}
