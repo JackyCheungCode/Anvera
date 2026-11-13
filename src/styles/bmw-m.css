@@ -24,8 +24,9 @@
 .m-button:hover{transform:translateY(-1px)}
 .m-button:focus-visible{outline:2px solid var(--m-focus);outline-offset:3px}
 .m-button:disabled,.m-button[aria-disabled=true]{opacity:.42;pointer-events:none}
-.m-button--primary{color:#fff;background:linear-gradient(110deg,#075da8 0%,#147fc3 48%,#e6323a 100%);box-shadow:0 5px 18px rgba(0,75,140,.18)}
-.m-button--primary:hover{background:linear-gradient(110deg,#0872c8 0%,#159bdc 48%,#f0444b 100%)}
+.m-button--primary{color:#fff;border-color:#53616e;background:linear-gradient(180deg,#303943,#202830);box-shadow:0 5px 18px rgba(0,0,0,.22)}
+.m-button--primary::before{position:absolute;left:0;top:0;width:100%;height:3px;background:linear-gradient(90deg,#1674c8 0 33.33%,#16a6d7 33.33% 66.66%,#e6323a 66.66%);opacity:1;transform:none}
+.m-button--primary:hover{border-color:#8c9aa8;background:linear-gradient(180deg,#3b4651,#29333d)}
 .m-button--secondary,.m-button--tertiary{color:var(--m-white);border-color:var(--m-line-strong);background:linear-gradient(180deg,#353d46,#242b33)}
 .m-button--secondary:hover,.m-button--tertiary:hover{border-color:#8c9aa8;background:#3b4651}
 .m-button--ghost{color:var(--m-white);border-color:transparent;background:transparent}
@@ -63,6 +64,7 @@
 .anvera-carbon-vehicle-combo{position:relative}
 .anvera-carbon-selected-logo{position:absolute;z-index:2;left:12px;top:43px;width:26px;height:26px;pointer-events:none}
 .anvera-carbon-selected-logo img{width:100%;height:100%;object-fit:contain}
+.anvera-carbon-vehicle-combo.has-logo .m-combo__field .m-input{padding-left:52px}
 .anvera-carbon-combo-item{display:flex;align-items:center;gap:10px}
 .anvera-carbon-combo-item img{width:24px;height:24px;object-fit:contain}
 @media(max-width:640px){
