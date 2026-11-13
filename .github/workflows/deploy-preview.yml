@@ -20,6 +20,7 @@ on:
       - redesign/bmw-m-control-system
       - feature/wheel-design-gallery
       - fix/carbon-dropdown-click-selection
+      - design/global-bmw-light-refresh
     paths-ignore:
       - "docs/**"
       - "*.md"
