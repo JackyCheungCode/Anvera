@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { Button as CarbonButton } from "@carbon/react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 
 type ReviewItem = {
@@ -56,7 +57,7 @@ export function LibraryReviewQueue() {
   return <section className="api-review-queue">
     <div className="api-review-queue-heading">
       <div><p className="anvera-eyebrow">ENGINEERING GOVERNANCE</p><h3>Engineering Review Queue</h3><p>Review material, process, finish, construction and wheel specification records. Approval is never inferred from submission; wheel specifications require a load rating and evidence reference.</p></div>
-      <button type="button" className="anvera-refresh anvera-refresh--light" onClick={() => void load()} disabled={loading}>Refresh queue</button>
+      <CarbonButton kind="ghost" type="button" className="anvera-refresh anvera-refresh--light" onClick={() => void load()} disabled={loading}>Refresh queue</CarbonButton>
     </div>
     {error ? <p className="anvera-inline-message" role="alert">{error}</p> : null}
     {notice ? <p className="api-success-message" role="status">{notice}</p> : null}
@@ -70,9 +71,9 @@ export function LibraryReviewQueue() {
         </div>
         <label className="api-review-note"><span>Engineering review note</span><textarea value={notes[item.id] ?? ""} onChange={(event) => setNotes((current) => ({ ...current, [item.id]: event.target.value }))} placeholder="Record evidence checked, limitations or required changes." rows={2} /></label>
         <div className="api-review-decision-actions">
-          <button type="button" className="api-review-decision--approve" disabled={savingId === item.id} onClick={() => void decide(item, "approved")}>Approve</button>
-          <button type="button" disabled={savingId === item.id} onClick={() => void decide(item, "needs_revision")}>Return for revision</button>
-          <button type="button" className="api-review-decision--restrict" disabled={savingId === item.id} onClick={() => void decide(item, "restricted")}>Restrict</button>
+          <CarbonButton kind="ghost" type="button" className="api-review-decision--approve" disabled={savingId === item.id} onClick={() => void decide(item, "approved")}>Approve</CarbonButton>
+          <CarbonButton kind="ghost" type="button" disabled={savingId === item.id} onClick={() => void decide(item, "needs_revision")}>Return for revision</CarbonButton>
+          <CarbonButton kind="ghost" type="button" className="api-review-decision--restrict" disabled={savingId === item.id} onClick={() => void decide(item, "restricted")}>Restrict</CarbonButton>
         </div>
       </article>)}</div> : <div className="api-review-queue-empty"><strong>Queue is clear</strong><span>No records are waiting for engineering review.</span></div>}
   </section>;
