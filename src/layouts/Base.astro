@@ -98,8 +98,8 @@ const navigation = [
   </footer>
   <EmDashBodyEnd page={pageCtx} />
   <script>
-    const toggle = document.querySelector(".nav-toggle");
-    const nav = document.querySelector("#primary-nav");
+    const toggle = document.querySelector<HTMLButtonElement>(".nav-toggle");
+    const nav = document.querySelector<HTMLElement>("#primary-nav");
     toggle?.addEventListener("click", () => {
       const expanded = toggle.getAttribute("aria-expanded") === "true";
       toggle.setAttribute("aria-expanded", String(!expanded));
