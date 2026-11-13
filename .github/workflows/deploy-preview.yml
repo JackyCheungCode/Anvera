@@ -19,6 +19,7 @@ on:
       - fix/sitewide-carbon-native-controls
       - redesign/bmw-m-control-system
       - feature/wheel-design-gallery
+      - fix/carbon-dropdown-click-selection
     paths-ignore:
       - "docs/**"
       - "*.md"
