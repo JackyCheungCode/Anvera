@@ -1,6 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import TextInput from "../../components/ui/TextInput.astro";
+import Button from "../../components/ui/Button.astro";
 import { getEmDashCollection } from "emdash";
 import { Image } from "emdash/ui";
 import { wheelDevelopmentProducts } from "../../data/wheel-products";
@@ -76,10 +77,10 @@ const products = cmsProducts.length ? cmsProducts : wheelDevelopmentProducts.map
       <div class="wheel-catalog-tools">
         <div class="wheel-search-wrap"><TextInput id="wheel-search" name="wheelSearch" className="wheel-search" type="search" label="Search wheel designs" placeholder="Search model or design…" autocomplete="off" /></div>
         <div class="wheel-filter-group" role="group" aria-label="Filter by construction">
-          <button type="button" class="wheel-filter is-active" data-wheel-filter="all" aria-pressed="true">All designs <span>10</span></button>
-          <button type="button" class="wheel-filter" data-wheel-filter="monoblock" aria-pressed="false">Monoblock</button>
-          <button type="button" class="wheel-filter" data-wheel-filter="two-piece" aria-pressed="false">Two-piece</button>
-          <button type="button" class="wheel-filter" data-wheel-filter="three-piece" aria-pressed="false">Three-piece</button>
+          <Button className="wheel-filter is-active" filterKey="all" ariaPressed={true} variant="secondary">All designs <span>10</span></Button>
+          <Button className="wheel-filter" filterKey="monoblock" ariaPressed={false} variant="secondary">Monoblock</Button>
+          <Button className="wheel-filter" filterKey="two-piece" ariaPressed={false} variant="secondary">Two-piece</Button>
+          <Button className="wheel-filter" filterKey="three-piece" ariaPressed={false} variant="secondary">Three-piece</Button>
         </div>
         <p class="wheel-results-count" id="wheel-results-count" aria-live="polite">Showing {products.length} designs</p>
       </div>
