@@ -6,6 +6,7 @@ import { wheelDevelopmentProducts } from "../data/wheel-products";
 import VehicleFitmentFinder from "../components/VehicleFitmentFinder.astro";
 import TextInput from "../components/ui/TextInput.astro";
 import TextArea from "../components/ui/TextArea.astro";
+import FileUploader from "../components/ui/FileUploader.astro";
 import Button from "../components/ui/Button.astro";
 
 const turnstileSiteKey = "0x4AAAAAAF-OqItFi-JleERp";
@@ -114,7 +115,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
               <TextInput id="custom-rear-bore" name="rearBore" label="Centre bore" placeholder="Vehicle-specific" readOnly className="cds--g100" />
             </div>
             <div class="pcd-change-request"><p>PCD and centre bore are determined by the selected vehicle. To request a change, use the engineering override below. Changes may affect hub compatibility, fastener seating and vehicle safety.</p><Button id="request-pcd-change" className="carbon-button carbon-button--ghost" variant="ghost" type="button">Request PCD / bore change</Button></div>
-            <TextArea id="custom-notes" name="customNotes" label="Additional engineering notes" rows={3} placeholder="Brake package, suspension, tyre size or other requirements…" /><label class="upload-field">Vehicle / wheel reference photos <input id="custom-files" type="file" accept="image/*,.pdf" multiple /></label><p class="custom-response">Our engineering team will review your custom specifications and respond within <strong>1 business day</strong> after submission.</p></div>
+            <TextArea id="custom-notes" name="customNotes" label="Additional engineering notes" rows={3} placeholder="Brake package, suspension, tyre size or other requirements…" /><div class="upload-field"><FileUploader id="custom-files" name="customFiles" label="Vehicle / wheel reference photos" accept={["image/*", ".pdf"]} multiple description="Add reference images or PDF drawings for engineering review." /></div><p class="custom-response">Our engineering team will review your custom specifications and respond within <strong>1 business day</strong> after submission.</p></div>
         </div>
       </section>
 
