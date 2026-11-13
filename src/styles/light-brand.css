@@ -1,0 +1,222 @@
+/* ANVERA global light luxury system — BMW-inspired restraint, original brand expression. */
+:root {
+  color-scheme: light;
+  --anvera-white: #f7f7f5;
+  --anvera-black: #17191b;
+  --anvera-graphite: #292d31;
+  --anvera-steel: #747b81;
+  --anvera-silver: #aeb4b8;
+  --surface-page: #f7f7f5;
+  --surface-panel: #ffffff;
+  --surface-muted: #edeeec;
+  --surface-dark: #202326;
+  --surface-dark-panel: #2b3034;
+  --surface-dark-raised: #373d42;
+  --text-primary: #17191b;
+  --text-secondary: #555c61;
+  --text-muted: #777f84;
+  --text-on-dark: #f7f7f5;
+  --text-on-dark-muted: #c0c5c8;
+  --border-subtle: #e0e2e0;
+  --border-strong: #aeb4b5;
+  --font-display: "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --page-gutter: clamp(22px, 5.2vw, 88px);
+  --m-black: #f7f7f5;
+  --m-carbon: #eeefed;
+  --m-graphite: #e4e6e4;
+  --m-raised: #fff;
+  --m-steel: #aeb4b5;
+  --m-line: rgba(25,29,32,.12);
+  --m-line-strong: rgba(25,29,32,.28);
+  --m-white: #17191b;
+  --m-muted: #555c61;
+  --m-dim: #777f84;
+  --m-blue: #1769aa;
+  --m-focus: #1769aa;
+  --m-control-height: 50px;
+}
+html { background: #f7f7f5; color-scheme: light; }
+body { color: #17191b; background: #f7f7f5; }
+::selection { color: #fff; background: #1769aa; }
+.skip-link { color:#fff; background:#17191b; }
+
+/* Shared navigation and shell */
+.site-header {
+  position: relative;
+  inset: auto;
+  z-index: 50;
+  color: #17191b;
+  background: rgba(255,255,255,.97);
+  border-bottom: 1px solid #e6e7e5;
+  backdrop-filter: blur(16px);
+}
+.header-inner { min-height: 82px; }
+.brand-logo { filter: none; }
+.primary-nav a, .header-utility { color: #353a3e; }
+.primary-nav a:hover, .header-utility:hover { color: #1769aa; }
+.primary-nav a[aria-current="page"] { color:#1769aa; }
+.nav-toggle { color:#17191b; }
+@media (max-width:900px) {
+  .primary-nav { top:72px; color:#17191b; background:rgba(255,255,255,.99); border-top:1px solid #e6e7e5; box-shadow:0 16px 32px rgba(20,25,28,.08); }
+  .primary-nav a { color:#252a2e; }
+}
+.site-footer { color:#555c61; background:#eceeec; }
+.site-footer .brand-logo { filter: grayscale(1) brightness(.25); }
+.footer-links a { color:#353a3e; }
+.footer-links a:hover { color:#1769aa; }
+.footer-bottom { border-color:#d5d8d6; color:#777f84; }
+
+/* Homepage and editorial hero surfaces */
+.hero {
+  min-height:min(790px, calc(100svh - 82px));
+  color:#17191b;
+  background:#e8e9e6;
+}
+.hero::before {
+  background:
+    radial-gradient(ellipse at 78% 48%, rgba(255,255,255,.95), transparent 37%),
+    linear-gradient(110deg,#f8f8f6 0%,#eceeeb 52%,#dfe2e0 100%);
+}
+.hero::after {
+  background:linear-gradient(90deg,rgba(247,247,245,.94) 0%,rgba(247,247,245,.64) 42%,transparent 76%),
+    linear-gradient(0deg,rgba(220,223,220,.38),transparent 34%);
+}
+.hero h1 { color:#17191b; }
+.hero h1 span { color:#1769aa; }
+.hero-copy { color:#555c61; }
+.eyebrow { color:#596167; }
+.eyebrow::before { background:#1769aa; }
+.hero-wheel {
+  opacity:.92;
+  background:
+    radial-gradient(circle,#d9dddf 0 8%,#7f878d 8.5% 10%,transparent 10.5%),
+    radial-gradient(circle,transparent 0 17%,#aeb5b9 17.5% 19%,#f5f6f4 19.5% 21%,#707980 21.5% 24%,transparent 24.5%),
+    radial-gradient(circle,transparent 0 28%,#c7ccce 28.5% 30%,#777f85 30.5% 31.5%,#f7f8f6 32% 34%,#858d92 34.5% 36%,#dfe2e0 36.5% 39%,#656e74 39.5% 40.5%,#f7f8f6 41% 45%,#9ba3a8 45.5% 47%,#d9ddde 47.5% 49%,#687178 49.5% 51%,transparent 51.5%),
+    repeating-conic-gradient(from 4deg,#aeb5b9 0deg 2deg,#f7f8f6 2.5deg 7deg,#737c82 7.5deg 9deg,#d7dbdc 9.5deg 15deg);
+  box-shadow:0 28px 70px rgba(25,30,34,.18),inset 0 0 36px rgba(255,255,255,.7);
+}
+.hero-wheel::before { border-color:rgba(40,47,52,.2); }
+.hero-wheel::after { border-color:rgba(90,99,105,.6); box-shadow:inset 0 0 0 2px rgba(255,255,255,.8); }
+@media(max-width:900px) { .hero { min-height:720px; } }
+.collection-hero {
+  color:#17191b;
+  background:#eceeeb;
+}
+.collection-hero::before {
+  background:linear-gradient(90deg,#f7f7f5 0%,rgba(247,247,245,.94) 35%,rgba(247,247,245,.2) 100%),
+    radial-gradient(ellipse at 78% 48%,#fff 0%,#e2e5e2 45%,#d4d8d6 78%);
+}
+.collection-hero h1,.family-detail-copy h1 { color:#17191b; }
+.collection-hero h1 span { color:#1769aa; }
+.collection-hero-content > p:not(.eyebrow) { color:#555c61; }
+
+/* Shared typography, sections and restrained card language */
+.section { background:#f7f7f5; }
+.section-title,.split-copy h2 { color:#17191b; }
+.section-kicker { color:#1769aa; }
+.section-lead { color:#555c61; }
+.statement-grid { gap:0; background:#e0e2e0; }
+.statement-card { background:#f7f7f5; }
+.statement-number { color:#1769aa; }
+.statement-card p { color:#626a6f; }
+.dark-section { color:#17191b; background:#eceeeb; }
+.dark-section .section-lead { color:#555c61; }
+.split-visual { background:radial-gradient(circle at 52% 48%,#d5d9d9 0 4%,#9ca4a8 4.5% 19%,#e6e8e6 19.5% 38%,#aab1b4 38.5% 39%,#f7f7f5 40% 100%); }
+.split-visual::before { border-color:rgba(35,42,46,.2); box-shadow:0 0 70px rgba(40,45,48,.1),inset 0 0 35px rgba(255,255,255,.7); }
+.split-copy { color:#17191b; background:#f0f1ef; }
+.split-copy p { color:#555c61; }
+.inquiry-band { color:#17191b; background:#e3e6e4; }
+.inquiry-band .section-title { color:#17191b; }
+.inquiry-band .section-lead { color:#555c61!important; }
+.inquiry-band .eyebrow { color:#555c61; }
+.inquiry-band .cds-btn--secondary { color:#17191b; border-color:#777f84; }
+.inquiry-band .cds-btn--secondary:hover { color:#fff; background:#17191b; }
+
+/* Consistent controls outside the specialist dark configurator */
+.cds-btn--primary,.cds-btn--carbon,.legacy-carbon-btn--primary { color:#fff; background:#1769aa; }
+.cds-btn--primary:hover,.cds-btn--carbon:hover,.legacy-carbon-btn--primary:hover { background:#0f548c; }
+.cds-btn--secondary { color:#17191b; border-color:#8d969a; background:transparent; }
+.cds-btn--secondary:hover { color:#fff; background:#292e32; }
+.cds-btn--dark { color:#fff; background:#17191b; }
+.cds-input,.cds-select,.cds-textarea,.m-input {
+  color:#17191b; background:#fff; border-color:#aeb4b5;
+}
+.cds-input::placeholder,.m-input::placeholder { color:#777f84; }
+.cds-listbox,.cds-listbox-option,.m-combo__list { color:#17191b; background:#fff; }
+.cds-listbox-option:hover,.cds-listbox-option:focus-visible { background:#eceeeb; }
+.cds-listbox-option[aria-selected="true"] { background:#e8f0f8; box-shadow:inset 3px 0 #1769aa; }
+.m-field,.m-combo,.m-upload { color:#17191b; }
+.m-field__label { color:#555c61; }
+.m-input { border:1px solid #c5cac8; box-shadow:none; background:#fff; }
+.m-input:hover { border-color:#7c8589; background:#fafbf9; }
+.m-input:focus { border-color:#1769aa; box-shadow:0 0 0 2px rgba(23,105,170,.15); background:#fff; }
+.m-button--primary { color:#fff; border-color:#1769aa; background:#1769aa; box-shadow:none; }
+.m-button--primary::before { display:none; }
+.m-button--primary:hover { color:#fff; border-color:#0f548c; background:#0f548c; }
+.m-button--secondary,.m-button--tertiary { color:#17191b; border-color:#9da5a8; background:#fff; }
+.m-button--secondary:hover,.m-button--tertiary:hover { color:#fff; border-color:#292e32; background:#292e32; }
+.m-button--ghost { color:#17191b; }
+.m-button--ghost:hover { color:#17191b; background:#eceeeb; }
+.m-checkbox { color:#353b3f; }
+.m-checkbox__mark { border-color:#9da5a8; background:#fff; }
+.m-checkbox input:checked+.m-checkbox__mark { border-color:#1769aa; background:#1769aa; }
+.m-combo__list { border-color:#d8dcda; background:#fff; box-shadow:0 12px 28px rgba(20,25,28,.12); }
+.m-combo__list li button { color:#17191b; background:#fff; }
+.m-combo__list li button:hover,.m-combo__list li[aria-selected=true] button { background:#edf1f3; }
+.m-upload__button { color:#1769aa; border-color:#aeb4b5; background:#fff; }
+.m-notice { color:#353b3f; background:#edf1f3; }
+
+/* Craftsmanship editorial page: light gallery-like canvas with dark photography only where useful */
+.craft-page { color:#17191b; background:#f7f7f5; }
+.craft-hero { color:#17191b; background:#e8eae7; }
+.craft-hero-image { filter:saturate(.72) brightness(1.08); }
+.craft-hero-shade { background:linear-gradient(90deg,rgba(247,247,245,.94),rgba(247,247,245,.72) 48%,rgba(247,247,245,.08)),linear-gradient(0deg,rgba(225,228,225,.45),transparent 52%); }
+.craft-eyebrow { color:#596167; }
+.craft-eyebrow span { color:#17191b; }
+.craft-hero h1 { color:#17191b; }
+.craft-hero h1 em,.craft-process-intro h2 em,.craft-chapter h3 em,.craft-construction-heading h2 em,.craft-finale h2 em { color:#727b80; }
+.craft-hero-copy { color:#555c61; }
+.craft-scroll-cue { color:#17191b; }
+.craft-scroll-cue span { background:#1769aa; }
+.craft-hero-index { color:#555c61; }
+.craft-process { color:#17191b; background:#f7f7f5; }
+.craft-process-intro>p:last-child { color:#626a6f; }
+.craft-visual-frame { background:#e3e5e2; }
+.craft-visual img { filter:grayscale(8%) brightness(.96) contrast(1.02); }
+.craft-visual-vignette { background:linear-gradient(0deg,rgba(15,18,20,.56),transparent 32%); }
+.craft-visual>span { color:#fff; }
+.craft-visual-progress { color:#6b7378; }
+.craft-progress-track { background:#d9ddda; }
+.craft-progress-track i { background:#1769aa; }
+.craft-chapter { border-color:#dfe2df; }
+.craft-chapter-top span { color:#17191b; }
+.craft-chapter-top b,.craft-chapter>p { color:#626a6f; }
+.craft-chapter>small { color:#555c61; }
+.craft-chapter>i { background:#aeb4b5; }
+.craft-chapter.is-active>i { background:#1769aa; }
+.craft-construction { background:#eceeeb; }
+.craft-construction-heading .craft-eyebrow { color:#555c61; }
+.craft-construction-grid { border-color:#cbd0cd; }
+.craft-construction-grid article+article { border-color:#cbd0cd; }
+.craft-construction-grid article>span,.craft-construction-grid p,.craft-construction-note { color:#626a6f; }
+.craft-finale { color:#fff; background:#252a2e; }
+.craft-finale-image { filter:grayscale(15%) brightness(.8); }
+.craft-finale-overlay { background:linear-gradient(90deg,rgba(12,15,17,.76),rgba(12,15,17,.18) 72%); }
+.craft-finale h2 em { color:#d3d7d8; }
+.craft-source-note { color:#626a6f; background:#eceeeb; border-color:#d5d9d6; }
+.craft-source-note>span { color:#353b3f; }
+.craft-source-note a { color:#1769aa; }
+
+/* Keep the dedicated configuration studio a focused dark technical workspace. */
+.studio-shell { color-scheme:dark; }
+.studio-shell .m-field__label { color:#c6c6c6; }
+.studio-shell .m-input { color:#f4f4f4; border-color:#525252; background:#262626; }
+.studio-shell .m-input:hover { background:#393939; }
+.studio-shell .m-input:focus { border-color:#4589ff; background:#262626; }
+.studio-shell .m-checkbox { color:#f4f4f4; }
+.studio-shell .m-combo__list { border-color:#525252; background:#262626; }
+.studio-shell .m-combo__list li button { color:#f4f4f4; background:#262626; }
+.studio-shell .m-combo__list li button:hover,.studio-shell .m-combo__list li[aria-selected=true] button { color:#fff; background:#393939; }
+.studio-shell .m-button--primary { color:#fff; border-color:#0f62fe; background:#0f62fe; }
+.studio-shell .m-button--secondary,.studio-shell .m-button--tertiary { color:#f4f4f4; border-color:#6f6f6f; background:#393939; }
+.studio-shell .m-notice { color:#f4f4f4; background:#262626; }
