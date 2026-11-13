@@ -1,6 +1,8 @@
 ---
 import Base from "../../layouts/Base.astro";
 import TextInput from "../../components/ui/TextInput.astro";
+import TextArea from "../../components/ui/TextArea.astro";
+import Button from "../../components/ui/Button.astro";
 ---
 <Base title="Become an ANVERA Dealer" description="Submit your company profile for consideration as an ANVERA authorised dealer. All applications are subject to administrator review.">
   <section class="dealer-apply-hero"><div><p class="eyebrow">ANVERA / PARTNER APPLICATION</p><h1>Let's start<br /><span>a partnership.</span></h1><p>Tell us about your business and the market you serve. Applications are reviewed individually; submission does not automatically grant dealer access.</p></div></section>
@@ -29,8 +31,8 @@ import TextInput from "../../components/ui/TextInput.astro";
         <TextInput id="contact-email" name="email" label="Business email" type="email" required />
         <TextInput id="contact-phone" name="phone" label="Telephone / WhatsApp" type="tel" />
       </div>
-      <div class="cds-field brief-notes"><label class="cds-label" for="dealer-notes">Tell us about your business</label><textarea class="cds-textarea" id="dealer-notes" name="notes" rows="5" placeholder="Customer profile, sales channels, workshop capability, regional coverage…"></textarea></div>
-      <div class="brief-actions"><button class="cds-btn cds-btn--carbon" type="submit" id="submit-dealer-application">Submit dealer application ↗</button><button class="brief-reset" type="button" id="copy-dealer-application">Copy application summary</button><button class="brief-reset" type="reset">Clear all fields</button></div>
+      <div class="brief-notes"><TextArea id="dealer-notes" name="notes" label="Tell us about your business" rows={5} placeholder="Customer profile, sales channels, workshop capability, regional coverage…" /></div>
+      <div class="brief-actions"><Button id="submit-dealer-application" type="submit">Submit dealer application ↗</Button><Button id="copy-dealer-application" variant="secondary" type="button">Copy application summary</Button><Button variant="ghost" type="reset">Clear all fields</Button></div>
       <div class="cf-turnstile" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || ""}></div>
       <p class="brief-feedback" id="dealer-feedback" role="status" aria-live="polite">Applications are subject to manual review. Submission does not activate a dealer account.</p>
     </form>
