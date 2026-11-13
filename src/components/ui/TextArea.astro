@@ -1,0 +1,15 @@
+---
+import { TextAreaControl } from "../carbon/Controls";
+interface Props {
+  id: string;
+  name: string;
+  label: string;
+  value?: string;
+  placeholder?: string;
+  rows?: number;
+  required?: boolean;
+  helpText?: string;
+}
+const props = Astro.props;
+---
+<TextAreaControl {...props} />
