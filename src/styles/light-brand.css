@@ -352,3 +352,104 @@ body { color: #17191b; background: #f7f7f5; }
 #configuration-studio .m-combo__list li button { color:#17191b!important; background:#fff!important; }
 #configuration-studio .m-combo__list li button:hover,
 #configuration-studio .m-combo__list li[aria-selected=true] button { background:#edf1f3!important; }
+
+
+/* Second migration pass: bring the remaining editorial, fitment and inquiry pages into the same light system. */
+.custom-hero {
+  color:#17191b;
+  background:#e8eae7;
+}
+.custom-hero::before {
+  background:linear-gradient(90deg,#f7f7f5 0%,rgba(247,247,245,.94) 36%,rgba(247,247,245,.12) 100%),
+    radial-gradient(ellipse at 76% 48%,#fff 0%,#e0e4e1 48%,#cfd5d2 82%);
+}
+.custom-hero h1 { color:#17191b; }
+.custom-hero h1 span { color:#1769aa; }
+.custom-hero-copy > p:not(.eyebrow) { color:#555c61; }
+.custom-hero .eyebrow { color:#596167; }
+.custom-spec { color:#17191b; background:#eceeeb; }
+.custom-spec-copy > p:not(.section-kicker) { color:#555c61; }
+.custom-cta { color:#17191b; background:#e3e6e4; }
+.custom-cta h2,.custom-cta .section-title { color:#17191b; }
+.custom-cta > p:not(.section-kicker) { color:#555c61; }
+.custom-cta .cds-btn--secondary { color:#17191b; border-color:#8d969a; }
+.custom-cta .cds-btn--secondary:hover { color:#fff; background:#292e32; }
+
+.gallery-hero,.about-hero,.dealer-hero,.contact-hero,.dealer-apply-hero,.inquiry-page-hero {
+  color:#17191b;
+  background:radial-gradient(ellipse at 78% 40%,#fff 0%,#e7eae7 38%,#d8ddda 78%);
+}
+.gallery-hero h1,.about-hero h1,.dealer-hero h1,.contact-hero h1,.dealer-apply-hero h1,.inquiry-page-hero h1 { color:#17191b; }
+.gallery-hero h1 span,.about-hero h1 span,.dealer-hero h1 span,.contact-hero h1 span,.dealer-apply-hero h1 span,.inquiry-page-hero h1 span { color:#1769aa; }
+.gallery-hero-inner > p:not(.eyebrow),.about-hero-inner > p:not(.eyebrow),.dealer-hero-inner > p:not(.eyebrow),.contact-hero-inner > p:not(.eyebrow),.dealer-apply-hero p:not(.eyebrow),.inquiry-page-hero-inner > p:not(.eyebrow) { color:#555c61; }
+.gallery-hero .eyebrow,.about-hero .eyebrow,.dealer-hero .eyebrow,.contact-hero .eyebrow,.dealer-apply-hero .eyebrow,.inquiry-page-hero .eyebrow { color:#596167; }
+.gallery-intro,.dealer-content,.contact-content,.inquiry-form-section,.dealer-apply-layout { color:#17191b; background:#f7f7f5; }
+.gallery-grid { background:#dfe2df; }
+.gallery-tile,.gallery-tile:nth-child(2),.gallery-tile:nth-child(3) { color:#17191b; background:#fff; }
+.gallery-art { background:radial-gradient(ellipse at center,#fff 0%,#e2e6e3 56%,#cbd2cf 100%); }
+.gallery-art--dark { background:radial-gradient(ellipse at center,#dce1df,#aeb7b4 60%,#87918f); }
+.gallery-art--warm { background:radial-gradient(ellipse at center,#e8e3da,#c9c1b4 56%,#a79d90); }
+.gallery-tile-meta span:last-child,.gallery-tile > p { color:#626a6f; }
+.gallery-end,.dealer-cta,.about-cta,.about-statement,.family-detail-note,.collection-cta {
+  color:#17191b;
+  background:#eceeeb;
+}
+.gallery-end .section-title,.dealer-cta .section-title,.about-cta .section-title,.about-statement h2,.family-detail-note .section-title,.collection-cta .section-title { color:#17191b; }
+.gallery-end p:not(.section-kicker),.dealer-cta p:not(.section-kicker),.about-cta p:not(.section-kicker),.family-detail-note > p:not(.section-kicker),.collection-cta p:not(.section-kicker) { color:#555c61; }
+.about-statement h2 span { color:#727b80; }
+.about-values { background:#dfe2df; }
+.about-values article,.about-values article:nth-child(2),.about-values article:nth-child(3) { color:#17191b; background:#fff; }
+.about-values p,.dealer-steps p { color:#555c61; }
+.dealer-steps article { border-color:#dfe2df; }
+.contact-options a { color:#17191b; border-color:#dfe2df; }
+.contact-options a:first-child { border-color:#dfe2df; }
+.contact-options span,.about-values span,.dealer-steps article > span { color:#1769aa; }
+.inquiry-note,.dealer-review-note { color:#353b3f; background:#eceeeb; border-left-color:#1769aa; }
+.inquiry-note span,.dealer-review-note span { color:#555c61; }
+.project-brief-form,.dealer-application-form { color:#17191b; background:#fff; box-shadow:0 12px 36px rgba(25,30,34,.06); }
+.brief-form-heading { color:#17191b; border-color:#dfe2df; }
+.brief-form-heading span:last-child { color:#6d767b; }
+.brief-reset { color:#353b3f; border-color:#aeb4b5; }
+.brief-feedback { color:#353b3f; background:#eceeeb; border-left-color:#1769aa; }
+.dealer-apply-layout > div:first-child > p:not(.section-kicker),.inquiry-form-intro > p:not(.section-kicker) { color:#555c61; }
+
+.family-card-visual,.family-product-media {
+  background:radial-gradient(ellipse at center,#fff 0%,#e3e7e4 54%,#cbd2cf 100%);
+}
+.family-detail-hero {
+  color:#17191b;
+  background:radial-gradient(ellipse at 30% 48%,#fff 0%,#e7eae7 44%,#d5dbd8 82%);
+}
+.family-detail-copy h1 { color:#17191b; }
+.family-detail-copy h1 span { color:#1769aa; }
+.family-detail-intro { color:#555c61; }
+.family-detail-type { color:#1769aa; }
+.family-detail-story { background:#f7f7f5; }
+.family-detail-note { color:#17191b; background:#eceeeb; }
+.family-detail-note .section-title { color:#17191b; }
+
+.vehicle-finder-hero {
+  color:#17191b;
+  background:radial-gradient(ellipse at 78% 45%,#fff 0%,#e7eae7 38%,#d6dcda 82%);
+}
+.vehicle-finder-hero h1,.vehicle-finder-hero h1 span { color:#17191b; }
+.vehicle-finder-hero h1 span { color:#1769aa; }
+.vehicle-finder-hero p:last-child { color:#555c61; }
+.vehicle-finder-next { color:#17191b; background:#eceeeb; }
+.vehicle-finder-next h2 { color:#17191b; }
+.vehicle-finder-next p { color:#555c61; }
+.vehicle-finder-section--compact { color:#17191b; background:#f7f7f5; }
+.vehicle-finder-section--compact .m-field__label,
+.vehicle-finder-section--compact .m-field__help,
+.vehicle-finder-section--compact .vf-product-filter { color:#555c61; }
+.vehicle-finder-section--compact .legacy-carbon-combo .legacy-carbon-list-field,
+.vehicle-finder-section--compact .legacy-carbon-combo .m-input,
+.vehicle-finder-section--compact .legacy-carbon-list-field { color:#17191b; background:#fff; border-color:#aeb4b5; }
+.vehicle-finder-section--compact .legacy-carbon-combo .m-input::placeholder { color:#777f84; }
+.vehicle-finder-section--compact .legacy-carbon-list__menu,
+.vehicle-finder-section--compact .legacy-carbon-list__menu-item,
+.vehicle-finder-section--compact .legacy-carbon-list__menu-item__option { color:#17191b; background:#fff; }
+.vehicle-finder-section--compact .legacy-carbon-list__menu-item:hover,
+.vehicle-finder-section--compact .legacy-carbon-list__menu-item[aria-selected="true"] { color:#17191b; background:#edf1f3; }
+.vehicle-finder-results pre { color:#353b3f; background:#eceeeb; }
+.collection-cta { color:#17191b; background:#eceeeb; }
