@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Button as CarbonButton } from "@carbon/react";
+import { Button as CarbonButton, TextArea as CarbonTextArea, TextInput as CarbonTextInput } from "@carbon/react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 
 type MaterialProfile = {
@@ -36,12 +36,12 @@ const blankForging = (): ForgingForm => ({
 function LibraryField({ label, value, onChange, placeholder, multiline = false }: {
   label: string; value: string; onChange: (value: string) => void; placeholder?: string; multiline?: boolean;
 }) {
-  return <label className={`api-library-field ${multiline ? "api-library-field--wide" : ""}`}>
-    <span>{label}</span>
+  const id = `material-library-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  return <div className={`api-library-field ${multiline ? "api-library-field--wide" : ""}`}>
     {multiline
-      ? <textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={3} />
-      : <input value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />}
-  </label>;
+      ? <CarbonTextArea id={id} labelText={label} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={3} />
+      : <CarbonTextInput id={id} labelText={label} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />}
+  </div>;
 }
 
 function StatusControl({ value, onChange }: { value: string; onChange: (value: string) => void }) {
