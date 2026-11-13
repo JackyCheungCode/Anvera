@@ -95,7 +95,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
             <Button className="design-card" productKey={product.slug} ariaPressed={false} variant="ghost" type="button">
               <span class="design-art">
                 {product.image ? <Image image={product.image} width={1000} height={850} /> : <img src={wheelReferenceImages[index % wheelReferenceImages.length]} alt={`${product.title} forged wheel design reference photography`} loading={index > 3 ? "lazy" : "eager"} />}
-                <i>{String(index + 1).padStart(2, "0")}</i><span class="design-image-tag">REFERENCE IMAGE</span><span class="design-view-mark">VIEW DESIGN ↗</span>
+                <i>{String(index + 1).padStart(2, "0")}</i>{!product.image ? <span class="design-image-tag">REFERENCE IMAGE</span> : null}<span class="design-view-mark">VIEW DESIGN ↗</span>
               </span>
               <span class="design-meta"><span class="design-meta-top"><b>{product.title}</b><small>{product.code}</small></span><small>{product.construction.toUpperCase()} / {product.designStyle}</small><small>{product.diameter || "Vehicle-specific sizing"}</small></span>
               <span class="design-check" aria-hidden="true">✓</span>
