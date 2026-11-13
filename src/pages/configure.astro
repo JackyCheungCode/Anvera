@@ -101,21 +101,21 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
           </section>
           <div class="custom-spec-fields" id="custom-spec-fields" hidden><input type="hidden" id="custom-front" /><input type="hidden" id="custom-rear" />
             <div class="custom-wheel-side"><h4>FRONT WHEEL</h4>
-              <TextInput id="custom-front-diameter" name="frontDiameter" label="Diameter" placeholder="20 in" className="cds--g100" />
-              <TextInput id="custom-front-width" name="frontWidth" label="Width / J" placeholder="9.0J" className="cds--g100" />
-              <TextInput id="custom-front-pcd" name="frontPcd" label="PCD" placeholder="Vehicle-specific PCD" readOnly className="cds--g100" />
-              <TextInput id="custom-front-offset" name="frontOffset" label="Offset / ET" placeholder="ET25" className="cds--g100" />
-              <TextInput id="custom-front-bore" name="frontBore" label="Centre bore" placeholder="Vehicle-specific" readOnly className="cds--g100" />
+              <TextInput id="custom-front-diameter" name="frontDiameter" label="Diameter" placeholder="20 in" className="bmw-m-dark" />
+              <TextInput id="custom-front-width" name="frontWidth" label="Width / J" placeholder="9.0J" className="bmw-m-dark" />
+              <TextInput id="custom-front-pcd" name="frontPcd" label="PCD" placeholder="Vehicle-specific PCD" readOnly className="bmw-m-dark" />
+              <TextInput id="custom-front-offset" name="frontOffset" label="Offset / ET" placeholder="ET25" className="bmw-m-dark" />
+              <TextInput id="custom-front-bore" name="frontBore" label="Centre bore" placeholder="Vehicle-specific" readOnly className="bmw-m-dark" />
             </div>
             <div class="custom-wheel-side"><h4>REAR WHEEL</h4>
-              <TextInput id="custom-rear-diameter" name="rearDiameter" label="Diameter" placeholder="20 in" className="cds--g100" />
-              <TextInput id="custom-rear-width" name="rearWidth" label="Width / J" placeholder="10.5J" className="cds--g100" />
-              <TextInput id="custom-rear-pcd" name="rearPcd" label="PCD" placeholder="Vehicle-specific PCD" readOnly className="cds--g100" />
-              <TextInput id="custom-rear-offset" name="rearOffset" label="Offset / ET" placeholder="ET35" className="cds--g100" />
-              <TextInput id="custom-rear-bore" name="rearBore" label="Centre bore" placeholder="Vehicle-specific" readOnly className="cds--g100" />
+              <TextInput id="custom-rear-diameter" name="rearDiameter" label="Diameter" placeholder="20 in" className="bmw-m-dark" />
+              <TextInput id="custom-rear-width" name="rearWidth" label="Width / J" placeholder="10.5J" className="bmw-m-dark" />
+              <TextInput id="custom-rear-pcd" name="rearPcd" label="PCD" placeholder="Vehicle-specific PCD" readOnly className="bmw-m-dark" />
+              <TextInput id="custom-rear-offset" name="rearOffset" label="Offset / ET" placeholder="ET35" className="bmw-m-dark" />
+              <TextInput id="custom-rear-bore" name="rearBore" label="Centre bore" placeholder="Vehicle-specific" readOnly className="bmw-m-dark" />
             </div>
             <div class="pcd-change-request"><p>PCD and centre bore are determined by the selected vehicle. To request a change, use the engineering override below. Changes may affect hub compatibility, fastener seating and vehicle safety.</p><Button id="request-pcd-change" className="carbon-button carbon-button--ghost" variant="ghost" type="button">Request PCD / bore change</Button></div>
-            <TextArea id="custom-notes" name="customNotes" label="Additional engineering notes" rows={3} placeholder="Brake package, suspension, tyre size or other requirements…" className="cds--g100" /><div class="upload-field"><FileUploader id="custom-files" name="customFiles" label="Vehicle / wheel reference photos" accept={["image/*", ".pdf"]} multiple description="Add reference images or PDF drawings for engineering review." /></div><p class="custom-response">Our engineering team will review your custom specifications and respond within <strong>1 business day</strong> after submission.</p></div>
+            <TextArea id="custom-notes" name="customNotes" label="Additional engineering notes" rows={3} placeholder="Brake package, suspension, tyre size or other requirements…" className="bmw-m-dark" /><div class="upload-field"><FileUploader id="custom-files" name="customFiles" label="Vehicle / wheel reference photos" accept={["image/*", ".pdf"]} multiple description="Add reference images or PDF drawings for engineering review." /></div><p class="custom-response">Our engineering team will review your custom specifications and respond within <strong>1 business day</strong> after submission.</p></div>
         </div>
       </section>
 
@@ -141,17 +141,17 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
           <div class="delivery-field"><div class="carbon-dropdown cds--g100" data-carbon-dropdown data-label="Country / territory"><input type="hidden" id="delivery-country" value="" /></div></div>
           <div class="delivery-field">
             <div class="carbon-dropdown cds--g100" data-carbon-dropdown data-label="State / province"><input type="hidden" id="delivery-region" value="" /></div>
-            <div id="delivery-region-other-wrap" hidden><TextInput id="delivery-region-other" name="deliveryRegionOther" label="Enter state / province" placeholder="State / province" className="cds--g100" /></div>
+            <div id="delivery-region-other-wrap" hidden><TextInput id="delivery-region-other" name="deliveryRegionOther" label="Enter state / province" placeholder="State / province" className="bmw-m-dark" /></div>
           </div>
           <div class="delivery-field">
             <div class="carbon-dropdown cds--g100" data-carbon-dropdown data-label="City"><input type="hidden" id="delivery-city" value="" /></div>
-            <div id="delivery-city-other-wrap" hidden><TextInput id="delivery-city-other" name="deliveryCityOther" label="Enter city" placeholder="City" className="cds--g100" /></div>
+            <div id="delivery-city-other-wrap" hidden><TextInput id="delivery-city-other" name="deliveryCityOther" label="Enter city" placeholder="City" className="bmw-m-dark" /></div>
           </div>
-          <TextInput id="delivery-postal" name="postalCode" label="Postal code" autocomplete="postal-code" placeholder="Postal code" className="cds--g100" />
-          <div class="delivery-address"><TextInput id="delivery-address" name="address" label="Street address" autocomplete="street-address" placeholder="Street, building and unit number" className="cds--g100" /></div>
-          <TextInput id="contact-name" name="contactName" label="Contact name" autocomplete="name" placeholder="Full name" className="cds--g100" />
-          <TextInput id="contact-email" name="email" label="Email" type="email" autocomplete="email" placeholder="name@example.com" className="cds--g100" />
-          <TextInput id="contact-phone" name="phone" label="Phone / WhatsApp" type="tel" autocomplete="tel" placeholder="Country code + number" className="cds--g100" />
+          <TextInput id="delivery-postal" name="postalCode" label="Postal code" autocomplete="postal-code" placeholder="Postal code" className="bmw-m-dark" />
+          <div class="delivery-address"><TextInput id="delivery-address" name="address" label="Street address" autocomplete="street-address" placeholder="Street, building and unit number" className="bmw-m-dark" /></div>
+          <TextInput id="contact-name" name="contactName" label="Contact name" autocomplete="name" placeholder="Full name" className="bmw-m-dark" />
+          <TextInput id="contact-email" name="email" label="Email" type="email" autocomplete="email" placeholder="name@example.com" className="bmw-m-dark" />
+          <TextInput id="contact-phone" name="phone" label="Phone / WhatsApp" type="tel" autocomplete="tel" placeholder="Country code + number" className="bmw-m-dark" />
         </div>
         <div class="route-estimate">
           <div class="route-heading"><div><p class="step-kicker">LOGISTICS ROUTE / PLANNING VIEW</p><h3>Chengdu → Yantian → Destination</h3></div><span class="route-tag">SEA FREIGHT DEFAULT</span></div>
