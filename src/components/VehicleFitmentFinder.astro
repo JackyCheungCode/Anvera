@@ -21,7 +21,7 @@ const safeProducts = products.map((product) => ({
   verifiedFitments: Array.isArray(product.verifiedFitments) ? product.verifiedFitments : []
 }));
 ---
-<section class:list={["vehicle-finder-section", compact && "vehicle-finder-section--compact"]}>
+<section class:list={["vehicle-finder-section", compact && "vehicle-finder-section--compact"]} data-region-options={JSON.stringify(regions)} data-products={JSON.stringify(safeProducts)} data-compact={String(compact)} data-results-target={resultsTarget}>
   <div class="vehicle-finder-inner">
     {!compact && <div class="vehicle-finder-heading">
       <div><p class="section-kicker">ANVERA / VEHICLE FITMENT</p><h2>Find wheels<br /><span>for your vehicle.</span></h2></div>
@@ -42,7 +42,15 @@ const safeProducts = products.map((product) => ({
     {!compact && <p class="vehicle-finder-disclaimer">Fitment information is supplied by Wheel-Size as a reference. ANVERA will verify load rating, brake clearance, hub fit, offsets and vehicle-specific requirements before confirming any production specification.</p>}
   </div>
 </section>
-<script define:vars={{ regionOptions: regions, anveraProducts: safeProducts, compactMode: compact, resultsTargetId: resultsTarget }}>
+<script>
+  import React from "react";
+  import { createRoot } from "react-dom/client";
+  import { DynamicComboBoxControl } from "./carbon/Controls";
+  const sectionRoot = document.querySelector(".vehicle-finder-section");
+  const regionOptions = JSON.parse(sectionRoot?.getAttribute("data-region-options") || "[]");
+  const anveraProducts = JSON.parse(sectionRoot?.getAttribute("data-products") || "[]");
+  const compactMode = sectionRoot?.getAttribute("data-compact") === "true";
+  const resultsTargetId = sectionRoot?.getAttribute("data-results-target") || "";
   // @ts-nocheck
   const form = document.querySelector("#vehicle-finder-form");
   const status = document.querySelector("#vf-status");
@@ -150,46 +158,46 @@ const safeProducts = products.map((product) => ({
   };
   document.querySelectorAll("[data-dropdown]").forEach((host) => {
     const key = host.dataset.dropdown;
-    const trigger = document.createElement("button");
-    trigger.type = "button"; trigger.className = "vf-select-trigger";
-    trigger.setAttribute("aria-haspopup", "listbox"); trigger.setAttribute("aria-expanded", "false");
-    const valueLabel = document.createElement("span"); valueLabel.className = "vf-select-value";
-    const chevron = document.createElement("span"); chevron.className = "vf-select-chevron"; chevron.textContent = "⌄";
-    trigger.append(valueLabel, chevron);
-    const menu = document.createElement("div"); menu.className = "vf-select-menu"; menu.hidden = true; menu.setAttribute("role", "listbox");
-    menu.id = "vf-list-" + key; trigger.setAttribute("aria-controls", menu.id);
-    host.classList.add("vf-select"); host.append(trigger, menu);
     const placeholder = host.dataset.placeholder || "Select";
+    const label = host.parentElement?.querySelector("span")?.textContent?.trim() || key;
+    const reactRoot = createRoot(host);
     let options = [];
-    const close = () => { menu.hidden = true; trigger.setAttribute("aria-expanded", "false"); };
+    let isDisabled = key !== "region";
     const render = () => {
-      menu.replaceChildren();
-      for (const item of options) {
-        const option = document.createElement("button"); option.type = "button"; option.className = "vf-select-option";
-        option.setAttribute("role", "option"); option.setAttribute("aria-selected", String(item.value === values[key]));
-        if (key === "make") { const logo = makeLogo(item.label, item.raw); if (logo) option.append(logo); }
-        if (key === "model" && !compactMode) { const image = modelImage(item.raw, item.label); if (image) option.append(image); }
-        const label = document.createElement("span"); label.textContent = item.label; option.append(label);
-        option.addEventListener("click", () => { values[key] = item.value; renderSelectedValue(valueLabel, key, item, item.label); close(); render(); host.dispatchEvent(new CustomEvent("vf-change", { bubbles: true, detail: { key, value: item.value, item } })); });
-        menu.append(option);
-      }
-      if (!options.length) { const empty = document.createElement("div"); empty.className = "vf-select-empty"; empty.textContent = "No options available"; menu.append(empty); }
+      const selected = options.find((item) => item.value === values[key]) ?? null;
+      reactRoot.render(React.createElement(DynamicComboBoxControl, {
+        id: "vf-" + key,
+        label,
+        placeholder,
+        items: options,
+        selectedItem: selected,
+        disabled: isDisabled || !options.length,
+        onChange: (item) => {
+          values[key] = item?.value ?? "";
+          if (key === "make") selectedMakeLabel = item?.label ?? "";
+          if (key === "model") selectedModelLabel = item?.label ?? "";
+          host.dispatchEvent(new CustomEvent("vf-change", {
+            bubbles: true,
+            detail: { key, value: values[key], item: item?.raw ?? null }
+          }));
+        }
+      }));
     };
-    trigger.addEventListener("click", () => { if (trigger.disabled) return; const open = menu.hidden; document.querySelectorAll(".vf-select-menu").forEach((m) => m.hidden = true); document.querySelectorAll(".vf-select-trigger").forEach((t) => t.setAttribute("aria-expanded","false")); menu.hidden = !open; trigger.setAttribute("aria-expanded", String(open)); });
-    trigger.addEventListener("keydown", (event) => { if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") { event.preventDefault(); trigger.click(); menu.querySelector("button")?.focus(); } });
-    document.addEventListener("click", (event) => { if (!host.contains(event.target)) close(); });
     dropdowns[key] = {
       setOptions(items, text = placeholder, disabled = false) {
-        options = (items || []).map((item) => ({ value: slugOf(item), label: labelOf(item), raw: item })).filter((item) => item.value && item.label);
-        trigger.disabled = disabled || !options.length;
-        trigger.classList.toggle("is-disabled", trigger.disabled);
+        options = (items || []).map((item) => ({
+          value: slugOf(item), label: labelOf(item), raw: item
+        })).filter((item) => item.value && item.label);
+        isDisabled = disabled;
         if (!options.some((item) => item.value === values[key])) values[key] = "";
-        const selected = options.find((item) => item.value === values[key]);
-        if (selected) renderSelectedValue(valueLabel, key, selected, selected.label);
-        else valueLabel.textContent = text;
         render();
       },
-      reset(text = placeholder, disabled = true) { options = []; values[key] = ""; valueLabel.textContent = text; trigger.disabled = disabled; trigger.classList.toggle("is-disabled", disabled); close(); render(); }
+      reset(_text = placeholder, disabled = true) {
+        options = [];
+        values[key] = "";
+        isDisabled = disabled;
+        render();
+      }
     };
     dropdowns[key].reset(placeholder, key !== "region");
   });
