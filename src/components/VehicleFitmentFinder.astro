@@ -47,7 +47,7 @@ const safeProducts = products.map((product) => ({
   // @ts-nocheck
   import React from "react";
   import { createRoot } from "react-dom/client";
-  import { ButtonControl, DynamicComboBoxControl, FilterComboBoxControl } from "./carbon/Controls";
+  import { ButtonControl, DynamicComboBoxControl, FilterComboBoxControl } from "./bmw-m/SharedControls";
   const sectionRoot = document.querySelector(".vehicle-finder-section");
   const regionOptions = JSON.parse(sectionRoot?.getAttribute("data-region-options") || "[]");
   const anveraProducts = JSON.parse(sectionRoot?.getAttribute("data-products") || "[]");
