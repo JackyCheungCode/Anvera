@@ -138,10 +138,9 @@ export function DropdownControl({
         onChange={({ selectedItem }) => setSelected(selectedItem ?? null)}
         shouldFilterItem
         helperText={helpText}
-        aria-required={required}
+        required={required}
         size="lg"
       />
-      {required ? <input className="anvera-required-proxy" tabIndex={-1} aria-hidden="true" required value={selected?.value ?? ""} readOnly /> : null}
     </div>
   );
 }
