@@ -516,6 +516,8 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
   const loadDeliveryCountries=()=>{
     renderDropdownOptions(countryControl,countryRows.map(({value,label,flag})=>({value,label,flag})),"Search country or territory…");
     setDropdownLabel(countryControl,"Select country or territory");
+    setDropdownLabel(regionControl,"Select country first");
+    setDropdownLabel(cityControl,"Select state / province first");
     countryControl.trigger.disabled=false;
     regionControl.trigger.disabled=true;cityControl.trigger.disabled=true;
   };
