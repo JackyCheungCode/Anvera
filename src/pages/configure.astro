@@ -371,7 +371,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
       trigger.setAttribute("aria-expanded",String(opening));
       event.preventDefault();return;
     }
-    const option=target?.closest("[data-dropdown-option], [role="option"][data-value]");
+    const option=target?.closest("[data-dropdown-option], [role=option][data-value]");
     if(option&&root.contains(option)){
       const dropdown=option.closest("[data-carbon-dropdown]"), control=dropdownControl(dropdown.querySelector("input[type=hidden]")?.id);
       if(!control)return;
