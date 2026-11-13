@@ -4,12 +4,13 @@ interface Props {
   id: string;
   name: string;
   label: string;
-  type?: "text" | "email" | "tel" | "number" | "url";
+  type?: "text" | "email" | "tel" | "number" | "url" | "search" | "password";
   value?: string;
   placeholder?: string;
   required?: boolean;
   autocomplete?: string;
   helpText?: string;
+  className?: string;
 }
 const props = Astro.props;
 ---
