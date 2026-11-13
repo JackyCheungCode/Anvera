@@ -80,7 +80,7 @@ export function CheckboxControl({
       value={value}
       defaultChecked={checked}
       required={required}
-      labelText={children}
+      labelText={children ?? ""}
     />
   );
 }
@@ -99,7 +99,7 @@ export function NotificationControl({
     <CarbonInlineNotification
       kind={kind}
       title={title}
-      subtitle={children}
+      subtitle={typeof children === "string" ? children : undefined}
       lowContrast
       hideCloseButton
     />
@@ -136,9 +136,11 @@ export function DropdownControl({
         placeholder={placeholder}
         selectedItem={selected}
         onChange={({ selectedItem }) => setSelected(selectedItem ?? null)}
-        shouldFilterItem={({ item, inputValue, itemToString: toString }) =>
-          toString(item).toLocaleLowerCase().includes(inputValue.toLocaleLowerCase())
-        }
+        shouldFilterItem={({ item, inputValue, itemToString: toString }) => {
+          const label = toString?.(item) ?? "";
+          const query = inputValue ?? "";
+          return label.toLocaleLowerCase().includes(query.toLocaleLowerCase());
+        }}
         helperText={helpText}
         required={required}
         size="lg"
