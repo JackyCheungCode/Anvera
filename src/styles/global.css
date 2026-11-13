@@ -843,3 +843,107 @@ main:focus { outline: 0; }
   .anvera-carbon-selected-logo { flex-basis: 42px; width: 42px; height: 48px; }
   .anvera-carbon-selected-logo img { width: 30px; height: 30px; }
 }
+
+
+/* ANVERA Carbon visual recovery — keep Carbon controls legible and full-width
+   across public pages, configurators and the EmDash workspace. */
+.cds--btn {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 0;
+  font-family: var(--font-body, inherit);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  line-height: 1.25;
+  text-transform: uppercase;
+  transition: background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+}
+.cds--btn--primary {
+  color: #fff;
+  background: var(--anvera-red, #a9232b);
+}
+.cds--btn--primary:hover { color: #fff; background: var(--anvera-red-hover, #851b22); }
+.cds--btn--secondary {
+  color: #fff;
+  background: #343a40;
+  box-shadow: inset 0 0 0 1px #69717a;
+}
+.cds--btn--secondary:hover { color: #fff; background: #454d56; }
+.cds--btn--tertiary {
+  color: #fff;
+  background: #20262d;
+  box-shadow: inset 0 0 0 1px #69717a;
+}
+.cds--btn--tertiary:hover { color: #fff; background: #343a40; }
+.cds--btn--ghost {
+  color: inherit;
+  background: transparent;
+}
+.cds--btn--ghost:hover { color: inherit; background: rgba(127,127,127,.16); }
+.cds--btn:disabled, .cds--btn[disabled] { opacity: .45; cursor: not-allowed; }
+.cds--btn:focus-visible { outline: 2px solid #0f62fe; outline-offset: 2px; }
+
+/* Carbon ComboBox / ListBox dimensions must not collapse inside responsive grids. */
+.cds--combo-box,
+.cds--dropdown,
+.cds--list-box { display: block; width: 100%; min-width: 0; }
+.cds--combo-box .cds--list-box__field,
+.cds--dropdown .cds--list-box__field,
+.cds--list-box__field {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  font-family: var(--font-body, inherit);
+  font-size: 14px;
+}
+.cds--combo-box .cds--text-input,
+.cds--combo-box input.cds--text-input {
+  min-height: 48px;
+  font-family: var(--font-body, inherit);
+  font-size: 14px;
+}
+.cds--combo-box .cds--list-box__menu,
+.cds--dropdown .cds--list-box__menu { z-index: 1200; max-height: 18rem; }
+.cds--combo-box .cds--list-box__menu-item,
+.cds--dropdown .cds--list-box__menu-item { min-height: 44px; }
+.anvera-carbon-dropdown,
+.anvera-carbon-dropdown .cds--combo-box,
+.anvera-carbon-dropdown .cds--list-box,
+.vf-product-filter,
+.vf-product-filter .cds--combo-box { width: 100%; min-width: 0; }
+
+/* The compact wheel finder is intentionally dark; Carbon's field surfaces
+   must follow that context instead of falling back to white browser-like fields. */
+.vehicle-finder-section--compact .cds--label,
+.vehicle-finder-section--compact .cds--form__helper-text,
+.vehicle-finder-section--compact .vf-product-filter { color: #aeb7c1; }
+.vehicle-finder-section--compact .cds--combo-box .cds--list-box__field,
+.vehicle-finder-section--compact .cds--combo-box .cds--text-input,
+.vehicle-finder-section--compact .cds--list-box__field {
+  color: #f4f6f8;
+  background: #202328;
+  border-bottom: 1px solid #69717a;
+}
+.vehicle-finder-section--compact .cds--combo-box .cds--text-input::placeholder { color: #aeb7c1; }
+.vehicle-finder-section--compact .cds--list-box__menu,
+.vehicle-finder-section--compact .cds--list-box__menu-item,
+.vehicle-finder-section--compact .cds--list-box__menu-item__option {
+  color: #f4f6f8;
+  background: #262b32;
+}
+.vehicle-finder-section--compact .cds--list-box__menu-item:hover,
+.vehicle-finder-section--compact .cds--list-box__menu-item[aria-selected="true"] {
+  color: #fff;
+  background: #343c46;
+}
+@media (max-width: 640px) {
+  .cds--btn { min-height: 46px; padding-inline: 16px; }
+  .vehicle-finder-section--compact .vf-product-filters { grid-template-columns: minmax(0,1fr); }
+  .vehicle-finder-section--compact .vf-product-filter { min-width: 0; }
+}
