@@ -7,7 +7,7 @@
   "d1_databases": [{
     "binding": "DB",
     "database_name": "anvera-preview",
-    "database_id": "9bebf5e9-b020-420f-b398-f2f177c52ede"
+    "database_id": "9bebf5e9-b020-420b-b398-f2f177c52ede"
   }],
   "r2_buckets": [{
     "binding": "MEDIA",
