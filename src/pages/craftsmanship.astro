@@ -1,39 +1,145 @@
 ---
 import Base from "../layouts/Base.astro";
 import Button from "../components/ui/Button.astro";
-const pillars = [
-  { n:"01", title:"Material integrity", copy:"Material selection and process control form the foundation of a forged wheel programme." },
-  { n:"02", title:"Design discipline", copy:"Spoke geometry, section thickness and visual balance are considered together rather than in isolation." },
-  { n:"03", title:"Manufacturing control", copy:"A repeatable process, careful machining and documented inspection are essential to consistent outcomes." }
+
+const stages = [
+  { id:"material", n:"01", label:"THE MATERIAL", a:"It begins", b:"with aluminium.", copy:"A forged wheel starts with a carefully specified aluminium alloy billet. Material identity, condition and traceability are established before the first operation.", detail:"6061 ALUMINIUM · MATERIAL CONTROL", image:"https://images.unsplash.com/photo-1740209475472-aa7d280f7452?auto=format&fit=crop&w=2000&q=82", alt:"Aluminium machining and industrial metal preparation" },
+  { id:"forging", n:"02", label:"THE FORGE", a:"Pressure gives", b:"form to purpose.", copy:"The prepared billet is heated and pressed in controlled stages. Forging forms a dense wheel blank that becomes the foundation for the geometry to come.", detail:"CONTROLLED HEAT · HIGH-PRESSURE FORMING", image:"https://images.pexels.com/videos/5846313/pexels-photo-5846313.jpeg?auto=compress&cs=tinysrgb&w=2000", alt:"Hot metal forging in an industrial workshop" },
+  { id:"heat-treatment", n:"03", label:"THE HEAT TREATMENT", a:"Strength is", b:"never accidental.", copy:"A controlled solution and ageing cycle develops the required material properties. Time, temperature and process discipline matter at every stage.", detail:"THERMAL PROCESS · MATERIAL PROPERTIES", image:"https://images.unsplash.com/photo-1713371398484-cc4e4f6a262a?auto=format&fit=crop&w=2000&q=82", alt:"Industrial metal manufacturing environment" },
+  { id:"machining", n:"04", label:"THE MACHINING", a:"Precision takes", b:"its shape.", copy:"Multi-axis CNC machining transforms the forged blank. The face, spokes, hub, mounting pad and barrel are cut to the approved design and vehicle specification.", detail:"CNC MILLING · TURNING · GEOMETRY", image:"https://images.unsplash.com/photo-1740209475472-aa7d280f7452?auto=format&fit=crop&w=2000&q=82", alt:"Close-up of aluminium CNC milling" },
+  { id:"finishing", n:"05", label:"THE FINISH", a:"Every surface", b:"has a character.", copy:"Edges are refined and surfaces prepared before the selected finish is applied. Brushed, machined, polished and coated finishes each reveal the design in a different way.", detail:"SURFACE PREPARATION · BESPOKE FINISH", image:"https://images.unsplash.com/photo-1775848365847-79a8154f764f?auto=format&fit=crop&w=2000&q=82", alt:"Premium alloy wheel surface detail" },
+  { id:"assembly", n:"06", label:"THE ASSEMBLY", a:"Built as one", b:"considered whole.", copy:"For multi-piece constructions, the centre, inner barrel and outer lip are brought together with specified hardware and assembly controls. Monoblock designs follow their own finishing and inspection route.", detail:"CONSTRUCTION-SPECIFIC · 1 / 2 / 3-PIECE", image:"https://images.unsplash.com/photo-1760688970259-c860a19c2996?auto=format&fit=crop&w=2000&q=82", alt:"Custom alloy wheel and tyre detail" },
+  { id:"inspection", n:"07", label:"THE INSPECTION", a:"Measured.", b:"Then approved.", copy:"The finished wheel is checked against its approved specification. Dimensional accuracy, runout, mounting details and finish quality are reviewed before release.", detail:"DIMENSIONAL REVIEW · FINAL QUALITY CONTROL", image:"https://images.unsplash.com/photo-1760688970259-c860a19c2996?auto=format&fit=crop&w=2000&q=82", alt:"Finished custom alloy wheel detail" },
+  { id:"road", n:"08", label:"THE FINAL FORM", a:"Made for the", b:"way forward.", copy:"Tyres are fitted to the confirmed specification, the assembly is balanced and the wheels are prepared for installation. The final expression is defined by the vehicle they were made for.", detail:"TYRE FITMENT · BALANCING · ON THE ROAD", image:"https://images.unsplash.com/photo-1764184124037-7eda1af5b9f0?auto=format&fit=crop&w=2000&q=82", alt:"Luxury performance car with custom wheels" }
 ];
 ---
-<Base title="Craftsmanship & Engineering" description="Discover the design thinking, manufacturing discipline and quality principles behind ANVERA forged wheels.">
-  <section class="craft-hero">
-    <div class="craft-hero-image" aria-hidden="true"><div class="craft-metal-disc"></div></div>
-    <div class="craft-hero-copy">
-      <p class="eyebrow">ANVERA / CRAFTSMANSHIP</p>
-      <h1>Precision<br />has a form.</h1>
-      <p>Forged wheel design lives at the intersection of engineering and expression. Every decision must serve the structure, the vehicle and the final visual character.</p>
-    </div>
-    <div class="craft-caption">ENGINEERING / MATERIAL / DETAIL</div>
-  </section>
-  <section class="section craft-intro">
-    <div class="section-inner craft-intro-grid">
-      <div><p class="section-kicker">The ANVERA approach</p><h2 class="section-title">Purpose in every<br />proportion.</h2></div>
-      <p class="section-lead">We approach each wheel as a complete engineered object. Design intent is considered alongside fitment, material behaviour, manufacturing capability and inspection requirements.</p>
-    </div>
-  </section>
-  <section class="craft-pillars">
-    {pillars.map((pillar) => <article><span>{pillar.n} / PRINCIPLE</span><h3>{pillar.title}</h3><p>{pillar.copy}</p></article>)}
-  </section>
-  <section class="craft-quality">
-    <div><p class="section-kicker">Quality is a process</p><h2>Measured.<br />Reviewed.<br />Refined.</h2></div>
-    <p>Technical specifications and quality claims must be supported by actual product and factory records. ANVERA product pages will publish only verified specifications, approved finishes and validated fitment information.</p>
-  </section>
-  <section class="custom-cta">
-    <p class="section-kicker">A project starts with a conversation</p>
-    <h2>Bring your vision<br />into focus.</h2>
-    <p>Tell us about your vehicle and the wheel you want to create.</p>
-    <Button href="/custom-inquiry" variant="primary">Discuss a project <span aria-hidden="true">↗</span></Button>
-  </section>
+<Base title="The Art of Forging" description="Discover the journey from aluminium billet to a finished forged wheel through material control, forging, machining, finishing and fitment.">
+  <div class="craft-page" id="craftsmanship-experience">
+    <section class="craft-hero" aria-labelledby="craft-hero-title">
+      <div class="craft-hero-image" role="img" aria-label="Close-up of a premium custom wheel"></div>
+      <div class="craft-hero-shade"></div>
+      <div class="craft-hero-content">
+        <p class="craft-eyebrow"><span>ANVERA</span><i></i> THE MAKING OF A FORGED WHEEL</p>
+        <h1 id="craft-hero-title">FROM MATTER<br/><em>TO MOTION.</em></h1>
+        <p class="craft-hero-copy">A journey shaped by pressure, precision and purpose.<br/>Follow the making of a wheel, one deliberate stage at a time.</p>
+        <a class="craft-scroll-cue" href="#the-process"><span></span>SCROLL TO EXPLORE <b>↓</b></a>
+      </div>
+      <div class="craft-hero-index"><span>01—08</span><span>THE FORGING JOURNEY</span></div>
+    </section>
+
+    <section class="craft-process" id="the-process" aria-label="The wheel manufacturing process">
+      <div class="craft-process-intro">
+        <p class="craft-eyebrow">THE PROCESS / 08 CHAPTERS</p>
+        <h2>Engineering is<br/><em>in every layer.</em></h2>
+        <p>Scroll through the transformation. The story moves from raw material to the road.</p>
+      </div>
+      <div class="craft-stage-layout">
+        <div class="craft-visual-rail" aria-hidden="true">
+          <div class="craft-visual-frame">
+            {stages.map((stage, index) => <div class:list={["craft-visual", index === 0 && "is-active"]} data-visual={stage.id}><img src={stage.image} alt="" loading={index === 0 ? "eager" : "lazy"} decoding="async"/><div class="craft-visual-vignette"></div><span>{stage.detail}</span></div>)}
+            <div class="craft-visual-grain"></div>
+          </div>
+          <div class="craft-visual-progress"><span class="craft-progress-track"><i id="craft-progress-fill"></i></span><span id="craft-progress-number">01 / 08</span></div>
+        </div>
+        <div class="craft-chapters">
+          {stages.map((stage, index) => <article class:list={["craft-chapter", index === 0 && "is-active"]} data-stage={stage.id}>
+            <div class="craft-chapter-top"><span>{stage.n}</span><b>{stage.label}</b></div>
+            <h3>{stage.a}<br/><em>{stage.b}</em></h3>
+            <p>{stage.copy}</p>
+            <small>{stage.detail}</small>
+            <i></i>
+          </article>)}
+        </div>
+      </div>
+    </section>
+
+    <section class="craft-construction">
+      <div class="craft-construction-heading">
+        <p class="craft-eyebrow">ONE STANDARD / DISTINCT CONSTRUCTIONS</p>
+        <h2>Different architectures.<br/><em>One uncompromising intent.</em></h2>
+      </div>
+      <div class="craft-construction-grid">
+        <article><span>01 / MONOBLOCK</span><h3>One piece.<br/>One complete form.</h3><p>Machined from a single forged blank. The design, face and barrel are shaped as one integrated structure.</p></article>
+        <article><span>02 / 2-PIECE</span><h3>Two elements.<br/>One composition.</h3><p>A centre and a barrel are brought together to create a distinct relationship between face, depth and rim.</p></article>
+        <article><span>03 / 3-PIECE</span><h3>Three elements.<br/>More ways to define.</h3><p>Centre, inner barrel and outer lip allow a modular construction with its own assembly and inspection requirements.</p></article>
+      </div>
+      <p class="craft-construction-note">The exact production sequence varies with alloy specification, wheel design, construction and the manufacturing partner's validated process.</p>
+    </section>
+
+    <section class="craft-finale">
+      <div class="craft-finale-image" role="img" aria-label="Finished performance wheel on a luxury sports car"></div>
+      <div class="craft-finale-overlay"></div>
+      <div class="craft-finale-content">
+        <p class="craft-eyebrow">THE RESULT / YOUR SPECIFICATION</p>
+        <h2>Made to move<br/><em>with you.</em></h2>
+        <p>Choose a design. Define the fitment. Make it unmistakably yours.</p>
+        <div class="craft-finale-actions"><Button href="/configure" variant="primary">Explore wheel designs <span aria-hidden="true">↗</span></Button><Button href="/custom-inquiry" variant="secondary">Start your commission <span aria-hidden="true">↗</span></Button></div>
+      </div>
+    </section>
+
+    <aside class="craft-source-note">
+      <span>IMAGE CREDITS</span>
+      <p>Editorial reference imagery sourced from Unsplash and Pexels under their respective free-use licences. These images illustrate manufacturing concepts and are not representations of ANVERA's own factory, equipment or completed production. Replace with approved ANVERA or manufacturing-partner footage before making factory-specific claims.</p>
+      <a href="https://www.pexels.com/video/forging-hot-metal-5846313/" target="_blank" rel="noreferrer">Pexels forging reference ↗</a>
+      <a href="https://unsplash.com/photos/a-machine-that-is-cutting-a-piece-of-metal-sxtClAGwRck" target="_blank" rel="noreferrer">Unsplash CNC reference ↗</a>
+      <a href="https://unsplash.com/photos/close-up-of-a-custom-car-wheel-and-tire-xedFwcx_WEY" target="_blank" rel="noreferrer">Unsplash wheel reference ↗</a>
+    </aside>
+  </div>
 </Base>
+
+<script>
+  const experience = document.querySelector<HTMLElement>("#craftsmanship-experience");
+  if (experience) {
+    const chapters = Array.from(experience.querySelectorAll<HTMLElement>("[data-stage]"));
+    const visuals = Array.from(experience.querySelectorAll<HTMLElement>("[data-visual]"));
+    const progressFill = experience.querySelector<HTMLElement>("#craft-progress-fill");
+    const progressNumber = experience.querySelector<HTMLElement>("#craft-progress-number");
+    let activeIndex = 0;
+    const activate = (index: number) => {
+      if (index === activeIndex || index < 0 || index >= chapters.length) return;
+      activeIndex = index;
+      chapters.forEach((chapter, i) => chapter.classList.toggle("is-active", i === index));
+      visuals.forEach((visual, i) => visual.classList.toggle("is-active", i === index));
+      if (progressFill) progressFill.style.transform = `scaleY(${(index + 1) / chapters.length})`;
+      if (progressNumber) progressNumber.textContent = `${String(index + 1).padStart(2,"0")} / ${String(chapters.length).padStart(2,"0")}`;
+    };
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries.filter((entry) => entry.isIntersecting).sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (visible) activate(chapters.indexOf(visible.target as HTMLElement));
+    }, { rootMargin: "-36% 0px -36% 0px", threshold: [0.1,0.25,0.45,0.65] });
+    chapters.forEach((chapter) => observer.observe(chapter));
+    if (progressFill) progressFill.style.transform = "scaleY(.125)";
+  }
+</script>
+
+<style>
+.craft-page{background:#090b0d;color:#f2f3f1;overflow:clip}.craft-page *{box-sizing:border-box}
+.craft-hero{min-height:calc(100svh - 76px);position:relative;display:flex;align-items:flex-end;isolation:isolate;background:#101215}
+.craft-hero-image,.craft-hero-shade{position:absolute;inset:0;z-index:-1}.craft-hero-image{background-image:url("https://images.unsplash.com/photo-1760688970259-c860a19c2996?auto=format&fit=crop&w=2400&q=88");background-size:cover;background-position:center 56%;transform:scale(1.025);animation:craftReveal 1.4s ease-out both}
+.craft-hero-shade{background:linear-gradient(90deg,rgba(4,6,8,.88),rgba(4,6,8,.4) 52%,rgba(4,6,8,.05)),linear-gradient(0deg,rgba(4,6,8,.76),transparent 52%)}
+.craft-hero-content{width:min(1440px,100%);margin:0 auto;padding:clamp(90px,13vw,180px) clamp(24px,7vw,112px) 112px}
+.craft-eyebrow{display:flex;align-items:center;gap:13px;margin:0 0 28px;color:#c2c7ca;font-size:10px;font-weight:650;letter-spacing:.22em}.craft-eyebrow span{color:#fff;font-weight:800;letter-spacing:.28em}.craft-eyebrow i{width:26px;height:1px;background:#8c9297}
+.craft-hero h1{margin:0;max-width:900px;font-size:clamp(64px,11.4vw,166px);line-height:.82;letter-spacing:-.085em;font-weight:620}.craft-hero h1 em,.craft-process-intro h2 em,.craft-chapter h3 em,.craft-construction-heading h2 em,.craft-finale h2 em{font-style:normal;color:#aeb4b8}
+.craft-hero-copy{margin:34px 0 0;color:#d2d5d7;font-size:clamp(14px,1.35vw,18px);line-height:1.8}.craft-scroll-cue{display:inline-flex;align-items:center;gap:15px;margin-top:64px;color:#fff;text-decoration:none;font-size:9px;font-weight:650;letter-spacing:.2em}.craft-scroll-cue span{width:44px;height:1px;background:#b9bec2;animation:craftLine 1.7s ease-in-out infinite}.craft-scroll-cue b{font-size:14px;font-weight:400}
+.craft-hero-index{position:absolute;right:clamp(24px,7vw,112px);bottom:36px;display:flex;gap:22px;color:#c2c7ca;font-size:9px;letter-spacing:.17em}
+.craft-process{padding:clamp(100px,14vw,190px) 0 120px;background:#0c0e10}.craft-process-intro{width:min(1440px,100%);padding:0 clamp(24px,7vw,112px);margin:0 auto 88px}
+.craft-process-intro h2,.craft-construction-heading h2{margin:0;font-size:clamp(42px,7vw,96px);line-height:.96;letter-spacing:-.065em;font-weight:570}.craft-process-intro>p:last-child{max-width:460px;margin:25px 0 0;color:#92999e;font-size:14px;line-height:1.8}
+.craft-stage-layout{width:min(1440px,100%);margin:0 auto;padding:0 clamp(24px,7vw,112px);display:grid;grid-template-columns:minmax(0,1.12fr) minmax(340px,.88fr);gap:clamp(42px,7vw,112px);align-items:start}
+.craft-visual-rail{position:sticky;top:104px;align-self:start}.craft-visual-frame{position:relative;aspect-ratio:4/5;max-height:690px;overflow:hidden;background:#171a1d}
+.craft-visual{position:absolute;inset:0;opacity:0;transform:scale(1.055);transition:opacity .75s ease,transform 1.25s cubic-bezier(.2,.65,.25,1)}.craft-visual.is-active{opacity:1;transform:scale(1)}
+.craft-visual img{width:100%;height:100%;display:block;object-fit:cover;filter:grayscale(22%) brightness(.72) contrast(1.08)}.craft-visual-vignette{position:absolute;inset:0;background:linear-gradient(0deg,rgba(4,6,8,.74),transparent 32%),linear-gradient(90deg,rgba(4,6,8,.14),transparent 60%)}
+.craft-visual>span{position:absolute;left:25px;bottom:25px;color:#e2e5e6;font-size:9px;letter-spacing:.18em}.craft-visual-grain{position:absolute;inset:0;pointer-events:none;opacity:.1;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E")}
+.craft-visual-progress{display:flex;align-items:center;justify-content:space-between;padding-top:18px;color:#8f969b;font-size:9px;letter-spacing:.18em}.craft-progress-track{height:2px;flex:1;margin-right:18px;background:#303539;overflow:hidden}.craft-progress-track i{display:block;width:100%;height:100%;background:#e4e7e8;transform:scaleY(.125);transform-origin:top;transition:transform .6s ease}
+.craft-chapter{min-height:clamp(490px,66vh,700px);display:flex;flex-direction:column;justify-content:center;padding:42px 0 56px;border-top:1px solid rgba(255,255,255,.12);opacity:.4;transition:opacity .55s ease}.craft-chapter:last-child{border-bottom:1px solid rgba(255,255,255,.12)}.craft-chapter.is-active{opacity:1}
+.craft-chapter-top{display:flex;align-items:center;gap:16px;margin-bottom:34px}.craft-chapter-top span{color:#f4f4f1;font-size:12px;font-variant-numeric:tabular-nums;letter-spacing:.12em}.craft-chapter-top b{color:#858d92;font-size:9px;letter-spacing:.22em}
+.craft-chapter h3{margin:0;font-size:clamp(40px,5vw,70px);line-height:.98;letter-spacing:-.065em;font-weight:560}.craft-chapter h3 em{color:#858e93}.craft-chapter>p{max-width:430px;margin:27px 0 0;color:#aab0b4;font-size:14px;line-height:1.9}.craft-chapter>small{margin-top:38px;color:#d3d6d8;font-size:9px;font-weight:650;letter-spacing:.16em}.craft-chapter>i{width:38px;height:1px;margin-top:28px;background:#777f84;transition:width .5s ease}.craft-chapter.is-active>i{width:76px;background:#e8eaeb}
+.craft-construction{padding:clamp(100px,14vw,180px) clamp(24px,7vw,112px);background:#e8e8e5;color:#111416}.craft-construction-heading,.craft-construction-grid,.craft-construction-note{width:min(1216px,100%);margin-left:auto;margin-right:auto}.craft-construction-heading .craft-eyebrow{color:#555d61}.craft-construction-heading .craft-eyebrow i{background:#737a7e}.craft-construction-heading h2{font-size:clamp(40px,6vw,82px)}.craft-construction-heading h2 em{color:#7b8387}
+.craft-construction-grid{display:grid;grid-template-columns:repeat(3,1fr);margin-top:76px;border-top:1px solid #b7bcbd;border-bottom:1px solid #b7bcbd}.craft-construction-grid article{padding:30px 28px 36px 0;min-height:280px}.craft-construction-grid article+article{padding-left:28px;border-left:1px solid #b7bcbd}.craft-construction-grid article>span{font-size:9px;font-weight:700;letter-spacing:.17em;color:#626a6e}.craft-construction-grid h3{margin:35px 0 18px;font-size:clamp(25px,2.5vw,34px);line-height:1.08;letter-spacing:-.045em;font-weight:600}.craft-construction-grid p{max-width:330px;margin:0;color:#596166;font-size:13px;line-height:1.8}.craft-construction-note{margin-top:22px;color:#6b7377;font-size:11px;line-height:1.7}
+.craft-finale{position:relative;min-height:88svh;display:flex;align-items:center;isolation:isolate;background:#0a0b0d}.craft-finale-image,.craft-finale-overlay{position:absolute;inset:0;z-index:-1}.craft-finale-image{background-image:url("https://images.unsplash.com/photo-1764184124037-7eda1af5b9f0?auto=format&fit=crop&w=2400&q=88");background-size:cover;background-position:center 55%;filter:grayscale(35%) brightness(.68)}.craft-finale-overlay{background:linear-gradient(90deg,rgba(4,6,8,.88),rgba(4,6,8,.34) 72%),linear-gradient(0deg,rgba(4,6,8,.3),transparent)}
+.craft-finale-content{width:min(1440px,100%);margin:0 auto;padding:100px clamp(24px,7vw,112px)}.craft-finale h2{margin:0;font-size:clamp(56px,9vw,124px);line-height:.9;letter-spacing:-.075em;font-weight:600}.craft-finale h2 em{color:#c3c8ca}.craft-finale-content>p:not(.craft-eyebrow){max-width:450px;margin:28px 0 0;color:#c4c9cc;font-size:14px;line-height:1.8}.craft-finale-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:38px}
+.craft-source-note{display:flex;flex-wrap:wrap;gap:10px 24px;padding:24px clamp(24px,7vw,112px);background:#08090a;border-top:1px solid #262a2d;color:#777f84;font-size:10px;line-height:1.7}.craft-source-note>span{color:#c6cbce;font-weight:700;letter-spacing:.16em}.craft-source-note p{flex-basis:100%;max-width:980px;margin:0}.craft-source-note a{color:#aeb5b9;text-decoration:underline;text-underline-offset:3px}
+@keyframes craftReveal{from{opacity:.5;transform:scale(1.08)}to{opacity:1;transform:scale(1.025)}}@keyframes craftLine{0%,100%{transform:scaleX(.65);opacity:.5}50%{transform:scaleX(1);opacity:1}}
+@media(max-width:900px){.craft-stage-layout{grid-template-columns:minmax(0,1fr) minmax(280px,.9fr);gap:36px}.craft-chapter{min-height:560px}.craft-visual-frame{aspect-ratio:3/4}.craft-chapter h3{font-size:clamp(36px,5.3vw,56px)}}
+@media(max-width:680px){.craft-hero{min-height:calc(88svh - 64px);align-items:flex-end}.craft-hero-image{background-position:62% center}.craft-hero-shade{background:linear-gradient(0deg,rgba(5,7,9,.9),rgba(5,7,9,.12) 78%),linear-gradient(90deg,rgba(5,7,9,.2),transparent)}.craft-hero-content{padding:120px 22px 92px}.craft-hero h1{font-size:clamp(58px,16vw,100px)}.craft-hero-copy br{display:none}.craft-scroll-cue{margin-top:44px}.craft-hero-index{right:22px;bottom:24px;font-size:8px}.craft-process{padding:88px 0 70px}.craft-process-intro{padding:0 22px;margin-bottom:48px}.craft-process-intro h2{font-size:clamp(44px,12vw,68px)}.craft-stage-layout{display:flex;flex-direction:column;padding:0 22px;gap:28px}.craft-visual-rail{position:sticky;top:72px;z-index:3;width:100%}.craft-visual-frame{aspect-ratio:16/10;max-height:none}.craft-visual img{object-position:center 48%}.craft-visual>span{left:14px;bottom:14px;font-size:8px}.craft-visual-progress{padding-top:10px}.craft-chapters{width:100%}.craft-chapter{min-height:68svh;justify-content:center;padding:40px 0}.craft-chapter-top{margin-bottom:25px}.craft-chapter h3{font-size:clamp(42px,11vw,64px)}.craft-chapter>p{font-size:13px;margin-top:20px}.craft-chapter>small{margin-top:28px;font-size:8px}.craft-construction{padding:88px 22px}.craft-construction-heading h2{font-size:clamp(40px,10vw,62px)}.craft-construction-grid{grid-template-columns:1fr;margin-top:42px}.craft-construction-grid article{min-height:0;padding:25px 0 28px}.craft-construction-grid article+article{padding:25px 0 28px;border-left:0;border-top:1px solid #b7bcbd}.craft-construction-grid h3{margin:22px 0 12px}.craft-finale{min-height:82svh}.craft-finale-image{background-position:58% center}.craft-finale-content{padding:90px 22px}.craft-finale h2{font-size:clamp(58px,15vw,90px)}.craft-finale-actions{flex-direction:column;align-items:stretch}.craft-finale-actions>*{width:100%}.craft-source-note{padding:22px;gap:9px 16px}}
+@media(prefers-reduced-motion:reduce){.craft-hero-image,.craft-scroll-cue span{animation:none!important}.craft-visual,.craft-progress-track i,.craft-chapter,.craft-chapter>i{transition:none!important}.craft-visual{transform:none!important}.craft-visual:not(.is-active){visibility:hidden}}
+</style>
