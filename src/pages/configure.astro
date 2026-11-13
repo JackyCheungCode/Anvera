@@ -499,7 +499,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
     renderDropdownOptions(regionControl,regionRows,"Search state / province…");
     setDropdownLabel(regionControl,regionRows.length>1?"Select state / province":"Enter state / province manually");
     regionControl.trigger.disabled=false;
-    if(regionRows.length===1){regionControl.input.value="__none__";root.querySelector("#delivery-region-other").hidden=false;setDropdownValue(cityControl,"__other__","Enter city manually");root.querySelector("#delivery-city-other").hidden=false;cityControl.trigger.disabled=false;}
+    if(regionRows.length===1){regionControl.input.value="__none__";renderControl(regionControl);root.querySelector("#delivery-region-other-wrap").hidden=false;setDropdownValue(cityControl,"__other__","Enter city manually");root.querySelector("#delivery-city-other-wrap").hidden=false;cityControl.trigger.disabled=false;}
   };
   const loadDeliveryCities=async(countryCode,stateName)=>{
     const requestId=++cityRequestId;
