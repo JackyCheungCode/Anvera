@@ -750,11 +750,6 @@ main:focus { outline: 0; }
 .anvera-carbon-dropdown .m-field__label { color: var(--cds-text-secondary); }
 .anvera-carbon-dropdown .legacy-carbon-list-field { min-height: 3rem; }
 .anvera-carbon-dropdown .legacy-carbon-list__menu-item__option { min-height: 2.75rem; }
-.bmw-m-dark .m-input,
-.bmw-m-dark .m-textarea,
-.bmw-m-dark .legacy-carbon-list-field { background: #262b32; color: #f5f6f7; }
-.bmw-m-dark .m-field__label,
-.bmw-m-dark .m-field__help { color: #aeb7c1; }
 
 @media (max-width: 1100px) {
   .header-inner { gap: 18px; }
@@ -831,14 +826,6 @@ main:focus { outline: 0; }
 .anvera-carbon-combo-item img { display: block; width: 30px; height: 26px; object-fit: contain; flex: 0 0 30px; }
 .vf-product-filter { min-width: 0; }
 .vf-product-filter .legacy-carbon-combo { width: 100%; }
-.bmw-m-dark .legacy-carbon-list__menu,
-.bmw-m-dark .legacy-carbon-list__menu-item,
-.bmw-m-dark .legacy-carbon-list__menu-item__option { color: var(--cds-text-primary); background: var(--cds-layer-02); }
-.bmw-m-dark .legacy-carbon-list__menu-item:hover,
-.bmw-m-dark .legacy-carbon-list__menu-item[aria-selected="true"] { background: var(--cds-layer-hover-02); }
-.bmw-m-dark .m-input,
-.bmw-m-dark .m-textarea,
-.bmw-m-dark .legacy-carbon-list-field { background: var(--cds-field-01); color: var(--cds-text-primary); }
 @media (max-width: 640px) {
   .anvera-carbon-selected-logo { flex-basis: 42px; width: 42px; height: 48px; }
   .anvera-carbon-selected-logo img { width: 30px; height: 30px; }
@@ -947,3 +934,139 @@ main:focus { outline: 0; }
   .vehicle-finder-section--compact .vf-product-filters { grid-template-columns: minmax(0,1fr); }
   .vehicle-finder-section--compact .vf-product-filter { min-width: 0; }
 }
+
+
+/* ANVERA Carbon-inspired control layer: IBM-style geometry, neutral layers and blue interaction */
+:root {
+  --cds-interactive: #0f62fe; --cds-interactive-hover: #0353e9; --cds-focus: #0f62fe;
+  --cds-layer-01: #f4f4f4; --cds-layer-02: #e8e8e8; --cds-field: #f4f4f4;
+  --cds-border-subtle: #c6c6c6; --cds-border-strong: #8d8d8d;
+  --cds-text-primary: #161616; --cds-text-secondary: #525252;
+}
+.m-button {
+  min-height:48px;border:0;border-radius:0;padding:0 16px;display:inline-flex;align-items:center;justify-content:center;gap:12px;
+  font:600 14px/1.25 var(--font-body);letter-spacing:0;text-transform:none;
+  transition:background-color 120ms ease,color 120ms ease,outline-color 120ms ease;
+}
+.m-button--primary{color:#fff;background:#0f62fe}.m-button--primary:hover{background:#0353e9}
+.m-button--secondary{color:#0f62fe;background:transparent;box-shadow:inset 0 0 0 1px #0f62fe}.m-button--secondary:hover{color:#0043ce;background:#e8efff}
+.m-button--tertiary{color:#fff;background:#393939}.m-button--tertiary:hover{background:#4c4c4c}
+.m-button--ghost{color:#161616;background:transparent}.m-button--ghost:hover{background:#e8e8e8}
+.m-button:focus-visible,.m-input:focus-visible,.m-combo__field:focus-within{outline:2px solid #0f62fe;outline-offset:2px}
+.m-button:disabled{color:#8d8d8d;background:#c6c6c6;cursor:not-allowed}
+.m-field{display:grid;gap:8px;min-width:0}.m-field__label{color:#393939;font-size:12px;line-height:1.35;font-weight:600;letter-spacing:0;text-transform:none}
+.m-input{width:100%;min-width:0;min-height:48px;padding:0 16px;border:0;border-bottom:1px solid #8d8d8d;border-radius:0;color:#161616;background:#f4f4f4;font:14px/1.4 var(--font-body);box-shadow:none}
+.m-input:hover{background:#e8e8e8;border-bottom-color:#161616}.m-input:focus{outline:2px solid #0f62fe;outline-offset:-2px;border-bottom-color:#0f62fe;background:#fff}
+.m-input::placeholder{color:#6f6f6f;opacity:1}.m-input:disabled{color:#8d8d8d;background:#e0e0e0;cursor:not-allowed}
+.m-field__help{color:#525252;font-size:12px;line-height:1.4}.m-field__error{color:#da1e28;font-size:12px}
+.m-textarea{min-height:112px;padding:12px 16px;resize:vertical}
+.m-checkbox{display:inline-flex;align-items:flex-start;gap:10px;color:#161616;font-size:14px;line-height:1.4}.m-checkbox input{width:18px;height:18px;margin:1px 0 0;accent-color:#0f62fe}
+.m-combo{position:relative;display:grid;gap:8px;min-width:0}.m-combo__field{position:relative;display:flex;align-items:center}
+.m-combo__field .m-input{padding-right:48px}.m-combo__chevron,.m-combo__clear{position:absolute;right:14px;color:#525252}
+.m-combo__clear{right:34px;border:0;background:transparent;font-size:20px;cursor:pointer}
+.m-combo__list{position:absolute;z-index:100;top:calc(100% + 2px);left:0;right:0;max-height:280px;overflow:auto;margin:0;padding:4px 0;list-style:none;background:#fff;border:1px solid #c6c6c6;box-shadow:0 4px 12px #0002}
+.m-combo__list li button{width:100%;min-height:40px;padding:8px 16px;border:0;border-radius:0;display:flex;align-items:center;gap:10px;text-align:left;color:#161616;background:#fff;font:14px/1.35 var(--font-body);cursor:pointer}
+.m-combo__list li button:hover,.m-combo__list li[aria-selected="true"] button{background:#e8efff}
+.m-combo__empty{padding:12px 16px;color:#6f6f6f;font-size:13px}
+.m-notice{padding:16px;border-left:3px solid #0f62fe;border-radius:0;color:#161616;background:#edf5ff;font-size:14px}
+.m-notice--success{border-left-color:#24a148;background:#defbe6}.m-notice--warning{border-left-color:#f1c21b;background:#fcf4d6}.m-notice--error{border-left-color:#da1e28;background:#fff1f1}
+.m-upload__button{min-height:48px;padding:12px 16px;border:1px dashed #8d8d8d;border-radius:0;color:#0f62fe;background:#f4f4f4}
+.m-upload__button:hover{background:#e8e8e8;border-color:#0f62fe}
+
+
+/* Carbon control system — final override for every shared control component. */
+:root {
+  --cds-interactive: #0f62fe;
+  --cds-interactive-hover: #0353e9;
+  --cds-focus: #0f62fe;
+  --cds-layer-01: #f4f4f4;
+  --cds-layer-02: #e8e8e8;
+  --cds-field: #f4f4f4;
+  --cds-border-subtle: #c6c6c6;
+  --cds-border-strong: #8d8d8d;
+  --cds-text-primary: #161616;
+  --cds-text-secondary: #525252;
+}
+.m-button,
+.m-button:hover {
+  transform: none;
+  border-radius: 0;
+  font-family: var(--font-body, Arial, sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  box-shadow: none;
+}
+.m-button::before { content: none !important; display: none !important; }
+.m-button--primary { color: #fff; border: 0; background: #0f62fe; }
+.m-button--primary:hover { color: #fff; background: #0353e9; }
+.m-button--secondary { color: #0f62fe; border: 1px solid #0f62fe; background: transparent; }
+.m-button--secondary:hover { color: #0043ce; border-color: #0043ce; background: #e8efff; }
+.m-button--tertiary { color: #fff; border: 0; background: #393939; }
+.m-button--tertiary:hover { color: #fff; background: #4c4c4c; }
+.m-button--ghost { color: #161616; border: 0; background: transparent; }
+.m-button--ghost:hover { color: #161616; background: #e8e8e8; }
+.m-button:focus-visible,
+.m-input:focus-visible,
+.m-combo__field:focus-within {
+  outline: 2px solid #0f62fe;
+  outline-offset: 2px;
+}
+.m-field__label { color: #393939; font-size: 12px; font-weight: 600; letter-spacing: 0; text-transform: none; }
+.m-input {
+  min-height: 48px;
+  border: 0;
+  border-bottom: 1px solid #8d8d8d;
+  border-radius: 0;
+  color: #161616;
+  background: #f4f4f4;
+  box-shadow: none;
+  font: 14px/1.4 var(--font-body, Arial, sans-serif);
+}
+.m-input:hover { border-bottom-color: #161616; background: #e8e8e8; }
+.m-input:focus { outline: 2px solid #0f62fe; outline-offset: -2px; border-bottom-color: #0f62fe; background: #fff; }
+.m-input::placeholder { color: #6f6f6f; }
+.m-input:disabled, .m-input[readonly] { color: #8d8d8d; background: #e0e0e0; }
+.m-field__help { color: #525252; font-size: 12px; }
+.m-field__error { color: #da1e28; font-size: 12px; }
+.m-checkbox { color: #161616; font-size: 14px; }
+.m-checkbox input { accent-color: #0f62fe; }
+.m-combo__list { border: 1px solid #c6c6c6; border-radius: 0; background: #fff; box-shadow: 0 4px 12px #0002; }
+.m-combo__list li button { color: #161616; background: #fff; border-radius: 0; font: 14px/1.35 var(--font-body, Arial, sans-serif); }
+.m-combo__list li button:hover,
+.m-combo__list li[aria-selected="true"] button { background: #e8efff; }
+.m-notice { border-radius: 0; color: #161616; background: #edf5ff; }
+.m-upload__button { border-radius: 0; color: #0f62fe; background: #f4f4f4; }
+.m-upload__button:hover { background: #e8e8e8; border-color: #0f62fe; }
+
+/* Carbon G100 treatment for controls inside the dark configure workspace. */
+.studio-shell .m-field__label { color: #c6c6c6; }
+.studio-shell .m-input {
+  color: #f4f4f4;
+  border-bottom-color: #6f6f6f;
+  background: #262626;
+}
+.studio-shell .m-input:hover { background: #393939; border-bottom-color: #f4f4f4; }
+.studio-shell .m-input:focus { outline-color: #4589ff; border-bottom-color: #4589ff; background: #262626; }
+.studio-shell .m-input::placeholder { color: #a8a8a8; }
+.studio-shell .m-field__help { color: #c6c6c6; }
+.studio-shell .m-checkbox { color: #f4f4f4; }
+.studio-shell .m-combo__list { border-color: #525252; background: #262626; }
+.studio-shell .m-combo__list li button { color: #f4f4f4; background: #262626; }
+.studio-shell .m-combo__list li button:hover,
+.studio-shell .m-combo__list li[aria-selected="true"] button { color: #fff; background: #393939; }
+.studio-shell .m-upload__button { color: #78a9ff; border-color: #8d8d8d; background: #262626; }
+.studio-shell .m-upload__button:hover { background: #393939; border-color: #4589ff; }
+
+
+/* Legacy Carbon-named buttons share the same IBM Carbon interaction palette. */
+.legacy-carbon-btn { min-height: 48px; border: 0; border-radius: 0; font: 600 14px/1.25 var(--font-body, Arial, sans-serif); letter-spacing: 0; text-transform: none; box-shadow: none; }
+.legacy-carbon-btn--primary { color: #fff; background: #0f62fe; }
+.legacy-carbon-btn--primary:hover { color: #fff; background: #0353e9; }
+.legacy-carbon-btn--secondary { color: #0f62fe; background: transparent; box-shadow: inset 0 0 0 1px #0f62fe; }
+.legacy-carbon-btn--secondary:hover { color: #0043ce; background: #e8efff; }
+.legacy-carbon-btn--tertiary { color: #fff; background: #393939; box-shadow: none; }
+.legacy-carbon-btn--tertiary:hover { color: #fff; background: #4c4c4c; }
+.legacy-carbon-btn--ghost { color: inherit; background: transparent; }
+.legacy-carbon-btn--ghost:hover { background: rgba(127,127,127,.16); }
