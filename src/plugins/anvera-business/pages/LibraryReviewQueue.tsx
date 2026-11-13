@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Button as CarbonButton } from "@carbon/react";
+import { Button as CarbonButton, TextArea as CarbonTextArea } from "@carbon/react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 
 type ReviewItem = {
@@ -69,7 +69,7 @@ export function LibraryReviewQueue() {
           <strong>{item.code} · {item.name}</strong>
           <small>{item.detail}</small>
         </div>
-        <label className="api-review-note"><span>Engineering review note</span><textarea value={notes[item.id] ?? ""} onChange={(event) => setNotes((current) => ({ ...current, [item.id]: event.target.value }))} placeholder="Record evidence checked, limitations or required changes." rows={2} /></label>
+        <div className="api-review-note"><CarbonTextArea id={`review-note-${item.id}`} labelText="Engineering review note" value={notes[item.id] ?? ""} onChange={(event) => setNotes((current) => ({ ...current, [item.id]: event.target.value }))} placeholder="Record evidence checked, limitations or required changes." rows={2} /></div>
         <div className="api-review-decision-actions">
           <CarbonButton kind="ghost" type="button" className="api-review-decision--approve" disabled={savingId === item.id} onClick={() => void decide(item, "approved")}>Approve</CarbonButton>
           <CarbonButton kind="ghost" type="button" disabled={savingId === item.id} onClick={() => void decide(item, "needs_revision")}>Return for revision</CarbonButton>
