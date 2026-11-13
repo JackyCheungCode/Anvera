@@ -48,7 +48,7 @@ Hidden inputs used as form payload fields and honeypot fields are not user-facin
 - Isolated preview workflow: build, Wrangler dry-run, preview D1 migrations, preview Worker deployment, configuration-order persistence smoke test and Wheel-Size catalog proxy smoke test.
 - Browser Run screenshot review: mobile configuration page captured at 480 × 360.
 - No production merge or deployment is performed by this branch. Production remains on `main` until the reviewed pull request is merged and the production deployment workflow succeeds.
-- The redundant branch-scoped Cloudflare Workers Builds configuration was retired after it attempted a second preview deployment with an incomplete KV binding. GitHub Actions is now the single preview and production deployment path; the Worker itself and its production resources were not deleted.
+- The branch-scoped Cloudflare Workers Builds integration is retained as a build-only check; its deploy command is a no-op because GitHub Actions owns preview and production deployment. This prevents a duplicate Wrangler preview deployment from bypassing the isolated preview configuration and its KV binding.
 
 ## Remaining QA boundary
 
