@@ -23,6 +23,7 @@ type ButtonControlProps = {
   ariaExpanded?: boolean;
   productKey?: string;
   ariaControls?: string;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
 };
 
 export function ButtonControl({
@@ -37,11 +38,12 @@ export function ButtonControl({
   ariaPressed,
   ariaExpanded,
   productKey,
-  ariaControls
+  ariaControls,
+  onClick
 }: ButtonControlProps) {
   const kind = variant === "dark" ? "tertiary" : variant === "ghost" ? "ghost" : variant;
   return (
-    <CarbonButton id={id} className={className} data-wheel-filter={filterKey} data-product={productKey} aria-pressed={ariaPressed} aria-expanded={ariaExpanded} aria-controls={ariaControls} kind={kind} size="lg" type={type} href={disabled ? undefined : href} disabled={disabled}>
+    <CarbonButton id={id} className={className} data-wheel-filter={filterKey} data-product={productKey} aria-pressed={ariaPressed} aria-expanded={ariaExpanded} aria-controls={ariaControls} onClick={onClick} kind={kind} size="lg" type={type} href={disabled ? undefined : href} disabled={disabled}>
       {children}
     </CarbonButton>
   );
@@ -72,7 +74,7 @@ export function TextInputControl({
       readOnly={readOnly}
       labelText={label}
       type={type}
-      value={value}
+      defaultValue={value}
       placeholder={placeholder}
       required={required}
       autoComplete={autocomplete}
@@ -126,7 +128,7 @@ export function NotificationControl({
   );
 }
 
-type DropdownOption = { value: string; label: string };
+type DropdownOption = { value: string; label: string; logo?: string };
 type DropdownControlProps = {
   id: string;
   name: string;
@@ -170,7 +172,7 @@ export function DropdownControl({
 }
 
 
-export type CarbonVehicleOption = { value: string; label: string; raw: unknown };
+export type CarbonVehicleOption = { value: string; label: string; raw: unknown; logo?: string };
 type DynamicComboBoxControlProps = {
   id: string;
   label: string;
@@ -186,21 +188,25 @@ export function DynamicComboBoxControl({
 }: DynamicComboBoxControlProps) {
   const itemToString = (item: CarbonVehicleOption | null) => item?.label ?? "";
   return (
-    <ComboBox
-      id={id}
-      titleText={label}
-      placeholder={placeholder}
-      items={items}
-      selectedItem={selectedItem}
-      itemToString={itemToString}
-      disabled={disabled}
-      size="lg"
-      onChange={({ selectedItem: next }) => onChange(next ?? null)}
-      shouldFilterItem={({ item, inputValue, itemToString: toString }) => {
-        const label = toString?.(item) ?? "";
-        return label.toLocaleLowerCase().includes((inputValue ?? "").toLocaleLowerCase());
-      }}
-    />
+    <div className="anvera-carbon-vehicle-combo">
+      {selectedItem?.logo ? <span className="anvera-carbon-selected-logo"><img src={selectedItem.logo} alt="" /></span> : null}
+      <ComboBox
+        id={id}
+        titleText={label}
+        placeholder={placeholder}
+        items={items}
+        selectedItem={selectedItem}
+        itemToString={itemToString}
+        itemToElement={(item) => item ? <span className="anvera-carbon-combo-item">{item.logo ? <img src={item.logo} alt="" loading="lazy" /> : null}<span>{item.label}</span></span> : null}
+        disabled={disabled}
+        size="lg"
+        onChange={({ selectedItem: next }) => onChange(next ?? null)}
+        shouldFilterItem={({ item, inputValue, itemToString: toString }) => {
+          const label = toString?.(item) ?? "";
+          return label.toLocaleLowerCase().includes((inputValue ?? "").toLocaleLowerCase());
+        }}
+      />
+    </div>
   );
 }
 
@@ -226,7 +232,7 @@ export function TextAreaControl({
       name={name}
       className={className}
       labelText={label}
-      value={value}
+      defaultValue={value}
       placeholder={placeholder}
       rows={rows}
       required={required}
@@ -262,6 +268,30 @@ export function FileUploaderControl({
       labelDescription={description}
       buttonKind="secondary"
       size="md"
+    />
+  );
+}
+
+
+type FilterComboBoxControlProps = {
+  id: string;
+  label: string;
+  items: Array<{ value: string; label: string }>;
+  selectedItem: { value: string; label: string } | null;
+  onChange: (item: { value: string; label: string } | null) => void;
+};
+
+export function FilterComboBoxControl({ id, label, items, selectedItem, onChange }: FilterComboBoxControlProps) {
+  return (
+    <ComboBox
+      id={id}
+      titleText={label}
+      placeholder={`All ${label.toLowerCase()}s`}
+      items={items}
+      selectedItem={selectedItem}
+      itemToString={(item) => item?.label ?? ""}
+      onChange={({ selectedItem: next }) => onChange(next ?? null)}
+      size="lg"
     />
   );
 }
