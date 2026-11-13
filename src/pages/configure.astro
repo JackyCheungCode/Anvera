@@ -236,7 +236,8 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
       path: state.specPath,
       selected: state.selectedFitment ? {
         front: state.selectedFitment.front,
-        rear: state.selectedFitment.rear,        classification: state.selectedFitment.classification
+        rear: state.selectedFitment.rear,
+        classification: state.selectedFitment.classification
       } : null,
       customFront: root.querySelector("#custom-front")?.value || "",
       customRear: root.querySelector("#custom-rear")?.value || "",
@@ -357,7 +358,8 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
   };
   const setDropdownValue=(control,value,label)=>{
     if(!control)return;
-    control.input.value=value;setDropdownLabel(control,label);    control.menu?.querySelectorAll("[data-dropdown-option]").forEach(option=>option.setAttribute("aria-selected",String(option.dataset.value===value)));
+    control.input.value=value;setDropdownLabel(control,label);
+    control.menu?.querySelectorAll("[data-dropdown-option]").forEach(option=>option.setAttribute("aria-selected",String(option.dataset.value===value)));
     control.input.dispatchEvent(new Event("change",{bubbles:true}));
   };
   const closeDropdowns=except=>{
@@ -477,7 +479,8 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
   root.querySelector("#submit-configuration").addEventListener("click",async()=>{
     const button=root.querySelector("#submit-configuration"),status=root.querySelector("#submit-status");
     if(!state.serverReady||!state.accessToken){status.textContent="The secure order service is not available yet. Your local draft remains saved on this device.";return;}
-    const customerName=root.querySelector("#contact-name").value.trim(),email=root.querySelector("#contact-email").value.trim(),phone=root.querySelector("#contact-phone").value.trim();    if(!customerName||!email){status.textContent="Enter your contact name and email before submitting.";return;}
+    const customerName=root.querySelector("#contact-name").value.trim(),email=root.querySelector("#contact-email").value.trim(),phone=root.querySelector("#contact-phone").value.trim();
+    if(!customerName||!email){status.textContent="Enter your contact name and email before submitting.";return;}
     // @ts-ignore Cloudflare Turnstile is injected by its external script.
     const turnstile=window.turnstile;const turnstileToken=(turnstile&&turnstile.getResponse)?turnstile.getResponse():"";
     if(!turnstileToken){status.textContent="Complete the security verification before submitting.";return;}
