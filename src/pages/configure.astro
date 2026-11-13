@@ -435,11 +435,12 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
     }));
   };
   const countryControl=dropdownControl("delivery-country"), regionControl=dropdownControl("delivery-region"), cityControl=dropdownControl("delivery-city");
-  const constructionFilter=dropdownControl("filter-construction"), styleFilter=dropdownControl("filter-style"), diameterFilter=dropdownControl("filter-diameter"), widthFilter=dropdownControl("filter-width"), pcdFilter=dropdownControl("filter-pcd");
+  const styleFilter=dropdownControl("filter-style"), diameterFilter=dropdownControl("filter-diameter"), widthFilter=dropdownControl("filter-width");
   const finishControl=dropdownControl("wheel-finish"), colourControl=dropdownControl("wheel-colour"), deliveryTermControl=dropdownControl("delivery-term"), transportControl=dropdownControl("shipping-method");
-  const filterControls=[styleFilter,diameterFilter,widthFilter,pcdFilter].filter(Boolean);
+  let selectedConstruction="";
+  const filterControls=[styleFilter,diameterFilter,widthFilter].filter(Boolean);
   const applyDesignFilters=()=>{
-    const selected=[constructionFilter,styleFilter,diameterFilter,widthFilter,pcdFilter].map(control=>control.input.value);
+    const selected=[selectedConstruction,styleFilter?.input.value||"",diameterFilter?.input.value||"",widthFilter?.input.value||""];
     const cards=[...root.querySelectorAll(".design-card")];let visible=0;
     cards.forEach(card=>{
       const product=productRows.find(row=>row.slug===card.dataset.product)||{};
@@ -460,7 +461,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
     renderControl(control);
   };
   const uniqueRows=values=>[...new Set((values||[]).filter(value=>value!==null&&value!==undefined&&String(value).trim()!=="").map(String))].sort((a,b)=>a.localeCompare(b)).map(value=>({value,label:value}));
-  const setupOptions=(control,rows,placeholder)=>{renderDropdownOptions(control,rows,placeholder);setDropdownLabel(control,placeholder);control.trigger.disabled=false;};
+  const setupOptions=(control,rows,placeholder)=>{if(!control)return;renderDropdownOptions(control,rows,placeholder);setDropdownLabel(control,placeholder);control.trigger.disabled=false;};
   root.querySelectorAll("[data-construction-choice]").forEach(button=>button.addEventListener("click",()=>{
     selectedConstruction=button.dataset.constructionChoice==="all"?"":button.dataset.constructionChoice.replaceAll("_","-");
     root.querySelectorAll("[data-construction-choice]").forEach(choice=>choice.classList.toggle("is-active",choice===button));
@@ -469,7 +470,6 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
   setupOptions(styleFilter,uniqueRows(productRows.map(row=>row.designStyle||row.style)),"All styles");
   setupOptions(diameterFilter,uniqueRows(productRows.flatMap(row=>Array.isArray(row.diameterOptions)?row.diameterOptions:[])),"All diameters");
   setupOptions(widthFilter,uniqueRows(productRows.flatMap(row=>Array.isArray(row.widthOptions)?row.widthOptions:[])),"All widths");
-  setupOptions(pcdFilter,uniqueRows(productRows.flatMap(row=>Array.isArray(row.pcdOptions)?row.pcdOptions:[])),"All PCD");
   setupOptions(finishControl,["brushed","polished","machined","painted","powder-coated","anodized"].map(value=>({value,label:value.replaceAll("-"," ").replace(/(^|-)([a-z])/g,(_match,separator,letter)=>separator+letter.toUpperCase())})),"Select surface treatment");
   setupOptions(colourControl,["satin-black","gloss-black","titanium","graphite","silver","bronze","custom"].map(value=>({value,label:value.replaceAll("-"," ").replace(/(^|-)([a-z])/g,(_match,separator,letter)=>separator+letter.toUpperCase())})),"Select colour");
   setupOptions(deliveryTermControl,[
