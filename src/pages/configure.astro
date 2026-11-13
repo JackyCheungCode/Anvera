@@ -357,8 +357,38 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
       option.setAttribute("aria-selected",String(control.input.value===String(row.value)));
       if(row.flag){const flag=document.createElement("span");flag.className="dropdown-flag";flag.textContent=row.flag;flag.setAttribute("aria-hidden","true");option.append(flag);}
       const text=document.createElement("span");text.textContent=row.label;option.append(text);
+      // Bind selection directly to the generated button. This avoids relying on
+      // a delegated event crossing nested label/listbox elements on touch browsers.
+      option.addEventListener("click",event=>{
+        event.preventDefault();
+        event.stopPropagation();
+        void selectDropdownOption(control,option);
+      });
       control.menu.append(option);
     });
+  };
+  const selectDropdownOption=async(control,option)=>{
+    const value=option.dataset.value;
+    const label=option.dataset.label||option.textContent.trim();
+    if(!value)return;
+    setDropdownValue(control,value,control===countryControl?(countryRows.find(row=>row.value===value)?.flag+" "+label):label);
+    closeDropdowns();
+    if(control===countryControl){
+      ++regionRequestId;++cityRequestId;
+      setDropdownValue(regionControl,"","Loading states / provinces…");
+      setDropdownValue(cityControl,"","Select state / province first");
+      regionControl.trigger.disabled=true;cityControl.trigger.disabled=true;
+      root.querySelector("#delivery-region-other").hidden=true;root.querySelector("#delivery-city-other").hidden=true;
+      await loadDeliveryRegions(value);
+    }else if(control===regionControl){
+      ++cityRequestId;
+      root.querySelector("#delivery-region-other").hidden=value!=="__none__";
+      setDropdownValue(cityControl,"","Loading cities…");
+      cityControl.trigger.disabled=true;root.querySelector("#delivery-city-other").hidden=true;
+      await loadDeliveryCities(countryControl.input.value,value==="__none__"?"":label);
+    }else if(control===cityControl){
+      root.querySelector("#delivery-city-other").hidden=value!=="__other__";
+    }
   };
   const setDropdownValue=(control,value,label)=>{
     if(!control)return;
@@ -398,31 +428,6 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
       trigger.setAttribute("aria-expanded",String(opening));
       if(opening)menu?.querySelector(".carbon-dropdown-search")?.focus();
       event.preventDefault();return;
-    }
-    const option=target?.closest("[data-dropdown-option], [role=option][data-value]");
-    if(option&&root.contains(option)){
-      const dropdown=option.closest("[data-carbon-dropdown]"), control=dropdownControl(dropdown.querySelector("input[type=hidden]")?.id);
-      if(!control)return;
-      const value=option.dataset.value,label=option.dataset.label||option.textContent.trim();
-      setDropdownValue(control,value,control===countryControl?(countryRows.find(row=>row.value===value)?.flag+" "+label):label);
-      closeDropdowns();
-      if(control===countryControl){
-        ++regionRequestId;++cityRequestId;
-        setDropdownValue(regionControl,"","Loading states / provinces…");
-        setDropdownValue(cityControl,"","Select state / province first");
-        regionControl.trigger.disabled=true;cityControl.trigger.disabled=true;
-        root.querySelector("#delivery-region-other").hidden=true;root.querySelector("#delivery-city-other").hidden=true;
-        await loadDeliveryRegions(value);
-      }else if(control===regionControl){
-        ++cityRequestId;
-        root.querySelector("#delivery-region-other").hidden=value!=="__none__";
-        setDropdownValue(cityControl,"","Loading cities…");
-        cityControl.trigger.disabled=true;root.querySelector("#delivery-city-other").hidden=true;
-        await loadDeliveryCities(countryControl.input.value,value==="__none__"?"":label);
-      }else if(control===cityControl){
-        root.querySelector("#delivery-city-other").hidden=value!=="__other__";
-      }
-      event.preventDefault();
     }
   }, true);
   document.addEventListener("click",event=>{
