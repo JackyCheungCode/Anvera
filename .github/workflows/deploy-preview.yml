@@ -16,6 +16,7 @@ on:
       - feat/customer-configuration-studio
       - feat/configurator-selection-delivery-polish
       - fix/manufacturer-logo-fallback
+      - fix/sitewide-carbon-native-controls
     paths-ignore:
       - "docs/**"
       - "*.md"
