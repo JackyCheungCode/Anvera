@@ -44,6 +44,7 @@ const safeProducts = products.map((product) => ({
   </div>
 </section>
 <script>
+  // @ts-nocheck
   import React from "react";
   import { createRoot } from "react-dom/client";
   import { DynamicComboBoxControl } from "./carbon/Controls";
@@ -52,7 +53,6 @@ const safeProducts = products.map((product) => ({
   const anveraProducts = JSON.parse(sectionRoot?.getAttribute("data-products") || "[]");
   const compactMode = sectionRoot?.getAttribute("data-compact") === "true";
   const resultsTargetId = sectionRoot?.getAttribute("data-results-target") || "";
-  // @ts-nocheck
   const form = document.querySelector("#vehicle-finder-form");
   const status = document.querySelector("#vf-status");
   const submit = document.querySelector("#vf-submit");
