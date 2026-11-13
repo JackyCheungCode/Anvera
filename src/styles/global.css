@@ -750,11 +750,6 @@ main:focus { outline: 0; }
 .anvera-carbon-dropdown .m-field__label { color: var(--cds-text-secondary); }
 .anvera-carbon-dropdown .legacy-carbon-list-field { min-height: 3rem; }
 .anvera-carbon-dropdown .legacy-carbon-list__menu-item__option { min-height: 2.75rem; }
-.bmw-m-dark .m-input,
-.bmw-m-dark .m-textarea,
-.bmw-m-dark .legacy-carbon-list-field { background: #262b32; color: #f5f6f7; }
-.bmw-m-dark .m-field__label,
-.bmw-m-dark .m-field__help { color: #aeb7c1; }
 
 @media (max-width: 1100px) {
   .header-inner { gap: 18px; }
@@ -831,14 +826,6 @@ main:focus { outline: 0; }
 .anvera-carbon-combo-item img { display: block; width: 30px; height: 26px; object-fit: contain; flex: 0 0 30px; }
 .vf-product-filter { min-width: 0; }
 .vf-product-filter .legacy-carbon-combo { width: 100%; }
-.bmw-m-dark .legacy-carbon-list__menu,
-.bmw-m-dark .legacy-carbon-list__menu-item,
-.bmw-m-dark .legacy-carbon-list__menu-item__option { color: var(--cds-text-primary); background: var(--cds-layer-02); }
-.bmw-m-dark .legacy-carbon-list__menu-item:hover,
-.bmw-m-dark .legacy-carbon-list__menu-item[aria-selected="true"] { background: var(--cds-layer-hover-02); }
-.bmw-m-dark .m-input,
-.bmw-m-dark .m-textarea,
-.bmw-m-dark .legacy-carbon-list-field { background: var(--cds-field-01); color: var(--cds-text-primary); }
 @media (max-width: 640px) {
   .anvera-carbon-selected-logo { flex-basis: 42px; width: 42px; height: 48px; }
   .anvera-carbon-selected-logo img { width: 30px; height: 30px; }
@@ -1071,3 +1058,15 @@ main:focus { outline: 0; }
 .studio-shell .m-combo__list li[aria-selected="true"] button { color: #fff; background: #393939; }
 .studio-shell .m-upload__button { color: #78a9ff; border-color: #8d8d8d; background: #262626; }
 .studio-shell .m-upload__button:hover { background: #393939; border-color: #4589ff; }
+
+
+/* Legacy Carbon-named buttons share the same IBM Carbon interaction palette. */
+.legacy-carbon-btn { min-height: 48px; border: 0; border-radius: 0; font: 600 14px/1.25 var(--font-body, Arial, sans-serif); letter-spacing: 0; text-transform: none; box-shadow: none; }
+.legacy-carbon-btn--primary { color: #fff; background: #0f62fe; }
+.legacy-carbon-btn--primary:hover { color: #fff; background: #0353e9; }
+.legacy-carbon-btn--secondary { color: #0f62fe; background: transparent; box-shadow: inset 0 0 0 1px #0f62fe; }
+.legacy-carbon-btn--secondary:hover { color: #0043ce; background: #e8efff; }
+.legacy-carbon-btn--tertiary { color: #fff; background: #393939; box-shadow: none; }
+.legacy-carbon-btn--tertiary:hover { color: #fff; background: #4c4c4c; }
+.legacy-carbon-btn--ghost { color: inherit; background: transparent; }
+.legacy-carbon-btn--ghost:hover { background: rgba(127,127,127,.16); }
