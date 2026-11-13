@@ -8,6 +8,7 @@ on:
       - fix/vehicle-fitment-worker-dispatch
       - feat/vehicle-fitment-oem-aftermarket-products
       - fix/vehicle-fitment-carbon-ui
+      - refactor/design-tokens-app-shell-carbon
       - feat/vehicle-picker-brand-and-model-imagery
       - feat/wheels-catalog-and-product-data
       - feat/product-intelligence-global-setup
