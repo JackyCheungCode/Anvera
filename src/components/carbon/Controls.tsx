@@ -23,6 +23,7 @@ type ButtonControlProps = {
   ariaExpanded?: boolean;
   productKey?: string;
   ariaControls?: string;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
 };
 
 export function ButtonControl({
@@ -37,11 +38,12 @@ export function ButtonControl({
   ariaPressed,
   ariaExpanded,
   productKey,
-  ariaControls
+  ariaControls,
+  onClick
 }: ButtonControlProps) {
   const kind = variant === "dark" ? "tertiary" : variant === "ghost" ? "ghost" : variant;
   return (
-    <CarbonButton id={id} className={className} data-wheel-filter={filterKey} data-product={productKey} aria-pressed={ariaPressed} aria-expanded={ariaExpanded} aria-controls={ariaControls} kind={kind} size="lg" type={type} href={disabled ? undefined : href} disabled={disabled}>
+    <CarbonButton id={id} className={className} data-wheel-filter={filterKey} data-product={productKey} aria-pressed={ariaPressed} aria-expanded={ariaExpanded} aria-controls={ariaControls} onClick={onClick} kind={kind} size="lg" type={type} href={disabled ? undefined : href} disabled={disabled}>
       {children}
     </CarbonButton>
   );
