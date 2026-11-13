@@ -431,7 +431,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
       ++cityRequestId;
       root.querySelector("#delivery-region-other-wrap").hidden=value!=="__none__";
       setDropdownValue(cityControl,"","Loading cities…");
-      cityControl.trigger.disabled=true;root.querySelector("#delivery-city-other").hidden=true;
+      cityControl.trigger.disabled=true;root.querySelector("#delivery-city-other-wrap").hidden=true;
       await loadDeliveryCities(countryControl.input.value,value==="__none__"?"":label);
     }else if(control===cityControl){
       root.querySelector("#delivery-city-other-wrap").hidden=value!=="__other__";
