@@ -1,5 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
+import Button from "../components/ui/Button.astro";
 import VehicleFitmentFinder from "../components/VehicleFitmentFinder.astro";
 import { getEmDashCollection, getEmDashEntry } from "emdash";
 const { entries: wheelEntries = [], cacheHint } = await getEmDashCollection("wheel_products", { status: "published", limit: 100, orderBy: { display_order: "asc" } }).catch(() => ({ entries: [], cacheHint: null }));
@@ -44,6 +45,6 @@ const products = wheelEntries.map((entry: any) => {
   <VehicleFitmentFinder products={products} />
   <section class="vehicle-finder-next">
     <div><p class="section-kicker">Beyond factory fitment</p><h2>Made to fit.<br />Made to be yours.</h2><p>Factory specifications are the starting point. Our team will review the complete vehicle configuration before confirming a bespoke wheel specification.</p></div>
-    <a class="cds-btn cds-btn--primary" href="/custom-inquiry">Discuss your configuration <span aria-hidden="true">↗</span></a>
+    <Button href="/custom-inquiry" variant="primary">Discuss your configuration <span aria-hidden="true">↗</span></Button>
   </section>
 </Base>
