@@ -1,0 +1,203 @@
+/* Sitewide light migration follow-up: page-level templates that retain legacy dark styling. */
+:root {
+  --anvera-red: #1769aa;
+  --cds-focus: #1769aa;
+}
+
+/* Navigation: consistent light shell on every route, including mobile expansion. */
+.site-header {
+  position: sticky !important;
+  top: 0 !important;
+  inset: auto !important;
+  z-index: 100 !important;
+  color: #17191b !important;
+  background: rgba(255,255,255,.97) !important;
+  border-bottom: 1px solid #e1e4e2 !important;
+  box-shadow: 0 4px 18px rgba(20,25,28,.035);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+.site-header .header-inner { min-height: 78px; }
+.site-header .primary-nav a,
+.site-header .header-utility,
+.site-header .nav-toggle { color: #292f33 !important; }
+.site-header .primary-nav a:hover,
+.site-header .primary-nav a[aria-current="page"],
+.site-header .header-utility:hover { color: #1769aa !important; }
+.site-header .nav-toggle { border: 0; background: transparent; }
+@media (max-width: 900px) {
+  .site-header .primary-nav {
+    color: #17191b !important;
+    background: rgba(255,255,255,.99) !important;
+    border-top: 1px solid #e1e4e2 !important;
+    box-shadow: 0 18px 32px rgba(20,25,28,.10) !important;
+  }
+  .site-header .primary-nav a { color: #292f33 !important; }
+  .site-header .primary-nav a:hover,
+  .site-header .primary-nav a[aria-current="page"] { color: #1769aa !important; }
+  .site-header .mobile-nav-actions { border-top-color: #e1e4e2 !important; }
+  .site-header .mobile-nav-actions a { color: #292f33 !important; }
+}
+
+/* Vehicle fitment — the standalone page must not inherit the legacy black hero. */
+.vehicle-finder-hero {
+  min-height: 560px !important;
+  color: #17191b !important;
+  background:
+    radial-gradient(ellipse at 78% 42%, rgba(255,255,255,.98), transparent 34%),
+    linear-gradient(112deg,#f8f8f6 0%,#eceeeb 54%,#dfe3e1 100%) !important;
+}
+.vehicle-finder-hero .eyebrow { color: #596167 !important; }
+.vehicle-finder-hero h1 { color: #17191b !important; }
+.vehicle-finder-hero h1 span { color: #1769aa !important; }
+.vehicle-finder-hero p:last-child { color: #555e63 !important; }
+.vehicle-finder-section {
+  color: #17191b !important;
+  background: #f4f5f2 !important;
+}
+.vehicle-finder-heading h2,
+.vehicle-finder-heading h2 span { color: #17191b !important; }
+.vehicle-finder-heading h2 span { color: #1769aa !important; }
+.vehicle-finder-heading > p { color: #596168 !important; }
+.vehicle-finder-form { background: #fff !important; box-shadow: 0 12px 36px rgba(20,25,28,.055); }
+.vehicle-finder-field,
+.vehicle-finder-field > span { color: #555e63 !important; }
+.vehicle-finder-section .m-field__label { color: #555e63 !important; }
+.vehicle-finder-section .m-input,
+.vehicle-finder-section .m-combo__field,
+.vehicle-finder-section .vf-select-trigger,
+.vehicle-finder-section .vf-mini-trigger {
+  color: #17191b !important;
+  background-color: #fff !important;
+  border-color: #c7ceca !important;
+}
+.vehicle-finder-section .m-combo__list,
+.vehicle-finder-section .vf-select-menu,
+.vehicle-finder-section .vf-mini-menu { color: #17191b !important; background: #fff !important; }
+.vehicle-finder-section .m-combo__list li button,
+.vehicle-finder-section .vf-select-option,
+.vehicle-finder-section .vf-mini-menu button { color: #292f33 !important; background: #fff !important; }
+.vehicle-finder-section .m-combo__list li button:hover,
+.vehicle-finder-section .vf-select-option:hover,
+.vehicle-finder-section .vf-mini-menu button:hover { background: #edf1f3 !important; }
+.vehicle-finder-section .vehicle-finder-results,
+.vehicle-finder-section .vf-fitment-table,
+.vehicle-finder-section .vf-table-scroll { color: #17191b !important; background: #fff !important; }
+.vehicle-finder-section .vf-fitment-table thead,
+.vehicle-finder-section .vf-fitment-table th { color: #343b3f !important; background: #eceeeb !important; }
+.vehicle-finder-section .vf-fitment-table td { color: #292f33 !important; background: #fff !important; border-color: #e1e4e2 !important; }
+.vehicle-finder-section .vf-fitment-table tbody tr:hover td { background: #f4f6f4 !important; }
+.vehicle-finder-section .vf-fitment-table tbody tr[aria-selected="true"] td { background: #eaf1f7 !important; }
+.vehicle-finder-section .vf-results-heading h3,
+.vehicle-finder-section .vf-products-heading h3,
+.vehicle-finder-section .vf-fitment-group-heading h4 { color: #17191b !important; }
+.vehicle-finder-section .vf-results-heading p,
+.vehicle-finder-section .vf-products-heading p,
+.vehicle-finder-section .vf-fitment-group-heading p,
+.vehicle-finder-section .vf-fitment-card-note { color: #626b70 !important; }
+.vehicle-finder-section .vf-products { color: #17191b !important; background: #fff !important; }
+.vehicle-finder-section .vf-product-card { color: #17191b !important; background: #f4f5f2 !important; }
+.vehicle-finder-section .vf-product-card h4 { color: #17191b !important; }
+.vehicle-finder-section .vf-product-card a { color: #1769aa !important; border-color: #1769aa !important; }
+.vehicle-finder-next {
+  color: #17191b !important;
+  background: #e9ece9 !important;
+}
+.vehicle-finder-next h2 { color: #17191b !important; }
+.vehicle-finder-next p { color: #596168 !important; }
+
+/* The compact finder embedded in the configurator follows the same light atelier. */
+.vehicle-finder-section--compact,
+.vehicle-finder-section--compact .vehicle-finder-form,
+.vehicle-finder-section--compact .vehicle-finder-results,
+.vehicle-finder-section--compact .vf-table-scroll,
+.vehicle-finder-section--compact .vf-fitment-table,
+.vehicle-finder-section--compact .vf-fitment-table tbody,
+.vehicle-finder-section--compact .vf-fitment-table tbody tr {
+  color: #17191b !important;
+  color-scheme: light !important;
+  background: #fff !important;
+}
+.vehicle-finder-section--compact .vehicle-finder-field,
+.vehicle-finder-section--compact .vehicle-finder-actions p,
+.vehicle-finder-section--compact .vf-results-heading p,
+.vehicle-finder-section--compact .vf-fitment-group-heading p { color: #596168 !important; }
+.vehicle-finder-section--compact .vf-results-heading h3,
+.vehicle-finder-section--compact .vf-fitment-group-heading h4 { color: #17191b !important; }
+.vehicle-finder-section--compact .vf-fitment-table thead,
+.vehicle-finder-section--compact .vf-fitment-table th { color: #343b3f !important; background: #eceeeb !important; }
+.vehicle-finder-section--compact .vf-fitment-table td { color: #292f33 !important; background: #fff !important; border-color: #e1e4e2 !important; }
+.vehicle-finder-section--compact .vf-fitment-table tbody tr:hover td,
+.vehicle-finder-section--compact .vf-fitment-table tbody tr[aria-selected="true"] td { background: #eaf1f7 !important; }
+.vehicle-finder-section--compact .vf-select-trigger,
+.vehicle-finder-section--compact .m-input,
+.vehicle-finder-section--compact .m-combo__field { color: #17191b !important; background: #fff !important; border-color: #c7ceca !important; }
+.vehicle-finder-section--compact .vf-select-menu,
+.vehicle-finder-section--compact .m-combo__list { color: #17191b !important; background: #fff !important; }
+.vehicle-finder-section--compact .vf-select-option,
+.vehicle-finder-section--compact .m-combo__list li button { color: #292f33 !important; background: #fff !important; }
+.vehicle-finder-section--compact .vf-select-option:hover,
+.vehicle-finder-section--compact .m-combo__list li button:hover { background: #edf1f3 !important; }
+
+/* Brand, editorial, dealer and contact landing pages. */
+.gallery-hero,.about-hero,.dealer-hero,.contact-hero {
+  color: #17191b !important;
+  background:
+    radial-gradient(ellipse at 78% 40%,rgba(255,255,255,.98) 0%,transparent 36%),
+    linear-gradient(112deg,#f8f8f6 0%,#eceeeb 56%,#dfe3e1 100%) !important;
+}
+.gallery-hero h1,.about-hero h1,.dealer-hero h1,.contact-hero h1 { color: #17191b !important; }
+.gallery-hero h1 span,.about-hero h1 span,.dealer-hero h1 span,.contact-hero h1 span { color: #1769aa !important; }
+.gallery-hero-inner > p:not(.eyebrow),
+.about-hero-inner > p:not(.eyebrow),
+.dealer-hero-inner > p:not(.eyebrow),
+.contact-hero-inner > p:not(.eyebrow) { color: #596168 !important; }
+.gallery-intro,.about-statement,.contact-content,.dealer-content { color: #17191b !important; background: #f7f7f5 !important; }
+.gallery-intro h2,.about-statement h2,.contact-content h2,.dealer-content h2 { color: #17191b !important; }
+.gallery-intro p,.contact-content p,.dealer-content p { color: #596168; }
+.gallery-grid,.gallery-tile,.dealer-steps,.contact-options { color: #17191b; }
+.gallery-tile { background: #fff !important; }
+.dealer-apply-hero,.inquiry-page-hero {
+  color: #17191b !important;
+  background: linear-gradient(112deg,#f8f8f6,#e7eae7) !important;
+}
+.dealer-apply-hero h1,.inquiry-page-hero h1 { color: #17191b !important; }
+.dealer-apply-hero p,.inquiry-page-hero p { color: #596168 !important; }
+
+/* Product construction and model detail pages. */
+.family-detail-hero {
+  color: #17191b !important;
+  background: linear-gradient(112deg,#f7f7f5 0%,#eceeeb 58%,#dfe3e1 100%) !important;
+}
+.family-detail-copy h1,.family-detail-copy .family-detail-type { color: #17191b !important; }
+.family-detail-intro,.family-detail-copy .eyebrow { color: #596168 !important; }
+.family-detail-story,.family-products { color: #17191b !important; background: #f7f7f5 !important; }
+.family-detail-note { color: #17191b !important; background: #eceeeb !important; }
+.wheel-product-hero {
+  color: #17191b !important;
+  background: #f1f2ef !important;
+}
+.wheel-product-intro h1,.wheel-product-missing h1 { color: #17191b !important; }
+.wheel-product-description { color: #596168 !important; }
+.wheel-product-code { color: #1769aa !important; }
+.wheel-product-story,.wheel-product-design,.wheel-product-specs,
+.wheel-product-finishes,.wheel-product-gallery,.wheel-fitments { color: #17191b !important; background: #f7f7f5 !important; }
+.wheel-product-specs-heading h2,.wheel-product-gallery-heading h2,
+.wheel-fitments-heading h2 { color: #17191b !important; }
+.wheel-product-spec-list,.wheel-fitment-row,.wheel-finish-image { background: #fff !important; }
+.wheel-product-end { color: #17191b !important; background: #e9ece9 !important; }
+
+/* Customization and form pages. */
+.custom-hero {
+  color: #17191b !important;
+  background: linear-gradient(112deg,#f8f8f6 0%,#eceeeb 56%,#dfe3e1 100%) !important;
+}
+.custom-hero-copy h1,.custom-hero-copy h2 { color: #17191b !important; }
+.custom-hero-copy p,.custom-spec-copy p { color: #596168 !important; }
+.custom-process,.custom-spec { color: #17191b !important; background: #f7f7f5 !important; }
+.custom-process .process-step,.spec-list li { color: #292f33 !important; background: #fff !important; }
+.custom-cta { color: #17191b !important; background: #e9ece9 !important; }
+.dealer-apply-layout,.inquiry-form-section { color: #17191b !important; background: #f7f7f5 !important; }
+.dealer-application-form,.project-brief-form { color: #17191b !important; background: #fff !important; }
+.brief-form-heading h2,.brief-grid label,.brief-notes label { color: #292f33 !important; }
+.brief-feedback { color: #292f33 !important; }
