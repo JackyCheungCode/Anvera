@@ -4,6 +4,7 @@ import { getEmDashCollection } from "emdash";
 import { Image } from "emdash/ui";
 import { wheelDevelopmentProducts } from "../data/wheel-products";
 import VehicleFitmentFinder from "../components/VehicleFitmentFinder.astro";
+import TextInput from "../components/ui/TextInput.astro";
 
 const turnstileSiteKey = "0x4AAAAAAF-OqItFi-JleERp";
 
@@ -123,13 +124,19 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
           <div class="delivery-field"><div class="carbon-dropdown cds--g100" data-carbon-dropdown data-label="Delivery term"><input type="hidden" id="delivery-term" value="FOB" /></div></div>
           <div class="delivery-field"><div class="carbon-dropdown cds--g100" data-carbon-dropdown data-label="Transport method"><input type="hidden" id="shipping-method" value="sea" /></div></div>
           <div class="delivery-field"><div class="carbon-dropdown cds--g100" data-carbon-dropdown data-label="Country / territory"><input type="hidden" id="delivery-country" value="" /></div></div>
-          <div class="delivery-field"><div class="carbon-dropdown cds--g100" data-carbon-dropdown data-label="State / province"><input type="hidden" id="delivery-region" value="" /></div><input id="delivery-region-other" placeholder="Enter state / province" hidden /></div>
-          <div class="delivery-field"><div class="carbon-dropdown cds--g100" data-carbon-dropdown data-label="City"><input type="hidden" id="delivery-city" value="" /></div><input id="delivery-city-other" placeholder="Enter city" hidden /></div>
-          <label>Postal code <input id="delivery-postal" autocomplete="postal-code" placeholder="Postal code" /></label>
-          <label class="delivery-address">Street address <input id="delivery-address" autocomplete="street-address" placeholder="Street, building and unit number" /></label>
-          <label>Contact name <input id="contact-name" autocomplete="name" placeholder="Full name" /></label>
-          <label>Email <input id="contact-email" type="email" autocomplete="email" placeholder="name@example.com" /></label>
-          <label>Phone / WhatsApp <input id="contact-phone" autocomplete="tel" placeholder="Country code + number" /></label>
+          <div class="delivery-field">
+            <div class="carbon-dropdown cds--g100" data-carbon-dropdown data-label="State / province"><input type="hidden" id="delivery-region" value="" /></div>
+            <div id="delivery-region-other-wrap" hidden><TextInput id="delivery-region-other" name="deliveryRegionOther" label="Enter state / province" placeholder="State / province" /></div>
+          </div>
+          <div class="delivery-field">
+            <div class="carbon-dropdown cds--g100" data-carbon-dropdown data-label="City"><input type="hidden" id="delivery-city" value="" /></div>
+            <div id="delivery-city-other-wrap" hidden><TextInput id="delivery-city-other" name="deliveryCityOther" label="Enter city" placeholder="City" /></div>
+          </div>
+          <TextInput id="delivery-postal" name="postalCode" label="Postal code" autocomplete="postal-code" placeholder="Postal code" />
+          <div class="delivery-address"><TextInput id="delivery-address" name="address" label="Street address" autocomplete="street-address" placeholder="Street, building and unit number" /></div>
+          <TextInput id="contact-name" name="contactName" label="Contact name" autocomplete="name" placeholder="Full name" />
+          <TextInput id="contact-email" name="email" label="Email" type="email" autocomplete="email" placeholder="name@example.com" />
+          <TextInput id="contact-phone" name="phone" label="Phone / WhatsApp" type="tel" autocomplete="tel" placeholder="Country code + number" />
         </div>
         <div class="route-estimate">
           <div class="route-heading"><div><p class="step-kicker">LOGISTICS ROUTE / PLANNING VIEW</p><h3>Chengdu → Yantian → Destination</h3></div><span class="route-tag">SEA FREIGHT DEFAULT</span></div>
@@ -418,16 +425,16 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
       setDropdownValue(regionControl,"","Loading states / provinces…");
       setDropdownValue(cityControl,"","Select state / province first");
       regionControl.trigger.disabled=true;cityControl.trigger.disabled=true;
-      root.querySelector("#delivery-region-other").hidden=true;root.querySelector("#delivery-city-other").hidden=true;
+      root.querySelector("#delivery-region-other-wrap").hidden=true;root.querySelector("#delivery-city-other-wrap").hidden=true;
       await loadDeliveryRegions(value);
     }else if(control===regionControl){
       ++cityRequestId;
-      root.querySelector("#delivery-region-other").hidden=value!=="__none__";
+      root.querySelector("#delivery-region-other-wrap").hidden=value!=="__none__";
       setDropdownValue(cityControl,"","Loading cities…");
       cityControl.trigger.disabled=true;root.querySelector("#delivery-city-other").hidden=true;
       await loadDeliveryCities(countryControl.input.value,value==="__none__"?"":label);
     }else if(control===cityControl){
-      root.querySelector("#delivery-city-other").hidden=value!=="__other__";
+      root.querySelector("#delivery-city-other-wrap").hidden=value!=="__other__";
     }
   };
   const setDropdownValue=(control,value,label)=>{
