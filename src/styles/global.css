@@ -820,3 +820,26 @@ main:focus { outline: 0; }
   .brand-logo { width: 128px; }
   .mobile-nav-actions { grid-template-columns: 1fr; }
 }
+
+
+/* Carbon-native composite controls: manufacturer identity and consistent dark-surface behavior. */
+.anvera-carbon-vehicle-combo { display: flex; align-items: flex-end; gap: 10px; min-width: 0; }
+.anvera-carbon-vehicle-combo > .cds--combo-box { flex: 1 1 auto; min-width: 0; }
+.anvera-carbon-selected-logo { display: flex; align-items: center; justify-content: center; flex: 0 0 48px; width: 48px; height: 48px; margin-bottom: 1px; background: var(--cds-field-01, #262a30); }
+.anvera-carbon-selected-logo img { display: block; width: 34px; height: 34px; object-fit: contain; }
+.anvera-carbon-combo-item { display: flex; align-items: center; gap: 12px; min-height: 36px; }
+.anvera-carbon-combo-item img { display: block; width: 30px; height: 26px; object-fit: contain; flex: 0 0 30px; }
+.vf-product-filter { min-width: 0; }
+.vf-product-filter .cds--combo-box { width: 100%; }
+.cds--g100 .cds--list-box__menu,
+.cds--g100 .cds--list-box__menu-item,
+.cds--g100 .cds--list-box__menu-item__option { color: var(--cds-text-primary); background: var(--cds-layer-02); }
+.cds--g100 .cds--list-box__menu-item:hover,
+.cds--g100 .cds--list-box__menu-item[aria-selected="true"] { background: var(--cds-layer-hover-02); }
+.cds--g100 .cds--text-input,
+.cds--g100 .cds--text-area,
+.cds--g100 .cds--list-box__field { background: var(--cds-field-01); color: var(--cds-text-primary); }
+@media (max-width: 640px) {
+  .anvera-carbon-selected-logo { flex-basis: 42px; width: 42px; height: 48px; }
+  .anvera-carbon-selected-logo img { width: 30px; height: 30px; }
+}
