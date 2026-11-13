@@ -47,7 +47,7 @@ const safeProducts = products.map((product) => ({
   // @ts-nocheck
   import React from "react";
   import { createRoot } from "react-dom/client";
-  import { DynamicComboBoxControl, FilterComboBoxControl } from "./carbon/Controls";
+  import { ButtonControl, DynamicComboBoxControl, FilterComboBoxControl } from "./carbon/Controls";
   const sectionRoot = document.querySelector(".vehicle-finder-section");
   const regionOptions = JSON.parse(sectionRoot?.getAttribute("data-region-options") || "[]");
   const anveraProducts = JSON.parse(sectionRoot?.getAttribute("data-products") || "[]");
@@ -292,9 +292,10 @@ const safeProducts = products.map((product) => ({
       ["Torque", valueAt(record?.technical ?? {},["wheel_torque","torque"])]
     ];
     cells.forEach(([label,value],index) => { const cell=document.createElement("td"); if(index===0){const title=document.createElement("strong");title.textContent=value;const badge=document.createElement("span");badge.className="vf-fitment-badge vf-fitment-badge--"+item.classification;badge.textContent=item.classification==="oem"?"OEM":item.classification==="aftermarket"?"AFTERMARKET":"UNCLASSIFIED";cell.append(title,badge);}else{const span=document.createElement("span");span.className="vf-table-cell-label";span.textContent=label;const text=document.createElement("strong");text.textContent=display(value);cell.append(span,text);} row.append(cell);});
-    const actionCell=document.createElement("td");actionCell.className="vf-fitment-action-cell";const choose=document.createElement("button");choose.type="button";choose.className="cds-btn cds-btn--secondary vf-choose-fitment";choose.textContent=id===selectedId?"Selected":"Select";choose.setAttribute("aria-label","Select "+cells[0][1]);actionCell.append(choose);row.append(actionCell);
-    const select=()=>{document.querySelectorAll(".vf-fitment-row").forEach((node)=>{node.setAttribute("aria-selected","false");const button=node.querySelector(".vf-choose-fitment");if(button)button.textContent="Select";});row.setAttribute("aria-selected","true");choose.textContent="Selected";if(!compactMode)renderProducts(item,record);else status.textContent="Fitment selected. Review your wheel specification below.";window.dispatchEvent(new CustomEvent("anvera:fitment-selected",{detail:{record,fitment:item,vehicle:{...values}}}));};
-    row.addEventListener("click",select);choose.addEventListener("click",(event)=>{event.stopPropagation();select();});return row;
+    const actionCell=document.createElement("td");actionCell.className="vf-fitment-action-cell";const actionMount=document.createElement("div");actionCell.append(actionMount);row.append(actionCell);
+    const select=()=>{document.querySelectorAll(".vf-fitment-row").forEach((node)=>node.setAttribute("aria-selected","false"));row.setAttribute("aria-selected","true");if(!compactMode)renderProducts(item,record);else status.textContent="Fitment selected. Review your wheel specification below.";window.dispatchEvent(new CustomEvent("anvera:fitment-selected",{detail:{record,fitment:item,vehicle:{...values}}}));};
+    const actionRoot=createRoot(actionMount);actionRoot.render(React.createElement(ButtonControl,{variant:"secondary",type:"button",className:"vf-choose-fitment",ariaPressed:id===selectedId,onClick:(event)=>{event.stopPropagation();select();},children:"Select fitment"}));
+    row.addEventListener("click",select);return row;
   };
   const productValues = (product, keys) => {
     const found = [];
