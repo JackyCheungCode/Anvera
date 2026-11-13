@@ -8,13 +8,15 @@ import {
   TextInput as CarbonTextInput
 } from "@carbon/react";
 
-type ButtonVariant = "primary" | "secondary" | "dark";
+type ButtonVariant = "primary" | "secondary" | "dark" | "ghost";
 type ButtonControlProps = {
   children: React.ReactNode;
   href?: string;
   variant?: ButtonVariant;
   type?: "button" | "submit" | "reset";
   disabled?: boolean;
+  id?: string;
+  className?: string;
 };
 
 export function ButtonControl({
@@ -22,11 +24,13 @@ export function ButtonControl({
   href,
   variant = "primary",
   type = "button",
-  disabled = false
+  disabled = false,
+  id,
+  className
 }: ButtonControlProps) {
-  const kind = variant === "dark" ? "tertiary" : variant;
+  const kind = variant === "dark" ? "tertiary" : variant === "ghost" ? "ghost" : variant;
   return (
-    <CarbonButton kind={kind} size="lg" type={type} href={disabled ? undefined : href} disabled={disabled}>
+    <CarbonButton id={id} className={className} kind={kind} size="lg" type={type} href={disabled ? undefined : href} disabled={disabled}>
       {children}
     </CarbonButton>
   );
