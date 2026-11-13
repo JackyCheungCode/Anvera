@@ -1,5 +1,6 @@
 ---
 import Base from "../../layouts/Base.astro";
+import TextInput from "../../components/ui/TextInput.astro";
 import { getEmDashCollection } from "emdash";
 import { Image } from "emdash/ui";
 import { wheelDevelopmentProducts } from "../../data/wheel-products";
@@ -73,7 +74,7 @@ const products = cmsProducts.length ? cmsProducts : wheelDevelopmentProducts.map
         <p class="section-lead">Explore each design by construction, then open its product page for design details, available finishes and specification planning.</p>
       </div>
       <div class="wheel-catalog-tools">
-        <label class="wheel-search-wrap"><span class="sr-only">Search wheel designs</span><input id="wheel-search" class="wheel-search" type="search" placeholder="Search model or design…" autocomplete="off" /></label>
+        <div class="wheel-search-wrap"><TextInput id="wheel-search" name="wheelSearch" className="wheel-search" type="search" label="Search wheel designs" placeholder="Search model or design…" autocomplete="off" /></div>
         <div class="wheel-filter-group" role="group" aria-label="Filter by construction">
           <button type="button" class="wheel-filter is-active" data-wheel-filter="all" aria-pressed="true">All designs <span>10</span></button>
           <button type="button" class="wheel-filter" data-wheel-filter="monoblock" aria-pressed="false">Monoblock</button>
