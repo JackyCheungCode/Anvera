@@ -2,12 +2,14 @@
 import { ButtonControl } from "../carbon/Controls";
 interface Props {
   href?: string;
-  variant?: "primary" | "secondary" | "dark";
+  variant?: "primary" | "secondary" | "dark" | "ghost";
   type?: "button" | "submit" | "reset";
   disabled?: boolean;
+  id?: string;
+  className?: string;
 }
-const { href, variant = "primary", type = "button", disabled = false } = Astro.props;
+const { href, variant = "primary", type = "button", disabled = false, id, className } = Astro.props;
 ---
-<ButtonControl href={href} variant={variant} type={type} disabled={disabled}>
+<ButtonControl id={id} className={className} href={href} variant={variant} type={type} disabled={disabled}>
   <slot />
 </ButtonControl>
