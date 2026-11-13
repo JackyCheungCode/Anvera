@@ -188,7 +188,7 @@ export function DynamicComboBoxControl({
 }: DynamicComboBoxControlProps) {
   const itemToString = (item: { label: string } | null) => item?.label ?? "";
   return (
-    <div className="anvera-carbon-vehicle-combo">
+    <div className={`anvera-carbon-vehicle-combo ${selectedItem?.logo ? "has-logo" : ""}`}>
       {selectedItem?.logo ? <span className="anvera-carbon-selected-logo"><img src={selectedItem.logo} alt="" /></span> : null}
       <ComboBox
         id={id}
