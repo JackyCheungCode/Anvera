@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { Button as CarbonButton } from "@carbon/react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 
 type Application = {
@@ -131,7 +132,7 @@ export function DealerApplications() {
       <section className="anvera-panel">
         <div className="anvera-panel-heading">
           <h2>Application queue</h2>
-          <button className="anvera-refresh" type="button" onClick={() => void load()} disabled={loading}>{loading ? "Loading…" : "Refresh"}</button>
+          <CarbonButton kind="ghost" className="anvera-refresh" type="button" onClick={() => void load()} disabled={loading}>{loading ? "Loading…" : "Refresh"}</CarbonButton>
         </div>
         {loading ? (
           <div className="anvera-empty"><h3>Loading applications</h3><p>Connecting to the secured business workspace.</p></div>
@@ -148,7 +149,7 @@ export function DealerApplications() {
                   <td>{item.business_type}</td>
                   <td><span className="anvera-record-status">{item.status}</span></td>
                   <td>{new Date(item.created_at).toLocaleDateString()}</td>
-                  <td><button className="anvera-link-button" type="button" onClick={() => setSelected(item)}>Review</button></td>
+                  <td><CarbonButton kind="ghost" className="anvera-link-button" type="button" onClick={() => setSelected(item)}>Review</CarbonButton></td>
                 </tr>
               ))}</tbody>
             </table>
@@ -163,7 +164,7 @@ export function DealerApplications() {
       </section>
       {selected ? (
         <section className="anvera-detail-panel">
-          <div className="anvera-panel-heading"><h2>Application review · {selected.reference_code}</h2><button className="anvera-refresh anvera-refresh--light" type="button" onClick={() => setSelected(null)}>Close</button></div>
+          <div className="anvera-panel-heading"><h2>Application review · {selected.reference_code}</h2><CarbonButton kind="ghost" className="anvera-refresh anvera-refresh--light" type="button" onClick={() => setSelected(null)}>Close</CarbonButton></div>
           <div className="anvera-detail-content">
             <div className="anvera-detail-heading"><div><p className="anvera-eyebrow">COMPANY</p><h3>{selected.trading_name || selected.legal_company_name}</h3><p>{selected.legal_company_name}</p></div><span className="anvera-record-status">{selected.status}</span></div>
             <div className="anvera-detail-grid">
@@ -175,9 +176,9 @@ export function DealerApplications() {
               <div><span>REPRESENTED BRANDS</span><strong>{selected.represented_brands || "—"}</strong></div>
             </div>
             {selected.notes ? <div className="anvera-detail-notes"><span>APPLICATION NOTES</span><p>{selected.notes}</p></div> : null}
-            {selected.status === "pending" ? <div className="anvera-action-section"><h3>Review decision</h3><div className="anvera-action-row"><button className="anvera-action-button" disabled={saving} onClick={() => void review("reviewing")}>Start review</button><button className="anvera-action-button anvera-action-button--quiet" disabled={saving} onClick={() => void review("withdrawn")}>Withdraw</button></div></div> : null}
-            {selected.status === "reviewing" ? <div className="anvera-action-section"><h3>Review decision</h3><div className="anvera-action-row"><button className="anvera-action-button" disabled={saving} onClick={() => void review("approved")}>Approve application</button><button className="anvera-action-button anvera-action-button--danger" disabled={saving} onClick={() => void review("rejected")}>Reject</button><button className="anvera-action-button anvera-action-button--quiet" disabled={saving} onClick={() => void review("withdrawn")}>Withdraw</button></div></div> : null}
-            {selected.status === "approved" ? <div className="anvera-action-section"><h3>Activate dealer access</h3><p className="anvera-muted">Approval does not activate access. Enter the ID of an existing EmDash Subscriber account to link this organization.</p><label className="anvera-field-label" htmlFor="anvera-dealer-user-id">EmDash user ID</label><input id="anvera-dealer-user-id" className="anvera-note-input" value={userId} onChange={(event) => setUserId(event.target.value)} maxLength={128} placeholder="Existing Subscriber user ID" /><button className="anvera-refresh" type="button" disabled={saving || !userId.trim()} onClick={() => void activate()}>{saving ? "Activating…" : "Activate dealer"}</button></div> : null}
+            {selected.status === "pending" ? <div className="anvera-action-section"><h3>Review decision</h3><div className="anvera-action-row"><CarbonButton kind="ghost" className="anvera-action-button" disabled={saving} onClick={() => void review("reviewing")}>Start review</CarbonButton><CarbonButton kind="ghost" className="anvera-action-button anvera-action-button--quiet" disabled={saving} onClick={() => void review("withdrawn")}>Withdraw</CarbonButton></div></div> : null}
+            {selected.status === "reviewing" ? <div className="anvera-action-section"><h3>Review decision</h3><div className="anvera-action-row"><CarbonButton kind="ghost" className="anvera-action-button" disabled={saving} onClick={() => void review("approved")}>Approve application</CarbonButton><CarbonButton kind="ghost" className="anvera-action-button anvera-action-button--danger" disabled={saving} onClick={() => void review("rejected")}>Reject</CarbonButton><CarbonButton kind="ghost" className="anvera-action-button anvera-action-button--quiet" disabled={saving} onClick={() => void review("withdrawn")}>Withdraw</CarbonButton></div></div> : null}
+            {selected.status === "approved" ? <div className="anvera-action-section"><h3>Activate dealer access</h3><p className="anvera-muted">Approval does not activate access. Enter the ID of an existing EmDash Subscriber account to link this organization.</p><label className="anvera-field-label" htmlFor="anvera-dealer-user-id">EmDash user ID</label><input id="anvera-dealer-user-id" className="anvera-note-input" value={userId} onChange={(event) => setUserId(event.target.value)} maxLength={128} placeholder="Existing Subscriber user ID" /><CarbonButton kind="ghost" className="anvera-refresh" type="button" disabled={saving || !userId.trim()} onClick={() => void activate()}>{saving ? "Activating…" : "Activate dealer"}</CarbonButton></div> : null}
             {["rejected", "withdrawn"].includes(selected.status) ? <p className="anvera-muted">This application is closed. No dealer identity has been activated.</p> : null}
           </div>
         </section>
