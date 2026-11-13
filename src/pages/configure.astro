@@ -455,7 +455,6 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
     const label=option.label;
     if(!value)return;
     setDropdownValue(control,value,label);
-    closeDropdowns();
     if(control===countryControl){
       ++regionRequestId;++cityRequestId;
       setDropdownValue(regionControl,"","Loading states / provinces…");
@@ -481,44 +480,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
     control.input.dispatchEvent(new Event("change",{bubbles:true}));
     control.input.dispatchEvent(new Event("input",{bubbles:true}));
   };
-  const closeDropdowns=except=>{
-    root.querySelectorAll("[data-carbon-dropdown].is-open").forEach(dropdown=>{
-      if(dropdown===except)return;
-      dropdown.classList.remove("is-open");
-      dropdown.querySelector(".carbon-dropdown-menu")?.setAttribute("hidden","");
-      dropdown.querySelector(".carbon-dropdown-trigger")?.setAttribute("aria-expanded","false");
-    });
-  };
   let regionRequestId=0,cityRequestId=0;
-  root.addEventListener("input",event=>{
-    const target=event.target instanceof HTMLInputElement?event.target:null;
-    if(!target?.classList.contains("carbon-dropdown-search"))return;
-    const query=target.value.trim().toLocaleLowerCase();
-    const menu=target.closest(".carbon-dropdown-menu");
-    menu?.querySelectorAll("[data-dropdown-option]").forEach(option=>{
-      option.hidden=!option.textContent.toLocaleLowerCase().includes(query);
-    });
-  });
-  root.addEventListener("click",async event=>{
-    const target=event.target instanceof Element?event.target:null;
-    const trigger=target?.closest(".carbon-dropdown-trigger");
-    if(trigger&&root.contains(trigger)){
-      const dropdown=trigger.closest("[data-carbon-dropdown]");
-      if(trigger.disabled)return;
-      const opening=!dropdown.classList.contains("is-open");
-      closeDropdowns(dropdown);
-      dropdown.classList.toggle("is-open",opening);
-      const menu=dropdown.querySelector(".carbon-dropdown-menu");
-      if(menu)menu.hidden=!opening;
-      trigger.setAttribute("aria-expanded",String(opening));
-      if(opening)menu?.querySelector(".carbon-dropdown-search")?.focus();
-      event.preventDefault();return;
-    }
-  }, true);
-  document.addEventListener("click",event=>{
-    const target=event.target instanceof Node?event.target:null;
-    if(target&&!root.contains(target))closeDropdowns();
-  });
   const loadDeliveryRegions=async countryCode=>{
     const requestId=++regionRequestId;
     const country=countryRows.find(row=>row.value===countryCode)?.label||countryCode;
@@ -565,7 +527,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
     regionControl.trigger.disabled=true;cityControl.trigger.disabled=true;
   };
   loadDeliveryCountries();
-  const deliveryIds=["delivery-term","shipping-method","delivery-postal","delivery-address","contact-name","contact-email","contact-phone"];
+  const deliveryIds=["delivery-term","shipping-method","delivery-region-other","delivery-city-other","delivery-postal","delivery-address","contact-name","contact-email","contact-phone"];
   deliveryIds.forEach(id=>root.querySelector("#"+id).addEventListener("input",()=>{state.delivery[id]=root.querySelector("#"+id).value;updateArrivalEstimate();updateProgress();}));
   ["delivery-country","delivery-region","delivery-city","delivery-term","shipping-method"].forEach(id=>root.querySelector("#"+id).addEventListener("change",()=>{state.delivery[id]=root.querySelector("#"+id).value;updateArrivalEstimate();updateProgress();}));
   root.querySelector("#request-pcd-change").addEventListener("click",()=>{const accepted=window.confirm("PCD / centre bore are safety-critical and normally fixed by the vehicle hub. Changing them requires ANVERA engineering approval and may make the wheel incompatible. Continue with a request?");if(!accepted)return;["front","rear"].forEach(side=>["pcd","bore"].forEach(key=>{const field=root.querySelector("#custom-"+side+"-"+key);field.readOnly=false;field.placeholder="Requested change — engineering approval required";}));root.querySelector("#custom-notes").value=(root.querySelector("#custom-notes").value+"\nPCD / centre bore override requested. Validate hub and fastener compatibility.").trim();hint.textContent="PCD / bore override requested. ANVERA engineering approval is mandatory.";});
