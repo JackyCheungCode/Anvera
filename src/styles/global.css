@@ -762,7 +762,7 @@ main:focus { outline: 0; }
   .primary-nav a, .header-utility { font-size: 9px; letter-spacing: .07em; }
   .header-actions { gap: 10px; }
 }
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .header-inner { min-height: var(--header-height-mobile); gap: 12px; }
   .brand-logo { width: 138px; }
   .nav-toggle {
