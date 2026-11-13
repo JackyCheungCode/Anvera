@@ -1,5 +1,6 @@
 ---
 import Base from "../../../layouts/Base.astro";
+import Button from "../../../components/ui/Button.astro";
 import { getEmDashCollection, getEmDashEntry } from "emdash";
 import { Image, PortableText } from "emdash/ui";
 import { getWheelDevelopmentProduct } from "../../../data/wheel-products";
@@ -72,7 +73,7 @@ const specificationRows = [
         <h1>{title}</h1>
         {description && <p class="wheel-product-description">{description}</p>}
         {isDevelopmentSample && <span class="wheel-demo-label wheel-demo-label--detail">DEVELOPMENT SAMPLE / NOT FOR PRODUCTION</span>}
-        <a class="cds-btn cds-btn--primary" href={`/custom-inquiry?model=${encodeURIComponent(modelCode || title)}`}>Discuss this design <span aria-hidden="true">↗</span></a>
+        <Button href={`/custom-inquiry?model=${encodeURIComponent(modelCode || title)}`} variant="primary">Discuss this design <span aria-hidden="true">↗</span></Button>
       </div>
     </section>
     {data.design_style && <section class="wheel-product-design"><div><p class="section-kicker">Design language</p><h2>{String(data.design_style)}</h2></div><div><p>{String(data.manufacturing_process ?? "")}</p><p class="wheel-design-family">{String(sample?.family ?? "ANVERA / FORGED COLLECTION")}</p></div></section>}
@@ -83,6 +84,6 @@ const specificationRows = [
     {verifiedFitments.length > 0 && <section class="wheel-fitments"><div class="wheel-fitments-heading"><div><p class="section-kicker">Engineering / Verified fitment</p><h2>Specified for<br />your vehicle.</h2></div><p>Only fitments reviewed and marked verified by the ANVERA team are shown here. Always confirm final brake clearance and vehicle configuration before production.</p></div><div class="wheel-fitment-list">{verifiedFitments.map((fitment: any) => { const d = fitment.data ?? {}; const years = [d.model_year_from, d.model_year_to].filter(Boolean); return <article class="wheel-fitment-row"><div><h3>{String(d.vehicle_make ?? "")} {String(d.vehicle_model ?? "")}</h3><p>{years.length ? years.join("–") : "Model year varies"}</p></div><div><span>FRONT</span><strong>{formatSpec(d.front_spec) || "Specification on request"}</strong></div><div><span>REAR</span><strong>{formatSpec(d.rear_spec) || "Specification on request"}</strong></div><div class="wheel-fitment-status"><span aria-label="Verified fitment">VERIFIED</span>{d.verified_at && <small>{new Date(d.verified_at).toLocaleDateString("en-GB", {year:"numeric",month:"short"})}</small>}</div></article>; })}</div></section>}
     {data.design_story && <section class="wheel-product-story"><p class="section-kicker">Design perspective</p><div class="wheel-product-richtext"><PortableText value={data.design_story as any} /></div></section>}
     {data.technical_disclaimer && <p class="wheel-product-disclaimer">{String(data.technical_disclaimer)}</p>}
-    <section class="wheel-product-end"><p class="section-kicker">Configure around your vehicle</p><h2>The right specification<br />starts with your brief.</h2><a class="cds-btn cds-btn--primary" href={`/custom-inquiry?model=${encodeURIComponent(modelCode || title)}`}>Start a project <span aria-hidden="true">↗</span></a></section>
-  </> : <section class="wheel-product-missing"><p class="eyebrow">ANVERA / CATALOGUE</p><h1>Design not<br /><span>available.</span></h1><p>This wheel design may be unpublished or no longer available. Browse the collection or contact our team for assistance.</p><a class="cds-btn cds-btn--primary" href="/wheels">Back to wheels <span aria-hidden="true">↗</span></a></section>}
+    <section class="wheel-product-end"><p class="section-kicker">Configure around your vehicle</p><h2>The right specification<br />starts with your brief.</h2><Button href={`/custom-inquiry?model=${encodeURIComponent(modelCode || title)}`} variant="primary">Start a project <span aria-hidden="true">↗</span></Button></section>
+  </> : <section class="wheel-product-missing"><p class="eyebrow">ANVERA / CATALOGUE</p><h1>Design not<br /><span>available.</span></h1><p>This wheel design may be unpublished or no longer available. Browse the collection or contact our team for assistance.</p><Button href="/wheels" variant="primary">Back to wheels <span aria-hidden="true">↗</span></Button></section>}
 </Base>
