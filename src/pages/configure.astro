@@ -193,6 +193,10 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
 .carbon-dropdown-menu{position:absolute;top:calc(100% + 2px);left:0;right:0;z-index:90;max-height:320px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;background:#262a30;color:#f4f4f4;border:1px solid #414851;box-shadow:0 12px 28px #0009;}
 .carbon-dropdown-menu button{appearance:none;-webkit-appearance:none;display:flex;align-items:center;gap:10px;width:100%;min-height:42px;padding:11px 14px;margin:0;border:0;border-radius:0;background:transparent;color:#f4f4f4;font:inherit;font-size:12px;line-height:1.4;text-align:left;white-space:normal;cursor:pointer;}
 .carbon-dropdown-menu button:hover,.carbon-dropdown-menu button:focus-visible,.carbon-dropdown-menu button[aria-selected=true]{background:#343b45;color:#fff;outline:0;}
+/* Keep injected location options directly interactive on touch and pointer devices. */
+.carbon-dropdown-menu [data-dropdown-option]{position:relative;z-index:2;pointer-events:auto;touch-action:manipulation;}
+.carbon-dropdown-menu{pointer-events:auto;}
+
 .carbon-dropdown-menu button[aria-selected=true]:after{content:"✓";margin-left:auto;flex:0 0 auto;color:#78a9ff;}
 .carbon-dropdown-menu[hidden]{display:none!important;}
 .carbon-dropdown-search{position:sticky;top:0;z-index:1;display:block;width:100%;min-height:44px;padding:11px 14px;border:0;border-bottom:1px solid #414851!important;border-radius:0!important;background:#1b1f24!important;color:#f4f4f4!important;font-size:12px!important;outline:0;}
@@ -420,7 +424,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
       }
       event.preventDefault();
     }
-  });
+  }, true);
   document.addEventListener("click",event=>{
     const target=event.target instanceof Node?event.target:null;
     if(target&&!root.contains(target))closeDropdowns();
