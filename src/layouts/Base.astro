@@ -4,6 +4,7 @@ import { EmDashHead, EmDashBodyStart, EmDashBodyEnd } from "emdash/ui";
 import { createPublicPageContext } from "emdash/page";
 import { resolveStarterSiteIdentity } from "../utils/site-identity";
 import BrandLogo from "../components/BrandLogo.astro";
+import Button from "../components/ui/Button.astro";
 import "../styles/carbon.scss";
 import "../styles/global.css";
 
@@ -62,10 +63,7 @@ const navigation = [
       <a class="brand-mark" href="/" aria-label="ANVERA home">
         <BrandLogo id="anvera-header" />
       </a>
-      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">
-        <span>Menu</span>
-        <span aria-hidden="true">＋</span>
-      </button>
+      <Button id="nav-toggle" className="nav-toggle" variant="ghost" type="button" ariaExpanded={false} ariaControls="primary-nav"><span>Menu</span><span aria-hidden="true">＋</span></Button>
       <nav class="primary-nav" id="primary-nav" aria-label="Main navigation">
         {navigation.map((item) => <a href={item.href} aria-current={Astro.url.pathname === item.href || (item.href !== "/" && Astro.url.pathname.startsWith(`${item.href}/`)) ? "page" : undefined}>{item.label}</a>)}
         <div class="mobile-nav-actions">
@@ -98,7 +96,7 @@ const navigation = [
   </footer>
   <EmDashBodyEnd page={pageCtx} />
   <script>
-    const toggle = document.querySelector<HTMLButtonElement>(".nav-toggle");
+    const toggle = document.querySelector<HTMLButtonElement>("#nav-toggle");
     const nav = document.querySelector<HTMLElement>("#primary-nav");
     toggle?.addEventListener("click", () => {
       const expanded = toggle.getAttribute("aria-expanded") === "true";
