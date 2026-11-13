@@ -1,5 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
+import Button from "../components/ui/Button.astro";
 ---
 <Base
   title="Premium Forged Wheels"
@@ -14,8 +15,8 @@ import Base from "../layouts/Base.astro";
         Precision forged. Individually considered. ANVERA brings engineering discipline and uncompromising design to every wheel.
       </p>
       <div class="hero-cta">
-        <a class="cds-btn cds-btn--primary" href="/wheels">Explore the collection <span aria-hidden="true">↗</span></a>
-        <a class="cds-btn cds-btn--secondary" href="/custom-inquiry">Configure your vision <span aria-hidden="true">↗</span></a>
+        <Button href="/wheels" variant="primary">Explore the collection <span aria-hidden="true">↗</span></Button>
+        <Button href="/custom-inquiry" variant="secondary">Configure your vision <span aria-hidden="true">↗</span></Button>
       </div>
     </div>
   </section>
@@ -55,7 +56,7 @@ import Base from "../layouts/Base.astro";
       <p>
         A wheel is a study in balance: structure and lightness, strength and elegance, precision and character. Explore the thinking and process behind the ANVERA approach.
       </p>
-      <a class="cds-btn cds-btn--secondary" href="/craftsmanship">Discover our craft <span aria-hidden="true">↗</span></a>
+      <Button href="/craftsmanship" variant="secondary">Discover our craft <span aria-hidden="true">↗</span></Button>
     </div>
   </section>
 
@@ -67,8 +68,8 @@ import Base from "../layouts/Base.astro";
         Tell us about your vehicle, preferred specifications and finish. Our team will work with you on a tailored solution.
       </p>
       <div class="hero-cta">
-        <a class="cds-btn cds-btn--secondary" href="/custom-inquiry">Start your inquiry <span aria-hidden="true">↗</span></a>
-        <a class="cds-btn cds-btn--secondary" href="/dealers/apply">Become a dealer <span aria-hidden="true">↗</span></a>
+        <Button href="/custom-inquiry" variant="secondary">Start your inquiry <span aria-hidden="true">↗</span></Button>
+        <Button href="/dealers/apply" variant="secondary">Become a dealer <span aria-hidden="true">↗</span></Button>
       </div>
     </div>
   </section>
