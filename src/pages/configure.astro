@@ -444,8 +444,8 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
   setupOptions(diameterFilter,uniqueRows(productRows.flatMap(row=>Array.isArray(row.diameterOptions)?row.diameterOptions:[])),"All diameters");
   setupOptions(widthFilter,uniqueRows(productRows.flatMap(row=>Array.isArray(row.widthOptions)?row.widthOptions:[])),"All widths");
   setupOptions(pcdFilter,uniqueRows(productRows.flatMap(row=>Array.isArray(row.pcdOptions)?row.pcdOptions:[])),"All PCD");
-  setupOptions(finishControl,["brushed","polished","machined","painted","powder-coated","anodized"].map(value=>({value,label:value.replaceAll("-"," ").replace(/\\b\\w/g,c=>c.toUpperCase())})),"Select surface treatment");
-  setupOptions(colourControl,["satin-black","gloss-black","titanium","graphite","silver","bronze","custom"].map(value=>({value,label:value.replaceAll("-"," ").replace(/\\b\\w/g,c=>c.toUpperCase())})),"Select colour");
+  setupOptions(finishControl,["brushed","polished","machined","painted","powder-coated","anodized"].map(value=>({value,label:value.replaceAll("-"," ").replace(/(^|-)([a-z])/g,(_match,separator,letter)=>separator+letter.toUpperCase())})),"Select surface treatment");
+  setupOptions(colourControl,["satin-black","gloss-black","titanium","graphite","silver","bronze","custom"].map(value=>({value,label:value.replaceAll("-"," ").replace(/(^|-)([a-z])/g,(_match,separator,letter)=>separator+letter.toUpperCase())})),"Select colour");
   setupOptions(deliveryTermControl,[
     ["FOB","FOB — Free On Board"],["EXW","EXW — Ex Works"],["FAS","FAS — Free Alongside Ship"],["FCA","FCA — Free Carrier"],["CFR","CFR — Cost and Freight"],["CIF","CIF — Cost, Insurance and Freight"],["CPT","CPT — Carriage Paid To"],["CIP","CIP — Carriage and Insurance Paid To"],["DAP","DAP — Delivered at Place"],["DPU","DPU — Delivered at Place Unloaded"],["DDP","DDP — Delivered Duty Paid"]
   ].map(([value,label])=>({value,label})),"Select delivery term");
