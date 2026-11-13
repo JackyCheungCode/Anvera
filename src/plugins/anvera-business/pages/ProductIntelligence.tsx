@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Button as CarbonButton } from "@carbon/react";
+import { Button as CarbonButton, ComboBox as CarbonComboBox, TextArea as CarbonTextArea, TextInput as CarbonTextInput } from "@carbon/react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 import { MaterialProcessLibrary } from "./MaterialProcessLibrary";
 import { LibraryReviewQueue } from "./LibraryReviewQueue";
@@ -249,35 +249,40 @@ function stepHasAnyValue(step: StepDefinition, document: SetupDocument, productI
 }
 
 function CustomSelect({ value, options, onChange, label }: { value: string; options: Array<string | SelectOption>; onChange: (value: string) => void; label: string }) {
-  const [open, setOpen] = useState(false);
-  const selected = options.find((option) => (typeof option === "string" ? option : option.value) === value);
-  const selectedLabel = selected ? (typeof selected === "string" ? selected : selected.label) : value;
+  const items = options.map((option) => ({
+    value: typeof option === "string" ? option : option.value,
+    label: typeof option === "string" ? option : option.label
+  }));
+  const selectedItem = items.find((item) => item.value === value) ?? null;
+  const itemToString = (item: { value: string; label: string } | null) => item?.label ?? "";
+  const id = `product-intelligence-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
-    <div className="api-select">
-      <CarbonButton kind="ghost" className="api-select-trigger" type="button" aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen(!open)}>
-        <span>{selectedLabel || `Select ${label.toLowerCase()}`}</span><span className="api-select-chevron">⌄</span>
-      </CarbonButton>
-      {open ? <div className="api-select-menu" role="listbox" aria-label={label}>
-        {options.map((option) => {
-          const optionValue = typeof option === "string" ? option : option.value;
-          const optionLabel = typeof option === "string" ? option : option.label;
-          return <CarbonButton kind="ghost" key={optionValue} type="button" role="option" aria-selected={value === optionValue} className={value === optionValue ? "is-selected" : ""} onClick={() => { onChange(optionValue); setOpen(false); }}>{optionLabel}</CarbonButton>;
-        })}
-      </div> : null}
-    </div>
+    <CarbonComboBox
+      id={id}
+      titleText={label}
+      items={items}
+      itemToString={itemToString}
+      selectedItem={selectedItem}
+      placeholder={`Select ${label.toLowerCase()}`}
+      size="md"
+      onChange={({ selectedItem: nextItem }) => onChange(nextItem?.value ?? "")}
+      shouldFilterItem={({ item, inputValue, itemToString: toString }) =>
+        (toString?.(item) ?? "").toLocaleLowerCase().includes((inputValue ?? "").toLocaleLowerCase())
+      }
+    />
   );
 }
 
 function Field({ field, value, onChange, error }: { field: FieldDefinition; value: string; onChange: (value: string) => void; error?: boolean }) {
+  const id = `product-intelligence-field-${field.key}`;
   return (
-    <label className={`api-field ${field.type === "textarea" ? "api-field--wide" : ""}`}>
-      <span className="api-field-label">{field.label}{field.required ? <i>Required</i> : null}</span>
+    <div className={`api-field ${field.type === "textarea" ? "api-field--wide" : ""}`}>
       {field.type === "select" ? <CustomSelect label={field.label} value={value} options={field.options ?? []} onChange={onChange} /> :
-        field.type === "textarea" ? <textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={field.placeholder} rows={4} /> :
-        <input type={field.type === "number" ? "number" : "text"} value={value} onChange={(event) => onChange(event.target.value)} placeholder={field.placeholder} aria-invalid={error || undefined} />}
+        field.type === "textarea" ? <CarbonTextArea id={id} labelText={field.label} value={value} onChange={(event) => onChange(event.target.value)} placeholder={field.placeholder} rows={4} required={field.required} /> :
+        <CarbonTextInput id={id} labelText={field.label} type={field.type === "number" ? "number" : "text"} value={value} onChange={(event) => onChange(event.target.value)} placeholder={field.placeholder} required={field.required} invalid={error} />}
       {field.help ? <small>{field.help}</small> : null}
       {error ? <small className="api-field-error">This field is required to complete this step.</small> : null}
-    </label>
+    </div>
   );
 }
 
@@ -537,14 +542,14 @@ export function ProductIntelligence() {
                   <thead><tr><th>POSITION</th><th>DIAMETER</th><th>WIDTH</th><th>BOLT COUNT</th><th>PCD (MM)</th><th>OFFSET (MM)</th><th>CENTER BORE (MM)</th><th>LOAD (KG)</th><th>EVIDENCE REFERENCE</th><th>ENGINEERING STATUS</th><th></th></tr></thead>
                   <tbody>{(document.products?.[productIndex]?.specifications ?? []).map((row) => <tr key={row.id}>
                     <td><CustomSelect label="Position" value={row.role} options={["Front", "Rear", "Front & Rear"]} onChange={(value) => setDocument((current) => updateSpecification(current, productIndex, row.id, "role", value))} /></td>
-                    <td><input aria-label="Diameter in inches" type="number" min="1" step="0.5" value={row.diameter} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "diameter", event.target.value))} /></td>
-                    <td><input aria-label="Width in inches" type="number" min="1" step="0.5" value={row.width} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "width", event.target.value))} /></td>
-                    <td><input aria-label="Bolt count" type="number" min="1" step="1" value={row.boltCount} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "boltCount", event.target.value))} /></td>
-                    <td><input aria-label="PCD in millimeters" type="number" min="1" step="0.1" value={row.pcd} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "pcd", event.target.value))} /></td>
-                    <td><input aria-label="Offset in millimeters" type="number" step="0.5" value={row.offset} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "offset", event.target.value))} /></td>
-                    <td><input aria-label="Center bore in millimeters" type="number" min="1" step="0.1" value={row.centerBore} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "centerBore", event.target.value))} /></td>
-                    <td><input aria-label="Load rating in kilograms" type="number" min="1" step="1" value={row.loadRating} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "loadRating", event.target.value))} /></td>
-                    <td><input aria-label="Specification evidence reference" type="text" value={row.evidenceRef ?? ""} placeholder="Drawing / test report ID" onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "evidenceRef", event.target.value))} /></td>
+                    <td><CarbonTextInput id={`spec-${row.id}-diameter`} labelText="Diameter in inches" hideLabel size="sm" type="number" min={1} step={0.5} value={row.diameter} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "diameter", event.target.value))} /></td>
+                    <td><CarbonTextInput id={`spec-${row.id}-width`} labelText="Width in inches" hideLabel size="sm" type="number" min={1} step={0.5} value={row.width} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "width", event.target.value))} /></td>
+                    <td><CarbonTextInput id={`spec-${row.id}-bolt-count`} labelText="Bolt count" hideLabel size="sm" type="number" min={1} step={1} value={row.boltCount} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "boltCount", event.target.value))} /></td>
+                    <td><CarbonTextInput id={`spec-${row.id}-pcd`} labelText="PCD in millimeters" hideLabel size="sm" type="number" min={1} step={0.1} value={row.pcd} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "pcd", event.target.value))} /></td>
+                    <td><CarbonTextInput id={`spec-${row.id}-offset`} labelText="Offset in millimeters" hideLabel size="sm" type="number" step={0.5} value={row.offset} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "offset", event.target.value))} /></td>
+                    <td><CarbonTextInput id={`spec-${row.id}-center-bore`} labelText="Center bore in millimeters" hideLabel size="sm" type="number" min={1} step={0.1} value={row.centerBore} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "centerBore", event.target.value))} /></td>
+                    <td><CarbonTextInput id={`spec-${row.id}-load-rating`} labelText="Load rating in kilograms" hideLabel size="sm" type="number" min={1} step={1} value={row.loadRating} onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "loadRating", event.target.value))} /></td>
+                    <td><CarbonTextInput id={`spec-${row.id}-evidence-ref`} labelText="Specification evidence reference" hideLabel size="sm" value={row.evidenceRef ?? ""} placeholder="Drawing / test report ID" onChange={(event) => setDocument((current) => updateSpecification(current, productIndex, row.id, "evidenceRef", event.target.value))} /></td>
                     <td>{["Engineering Approved", "Restricted"].includes(row.status) ?
                       <span className={`api-library-status api-library-status--${row.status === "Engineering Approved" ? "approved" : "restricted"}`}>{row.status}</span> :
                       <CustomSelect label="Specification status" value={row.status || "Draft"} options={["Draft", "Factory Supported", "Engineering Review"]} onChange={(value) => setDocument((current) => updateSpecification(current, productIndex, row.id, "status", value))} />}</td>
