@@ -388,7 +388,27 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
       items:control.options,
       selectedItem:selected,
       disabled:control.disabled||!control.options.length,
-      onChange:item=>{if(item)void selectDropdownOption(control,item);}
+      onChange:item=>{
+        if(item){void selectDropdownOption(control,item);return;}
+        setDropdownValue(control,"",control.placeholder);
+        if(control===countryControl){
+          ++regionRequestId;++cityRequestId;
+          setDropdownValue(regionControl,"","Select country first");
+          setDropdownValue(cityControl,"","Select state / province first");
+          regionControl.trigger.disabled=true;cityControl.trigger.disabled=true;
+          root.querySelector("#delivery-region-other-wrap").hidden=true;
+          root.querySelector("#delivery-city-other-wrap").hidden=true;
+        }else if(control===regionControl){
+          ++cityRequestId;
+          setDropdownValue(cityControl,"","Select state / province first");
+          cityControl.trigger.disabled=true;
+          root.querySelector("#delivery-region-other-wrap").hidden=true;
+          root.querySelector("#delivery-city-other-wrap").hidden=true;
+        }else if(control===cityControl){
+          root.querySelector("#delivery-city-other-wrap").hidden=true;
+        }
+        if(filterControls.includes(control))applyDesignFilters();
+      }
     }));
   };
   const countryControl=dropdownControl("delivery-country"), regionControl=dropdownControl("delivery-region"), cityControl=dropdownControl("delivery-city");
