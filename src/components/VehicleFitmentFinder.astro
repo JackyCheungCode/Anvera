@@ -648,3 +648,35 @@ const safeProducts = products.map((product) => ({
 .vehicle-finder-section--compact .anvera-carbon-field .m-combo__field{background:#202328}
 .vehicle-finder-section--compact .anvera-carbon-field .m-combo__field{border-bottom-color:#69717a}
 </style>
+
+<style is:global>
+/* Final component-level overrides: this component is shared by standalone fitment and configurator. */
+.vehicle-finder-section:not(.vehicle-finder-section--compact) .vehicle-finder-form,
+.vehicle-finder-section:not(.vehicle-finder-section--compact) .vehicle-finder-results,
+.vehicle-finder-section:not(.vehicle-finder-section--compact) .vf-products { color:#17191b!important;background:#fff!important; }
+.vehicle-finder-section:not(.vehicle-finder-section--compact) .vf-results-heading h3,
+.vehicle-finder-section:not(.vehicle-finder-section--compact) .vf-products-heading h3,
+.vehicle-finder-section:not(.vehicle-finder-section--compact) .vf-fitment-group-heading h4 { color:#17191b!important; }
+.vehicle-finder-section--compact,
+.vehicle-finder-section--compact *,
+.vehicle-finder-section--compact *::before,
+.vehicle-finder-section--compact *::after { color-scheme:light!important; }
+.vehicle-finder-section--compact .vehicle-finder-form,
+.vehicle-finder-section--compact .vehicle-finder-results,
+.vehicle-finder-section--compact .vf-table-scroll,
+.vehicle-finder-section--compact .vf-fitment-table,
+.vehicle-finder-section--compact .vf-fitment-table tbody,
+.vehicle-finder-section--compact .vf-fitment-table tbody tr { color:#17191b!important;background:#fff!important; }
+.vehicle-finder-section--compact .vf-fitment-table thead,
+.vehicle-finder-section--compact .vf-fitment-table th { color:#343b3f!important;background:#eceeeb!important; }
+.vehicle-finder-section--compact .vf-fitment-table td { color:#292f33!important;background:#fff!important;border-color:#e1e4e2!important; }
+.vehicle-finder-section--compact .vf-fitment-table tbody tr:hover td,
+.vehicle-finder-section--compact .vf-fitment-table tbody tr[aria-selected=true] td { background:#eaf1f7!important; }
+.vehicle-finder-section--compact .vf-select-trigger,
+.vehicle-finder-section--compact .m-input,
+.vehicle-finder-section--compact .m-combo__field { color:#17191b!important;background:#fff!important;border-color:#c7ceca!important; }
+.vehicle-finder-section--compact .vf-select-menu,
+.vehicle-finder-section--compact .m-combo__list,
+.vehicle-finder-section--compact .vf-select-option,
+.vehicle-finder-section--compact .m-combo__list li button { color:#17191b!important;background:#fff!important; }
+</style>
