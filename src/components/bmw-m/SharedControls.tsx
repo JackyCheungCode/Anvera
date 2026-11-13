@@ -7,7 +7,7 @@ import {
   InlineNotification as CarbonInlineNotification,
   TextArea as CarbonTextArea,
   TextInput as CarbonTextInput
-} from "../bmw-m/Controls";
+} from "./Controls";
 
 type ButtonVariant = "primary" | "secondary" | "dark" | "ghost";
 type ButtonControlProps = {
