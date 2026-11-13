@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 type CommonProps = { id?: string; className?: string; children?: React.ReactNode; disabled?: boolean; };
-type ButtonProps = CommonProps & { type?: "button"|"submit"|"reset"; href?: string; kind?: "primary"|"secondary"|"tertiary"|"ghost"|"danger"|"danger--primary"; size?: "sm"|"md"|"lg"; onClick?: React.MouseEventHandler<HTMLButtonElement>; "aria-pressed"?: boolean; "aria-expanded"?: boolean; "aria-controls"?: string; "aria-label"?: string; };
+type ButtonProps = CommonProps & { "aria-current"?: string; type?: "button"|"submit"|"reset"; href?: string; kind?: "primary"|"secondary"|"tertiary"|"ghost"|"danger"|"danger--primary"; size?: "sm"|"md"|"lg"; onClick?: React.MouseEventHandler<HTMLButtonElement>; "aria-pressed"?: boolean; "aria-expanded"?: boolean; "aria-controls"?: string; "aria-label"?: string; };
 export function Button({children,id,className="",disabled,type="button",href,onClick,kind="primary",size="md",...aria}:ButtonProps){
  const cls=`m-control m-button m-button--${kind.replace("--","-")} m-button--${size} ${className}`.trim();
  return href ? <a id={id} className={cls} href={disabled?undefined:href} aria-disabled={disabled||undefined} {...aria}>{children}</a> : <button id={id} className={cls} type={type} disabled={disabled} onClick={onClick} {...aria}>{children}</button>;
