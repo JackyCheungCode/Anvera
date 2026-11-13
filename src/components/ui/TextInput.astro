@@ -1,4 +1,5 @@
 ---
+import { TextInputControl } from "../carbon/Controls";
 interface Props {
   id: string;
   name: string;
@@ -10,20 +11,6 @@ interface Props {
   autocomplete?: string;
   helpText?: string;
 }
-const { id, name, label, type = "text", value, placeholder, required = false, autocomplete, helpText } = Astro.props;
+const props = Astro.props;
 ---
-<div class="cds-field">
-  <label class="cds-label" for={id}>{label}{required && <span aria-hidden="true"> *</span>}</label>
-  <input
-    class="cds-input"
-    id={id}
-    name={name}
-    type={type}
-    value={value}
-    placeholder={placeholder}
-    required={required}
-    autocomplete={autocomplete}
-    aria-describedby={helpText ? `${id}-help` : undefined}
-  />
-  {helpText && <span class="cds-helper" id={`${id}-help`}>{helpText}</span>}
-</div>
+<TextInputControl {...props} />
