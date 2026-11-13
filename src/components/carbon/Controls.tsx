@@ -136,7 +136,9 @@ export function DropdownControl({
         placeholder={placeholder}
         selectedItem={selected}
         onChange={({ selectedItem }) => setSelected(selectedItem ?? null)}
-        shouldFilterItem
+        shouldFilterItem={({ item, inputValue, itemToString: toString }) =>
+          toString(item).toLocaleLowerCase().includes(inputValue.toLocaleLowerCase())
+        }
         helperText={helpText}
         required={required}
         size="lg"
