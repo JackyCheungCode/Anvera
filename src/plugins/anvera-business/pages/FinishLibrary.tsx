@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Button as CarbonButton } from "@carbon/react";
+import { Button as CarbonButton, TextInput as CarbonTextInput, TextArea as CarbonTextArea } from "@carbon/react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 
 type FinishProfile = {
@@ -24,11 +24,12 @@ const blankForm = (): FinishForm => ({
 function Field({ label, value, onChange, placeholder, multiline = false }: {
   label: string; value: string; onChange: (value: string) => void; placeholder?: string; multiline?: boolean;
 }) {
-  return <label className={`api-library-field ${multiline ? "api-library-field--wide" : ""}`}>
-    <span>{label}</span>
-    {multiline ? <textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={3} /> :
-      <input value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />}
-  </label>;
+  const id = `finish-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  return <div className={`api-library-field ${multiline ? "api-library-field--wide" : ""}`}>
+    {multiline
+      ? <CarbonTextArea id={id} labelText={label} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={3} />
+      : <CarbonTextInput id={id} labelText={label} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />}
+  </div>;
 }
 
 export function FinishLibrary({ onCatalogChange }: {
