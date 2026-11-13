@@ -49,16 +49,24 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (type === "states") {
       const rows = Array.isArray(payload?.data?.states) ? payload.data.states : [];
-      const regions = [...new Set(rows.map((item: unknown) =>
-        typeof item === "string" ? item.trim() : clean((item as { name?: unknown })?.name)
-      ).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+      const regionNames: string[] = rows
+        .map((item: unknown): string =>
+          typeof item === "string" ? item.trim() : clean((item as { name?: unknown })?.name)
+        )
+        .filter((value: string): value is string => Boolean(value));
+      const regions: string[] = Array.from(new Set<string>(regionNames))
+        .sort((a: string, b: string) => a.localeCompare(b));
       return json({ ok: true, countryCode, country, regions });
     }
 
     const rows = Array.isArray(payload?.data) ? payload.data : [];
-    const cities = [...new Set(rows.map((item: unknown) =>
-      typeof item === "string" ? item.trim() : clean((item as { name?: unknown })?.name)
-    ).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    const cityNames: string[] = rows
+      .map((item: unknown): string =>
+        typeof item === "string" ? item.trim() : clean((item as { name?: unknown })?.name)
+      )
+      .filter((value: string): value is string => Boolean(value));
+    const cities: string[] = Array.from(new Set<string>(cityNames))
+      .sort((a: string, b: string) => a.localeCompare(b));
     return json({ ok: true, countryCode, country, state, cities });
   } catch {
     return json({ ok: false, error: "location_provider_unavailable" }, 502);
