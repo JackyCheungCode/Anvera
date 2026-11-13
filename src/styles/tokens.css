@@ -1,14 +1,32 @@
 :root {
-  /* ANVERA brand layer — high-contrast performance editorial */
-  --anvera-black: #0b0c0e;
-  --anvera-graphite: #17191c;
-  --anvera-steel: #282c31;
-  --anvera-silver: #b8bec5;
-  --anvera-white: #f7f8f9;
+  /* ANVERA performance identity — BMW M inspired, not a replica */
+  --anvera-black: #090b0e;
+  --anvera-graphite: #14181d;
+  --anvera-steel: #252b32;
+  --anvera-silver: #aeb7c1;
+  --anvera-white: #f5f6f7;
   --anvera-red: #d92832;
   --anvera-red-hover: #b91f28;
+  --anvera-m-blue: #0066b3;
+  --anvera-m-cyan: #00a3e0;
+  --anvera-m-red: #d92832;
 
-  /* Carbon interaction layer */
+  /* Semantic surfaces */
+  --surface-page: #f5f6f7;
+  --surface-panel: #ffffff;
+  --surface-muted: #eceff1;
+  --surface-dark: #090b0e;
+  --surface-dark-panel: #14181d;
+  --surface-dark-raised: #20262d;
+  --text-primary: #16191d;
+  --text-secondary: #525a63;
+  --text-muted: #737d87;
+  --text-on-dark: #f5f6f7;
+  --text-on-dark-muted: #aeb7c1;
+  --border-subtle: #d8dde2;
+  --border-strong: #8d969f;
+
+  /* Carbon interaction semantics */
   --cds-interactive: #0f62fe;
   --cds-interactive-hover: #0353e9;
   --cds-focus: #0f62fe;
@@ -25,10 +43,19 @@
   --cds-support-error: #da1e28;
   --cds-support-info: #0043ce;
 
-  --font-display: "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
-  --font-body: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  /* Typography */
+  --font-display: "Arial Narrow", "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+
+  /* Layout */
   --content-max: 1440px;
+  --content-wide: 1600px;
   --page-gutter: clamp(20px, 5vw, 80px);
+  --header-height: 88px;
+  --header-height-mobile: 68px;
+
+  /* Carbon-aligned spacing scale */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -38,6 +65,9 @@
   --space-7: 48px;
   --space-8: 64px;
   --space-9: 96px;
+
+  /* Motion */
   --motion-fast: 160ms ease;
   --motion-standard: 260ms cubic-bezier(.2,.7,.2,1);
+  --motion-slow: 420ms cubic-bezier(.2,.7,.2,1);
 }
