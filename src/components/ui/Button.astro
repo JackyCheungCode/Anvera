@@ -9,9 +9,11 @@ interface Props {
   className?: string;
   filterKey?: string;
   ariaPressed?: boolean;
+  ariaExpanded?: boolean;
+  productKey?: string;
 }
-const { href, variant = "primary", type = "button", disabled = false, id, className, filterKey, ariaPressed } = Astro.props;
+const { href, variant = "primary", type = "button", disabled = false, id, className, filterKey, ariaPressed, ariaExpanded, productKey } = Astro.props;
 ---
-<ButtonControl id={id} className={className} filterKey={filterKey} ariaPressed={ariaPressed} href={href} variant={variant} type={type} disabled={disabled}>
+<ButtonControl id={id} className={className} filterKey={filterKey} ariaPressed={ariaPressed} ariaExpanded={ariaExpanded} productKey={productKey} href={href} variant={variant} type={type} disabled={disabled}>
   <slot />
 </ButtonControl>
