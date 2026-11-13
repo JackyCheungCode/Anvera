@@ -39,6 +39,7 @@ The React wrappers live in `src/components/carbon/Controls.tsx`.
 - Custom Inquiry: Carbon TextInput, ComboBox, TextArea, FileUploader and Buttons; existing inquiry payload, attachment handling and Turnstile integration are preserved.
 - Dealer Application: Carbon TextInput, TextArea and Buttons; manual review and submission flow are preserved.
 - Configuration Tracking: Carbon TextInput and Button; private reference/token retrieval remains unchanged.
+- EmDash business workspace: Carbon Buttons, TextInputs, TextAreas and ComboBoxes across Configuration Orders, Dealer Accounts, Dealer Applications, Inquiry Inbox, Construction Capability Matrix, Material & Forging Libraries, Finish Library, Product Intelligence and Engineering Review Queue. Specification table editors use compact Carbon TextInputs; existing data tables and record workflows are preserved.
 
 Hidden inputs used as form payload fields and honeypot fields are not user-facing controls.
 
@@ -46,7 +47,7 @@ Hidden inputs used as form payload fields and honeypot fields are not user-facin
 
 - GitHub Actions: unit tests, Astro/TypeScript checks and production build.
 - Isolated preview workflow: build, Wrangler dry-run, preview D1 migrations, preview Worker deployment, configuration-order persistence smoke test and Wheel-Size catalog proxy smoke test.
-- Browser Run screenshot review: mobile configuration page captured at 480 × 360.
+- Browser Run screenshot review: mobile configuration and navigation, a 960 px tablet-width homepage, and public form/fitment page sections. The 960 px header review exposed crowded navigation; the collapse breakpoint was moved to 1024 px and the expanded mobile menu was captured.
 - No production merge or deployment is performed by this branch. Production remains on `main` until the reviewed pull request is merged and the production deployment workflow succeeds.
 - The branch-scoped Cloudflare Workers Builds integration is retained as a build-only check; its deploy command is a no-op because GitHub Actions owns preview and production deployment. This prevents a duplicate Wrangler preview deployment from bypassing the isolated preview configuration and its KV binding.
 
