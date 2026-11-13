@@ -117,7 +117,6 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
         </div>
         <p class="studio-note">The animated sequence illustrates the planned production stages; it does not represent live factory progress. Some operations may overlap depending on the final construction and factory schedule.</p>
       </section>
-
       <section class="studio-step" data-step="4" hidden>
         <div class="step-heading"><div><p class="step-kicker">04 / DELIVERY & LOGISTICS</p><h2>Where should we deliver?</h2><p>Choose the Incoterm and destination. The route and arrival window will be estimated from the destination address.</p></div><span class="step-index">04—06</span></div>
         <div class="delivery-form-grid">
@@ -237,8 +236,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
       path: state.specPath,
       selected: state.selectedFitment ? {
         front: state.selectedFitment.front,
-        rear: state.selectedFitment.rear,
-        classification: state.selectedFitment.classification
+        rear: state.selectedFitment.rear,        classification: state.selectedFitment.classification
       } : null,
       customFront: root.querySelector("#custom-front")?.value || "",
       customRear: root.querySelector("#custom-rear")?.value || "",
@@ -253,6 +251,8 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
       method: root.querySelector("#shipping-method")?.value || state.delivery.method,
       country: countryRows?.find(c=>c.value===root.querySelector("#delivery-country")?.value)?.label || "",
       countryCode: root.querySelector("#delivery-country")?.value || "",
+      countryFlag: countryRows?.find(c=>c.value===root.querySelector("#delivery-country")?.value)?.flag || "",
+      countryDisplay: [countryRows?.find(c=>c.value===root.querySelector("#delivery-country")?.value)?.flag, countryRows?.find(c=>c.value===root.querySelector("#delivery-country")?.value)?.label].filter(Boolean).join(" "),
       region: root.querySelector("#delivery-region")?.value==="__none__"?(root.querySelector("#delivery-region-other")?.value||""):root.querySelector("#delivery-region")?.value || "",
       city: root.querySelector("#delivery-city")?.value==="__other__"?(root.querySelector("#delivery-city-other")?.value||""):root.querySelector("#delivery-city")?.value || "",
       postal: root.querySelector("#delivery-postal")?.value || "",
@@ -357,8 +357,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
   };
   const setDropdownValue=(control,value,label)=>{
     if(!control)return;
-    control.input.value=value;setDropdownLabel(control,label);
-    control.menu?.querySelectorAll("[data-dropdown-option]").forEach(option=>option.setAttribute("aria-selected",String(option.dataset.value===value)));
+    control.input.value=value;setDropdownLabel(control,label);    control.menu?.querySelectorAll("[data-dropdown-option]").forEach(option=>option.setAttribute("aria-selected",String(option.dataset.value===value)));
     control.input.dispatchEvent(new Event("change",{bubbles:true}));
   };
   const closeDropdowns=except=>{
@@ -429,17 +428,18 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
     const country=countryRows.find(row=>row.value===countryCode)?.label||countryCode;
     const regionRows=[];
     try{
-      const response=await fetch("https://countriesnow.space/api/v0.1/countries/states",{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({country})});
+      const response=await fetch("/api/delivery-locations",{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({type:"states",countryCode,country})});
       if(!response.ok)throw new Error("states_http_"+response.status);
       const payload=await response.json();
-      if(payload?.error)throw new Error(payload.msg||"states_lookup_failed");
-      (payload?.data?.states||[]).forEach(item=>{if(item?.name)regionRows.push({value:item.name,label:item.name});});
+      if(!payload?.ok)throw new Error(payload?.error||"states_lookup_failed");
+      (Array.isArray(payload.regions)?payload.regions:[]).forEach(name=>{if(name)regionRows.push({value:String(name),label:String(name)});});
     }catch(error){console.warn("Delivery state/province lookup failed",error);}
     if(requestId!==regionRequestId)return;
-    regionRows.push({value:"__none__",label:regionRows.length?"Other / enter manually":"No state list available — enter manually"});
+    regionRows.push({value:"__none__",label:regionRows.length?"Other / enter manually":"State / province unavailable — enter manually"});
     renderDropdownOptions(regionControl,regionRows,"Search state / province…");
-    setDropdownLabel(regionControl,"Select state / province");
+    setDropdownLabel(regionControl,regionRows.length>1?"Select state / province":"Enter state / province manually");
     regionControl.trigger.disabled=false;
+    if(regionRows.length===1){regionControl.input.value="__none__";root.querySelector("#delivery-region-other").hidden=false;setDropdownValue(cityControl,"__other__","Enter city manually");root.querySelector("#delivery-city-other").hidden=false;cityControl.trigger.disabled=false;}
   };
   const loadDeliveryCities=async(countryCode,stateName)=>{
     const requestId=++cityRequestId;
@@ -447,11 +447,11 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
     let cityRows=[];
     if(stateName){
       try{
-        const response=await fetch("https://countriesnow.space/api/v0.1/countries/state/cities",{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({country,state:stateName})});
+        const response=await fetch("/api/delivery-locations",{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({type:"cities",countryCode,country,state:stateName})});
         if(!response.ok)throw new Error("cities_http_"+response.status);
         const payload=await response.json();
-        if(payload?.error)throw new Error(payload.msg||"city_lookup_failed");
-        cityRows=(payload?.data||[]).filter(Boolean).map(name=>({value:String(name),label:String(name)}));
+        if(!payload?.ok)throw new Error(payload?.error||"city_lookup_failed");
+        cityRows=(Array.isArray(payload.cities)?payload.cities:[]).filter(Boolean).map(name=>({value:String(name),label:String(name)}));
       }catch(error){console.warn("Delivery city lookup failed",error);}
     }
     if(requestId!==cityRequestId)return;
@@ -472,13 +472,12 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
   ["delivery-country","delivery-region","delivery-city","delivery-term","shipping-method"].forEach(id=>root.querySelector("#"+id).addEventListener("change",()=>{state.delivery[id]=root.querySelector("#"+id).value;updateArrivalEstimate();updateProgress();}));
   root.querySelector("#request-pcd-change").addEventListener("click",()=>{const accepted=window.confirm("PCD / centre bore are safety-critical and normally fixed by the vehicle hub. Changing them requires ANVERA engineering approval and may make the wheel incompatible. Continue with a request?");if(!accepted)return;["front","rear"].forEach(side=>["pcd","bore"].forEach(key=>{const field=root.querySelector("#custom-"+side+"-"+key);field.readOnly=false;field.placeholder="Requested change — engineering approval required";}));root.querySelector("#custom-notes").value=(root.querySelector("#custom-notes").value+"\nPCD / centre bore override requested. Validate hub and fastener compatibility.").trim();hint.textContent="PCD / bore override requested. ANVERA engineering approval is mandatory.";});
   const updateArrivalEstimate=()=>{const country=countryRows.find(c=>c.value===root.querySelector("#delivery-country").value)?.label||"",city=root.querySelector("#delivery-city").value==="__other__"?root.querySelector("#delivery-city-other").value.trim():root.querySelector("#delivery-city").value.trim();const complete=country&&city;root.querySelector("#delivery-window").textContent=complete?"Manufacturing + route estimate pending":"Awaiting destination details";root.querySelector("#delivery-window-note").textContent=complete?"Destination captured. A verified carrier and port route is required before calculating a reliable arrival date.":"Enter destination country and city to begin the delivery estimate.";root.querySelector("#ocean-estimate").textContent=complete?"Carrier schedule required":"Route required";};
-  const buildConfirmation=()=>{const v=state.vehicle;const vehicle=[v.makeLabel||v.make,v.modelLabel||v.model,v.year,v.generation,v.trim].filter(Boolean).join(" ");const spec=state.specPath==="oem"?"OEM reference":state.specPath==="upgrade"?"ANVERA upgrade reference":"Custom specification";const address=[root.querySelector("#delivery-address").value.trim(),cityControl.input.value==="__other__"?root.querySelector("#delivery-city-other").value:cityControl.input.value,regionControl.input.value==="__none__"?root.querySelector("#delivery-region-other").value:regionControl.input.value,countryRows.find(c=>c.value===countryControl.input.value)?.label,root.querySelector("#delivery-postal").value.trim()].filter(Boolean).join(", ");const val=id=>root.querySelector("#"+id).value.trim()||"Not supplied";root.querySelector("#document-reference").textContent=state.reference;root.querySelector("#document-date").textContent=new Date().toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"});root.querySelector("#document-design").textContent=state.product?.title||"—";root.querySelector("#document-construction").textContent=state.product?.construction||"—";root.querySelector("#document-vehicle").textContent=vehicle||"—";root.querySelector("#document-vehicle-detail").textContent="Market: "+v.region;root.querySelector("#document-spec-type").textContent=spec;root.querySelector("#document-spec-details").textContent=state.specPath==="custom"?"Front: "+val("custom-front")+" / Rear: "+val("custom-rear"):"Reference values to be confirmed against verified vehicle fitment data.";root.querySelector("#document-spec-details").textContent+=" · Finish: "+val("wheel-finish")+" / Colour: "+val("wheel-colour");root.querySelector("#document-delivery").textContent=val("delivery-term")+" / "+(val("shipping-method")==="sea"?"Sea freight":"Air freight");root.querySelector("#document-address").textContent=address;root.querySelector("#document-arrival").textContent="Estimated delivery date pending verified route calculation.";root.querySelector("#document-contact").textContent=val("contact-name");root.querySelector("#document-email").textContent=val("contact-email");root.querySelector("#document-phone").textContent=val("contact-phone");};
+  const buildConfirmation=()=>{const v=state.vehicle;const vehicle=[v.makeLabel||v.make,v.modelLabel||v.model,v.year,v.generation,v.trim].filter(Boolean).join(" ");const spec=state.specPath==="oem"?"OEM reference":state.specPath==="upgrade"?"ANVERA upgrade reference":"Custom specification";const address=[root.querySelector("#delivery-address").value.trim(),cityControl.input.value==="__other__"?root.querySelector("#delivery-city-other").value:cityControl.input.value,regionControl.input.value==="__none__"?root.querySelector("#delivery-region-other").value:regionControl.input.value,[countryRows.find(c=>c.value===countryControl.input.value)?.flag,countryRows.find(c=>c.value===countryControl.input.value)?.label].filter(Boolean).join(" "),root.querySelector("#delivery-postal").value.trim()].filter(Boolean).join(", ");const val=id=>root.querySelector("#"+id).value.trim()||"Not supplied";root.querySelector("#document-reference").textContent=state.reference;root.querySelector("#document-date").textContent=new Date().toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"});root.querySelector("#document-design").textContent=state.product?.title||"—";root.querySelector("#document-construction").textContent=state.product?.construction||"—";root.querySelector("#document-vehicle").textContent=vehicle||"—";root.querySelector("#document-vehicle-detail").textContent="Market: "+v.region;root.querySelector("#document-spec-type").textContent=spec;root.querySelector("#document-spec-details").textContent=state.specPath==="custom"?"Front: "+val("custom-front")+" / Rear: "+val("custom-rear"):"Reference values to be confirmed against verified vehicle fitment data.";root.querySelector("#document-spec-details").textContent+=" · Finish: "+val("wheel-finish")+" / Colour: "+val("wheel-colour");root.querySelector("#document-delivery").textContent=val("delivery-term")+" / "+(val("shipping-method")==="sea"?"Sea freight":"Air freight");root.querySelector("#document-address").textContent=address;root.querySelector("#document-arrival").textContent="Estimated delivery date pending verified route calculation.";root.querySelector("#document-contact").textContent=val("contact-name");root.querySelector("#document-email").textContent=val("contact-email");root.querySelector("#document-phone").textContent=val("contact-phone");};
   root.querySelector("#download-pdf").addEventListener("click",()=>window.print());
   root.querySelector("#submit-configuration").addEventListener("click",async()=>{
     const button=root.querySelector("#submit-configuration"),status=root.querySelector("#submit-status");
     if(!state.serverReady||!state.accessToken){status.textContent="The secure order service is not available yet. Your local draft remains saved on this device.";return;}
-    const customerName=root.querySelector("#contact-name").value.trim(),email=root.querySelector("#contact-email").value.trim(),phone=root.querySelector("#contact-phone").value.trim();
-    if(!customerName||!email){status.textContent="Enter your contact name and email before submitting.";return;}
+    const customerName=root.querySelector("#contact-name").value.trim(),email=root.querySelector("#contact-email").value.trim(),phone=root.querySelector("#contact-phone").value.trim();    if(!customerName||!email){status.textContent="Enter your contact name and email before submitting.";return;}
     // @ts-ignore Cloudflare Turnstile is injected by its external script.
     const turnstile=window.turnstile;const turnstileToken=(turnstile&&turnstile.getResponse)?turnstile.getResponse():"";
     if(!turnstileToken){status.textContent="Complete the security verification before submitting.";return;}
