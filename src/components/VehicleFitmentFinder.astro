@@ -29,12 +29,12 @@ const safeProducts = products.map((product) => ({
     </div>}
     <form class="vehicle-finder-form" id="vehicle-finder-form">
       <div class="vehicle-finder-grid" id="vf-vehicle-fields">
-        <div class="vehicle-finder-field"><div data-dropdown="region" data-placeholder="Southeast Asia"></div></div>
-        <div class="vehicle-finder-field"><div data-dropdown="make" data-placeholder="Select manufacturer"></div></div>
-        <div class="vehicle-finder-field"><div data-dropdown="model" data-placeholder="Select model"></div></div>
-        <div class="vehicle-finder-field"><div data-dropdown="year" data-placeholder="Select year"></div></div>
-        <div class="vehicle-finder-field"><div data-dropdown="generation" data-placeholder="Any generation"></div></div>
-        <div class="vehicle-finder-field"><div data-dropdown="modification" data-placeholder="All available trims"></div></div>
+        <div class="vehicle-finder-field"><div data-dropdown="region" data-label="Market region" data-placeholder="Southeast Asia"></div></div>
+        <div class="vehicle-finder-field"><div data-dropdown="make" data-label="Make" data-placeholder="Select manufacturer"></div></div>
+        <div class="vehicle-finder-field"><div data-dropdown="model" data-label="Model" data-placeholder="Select model"></div></div>
+        <div class="vehicle-finder-field"><div data-dropdown="year" data-label="Year" data-placeholder="Select year"></div></div>
+        <div class="vehicle-finder-field"><div data-dropdown="generation" data-label="Generation" data-placeholder="Any generation"></div></div>
+        <div class="vehicle-finder-field"><div data-dropdown="modification" data-label="Modification / trim" data-placeholder="All available trims"></div></div>
       </div>
       <div class="vehicle-finder-actions"><p id="vf-status" role="status" aria-live="polite">Loading vehicle catalogue…</p><button class="cds-btn cds-btn--primary" type="submit" id="vf-submit" disabled>Find fitment <span aria-hidden="true">↗</span></button></div>
     </form>
@@ -159,7 +159,7 @@ const safeProducts = products.map((product) => ({
   document.querySelectorAll("[data-dropdown]").forEach((host) => {
     const key = host.dataset.dropdown;
     const placeholder = host.dataset.placeholder || "Select";
-    const label = host.parentElement?.querySelector("span")?.textContent?.trim() || key;
+    const label = host.dataset.label || key;
     host.classList.add("cds--g100", "anvera-carbon-field");
     const reactRoot = createRoot(host);
     let options = [];
