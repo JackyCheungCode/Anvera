@@ -3,6 +3,7 @@ import Base from "../layouts/Base.astro";
 import TextInput from "../components/ui/TextInput.astro";
 import TextArea from "../components/ui/TextArea.astro";
 import Button from "../components/ui/Button.astro";
+import FileUploader from "../components/ui/FileUploader.astro";
 import Dropdown from "../components/ui/Dropdown.astro";
 import { getEmDashCollection } from "emdash";
 const selectedModel = Astro.url.searchParams.get("model") ?? "";
@@ -62,9 +63,7 @@ const fallbackFinishOptions = [{value:"gloss-black",label:"Gloss black"},{value:
         <TextArea id="project-notes" name="projectNotes" label="Project notes" rows={5} placeholder="Tell us about the look, intended use, brake package, references or any details that matter." />
       </div>
       <div class="cds-field brief-notes">
-        <label class="cds-label" for="project-attachments">Reference files</label>
-        <input class="cds-input" id="project-attachments" name="attachments" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" multiple />
-        <p class="cds-help-text">Up to 5 files · 8 MB each · 20 MB total. JPG, PNG, WebP or PDF.</p>
+        <FileUploader id="project-attachments" name="attachments" label="Reference files" accept={["image/jpeg", "image/png", "image/webp", "application/pdf"]} multiple description="Up to 5 files · 8 MB each · 20 MB total. JPG, PNG, WebP or PDF." />
       </div>
       <div class="brief-actions">
         <Button id="submit-project-brief" type="submit">Send project inquiry <span aria-hidden="true">↗</span></Button>
