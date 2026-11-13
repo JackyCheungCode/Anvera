@@ -1,5 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
+import Button from "../components/ui/Button.astro";
 const pillars = [
   { n:"01", title:"Material integrity", copy:"Material selection and process control form the foundation of a forged wheel programme." },
   { n:"02", title:"Design discipline", copy:"Spoke geometry, section thickness and visual balance are considered together rather than in isolation." },
@@ -33,6 +34,6 @@ const pillars = [
     <p class="section-kicker">A project starts with a conversation</p>
     <h2>Bring your vision<br />into focus.</h2>
     <p>Tell us about your vehicle and the wheel you want to create.</p>
-    <a class="cds-btn cds-btn--primary" href="/custom-inquiry">Discuss a project <span aria-hidden="true">↗</span></a>
+    <Button href="/custom-inquiry" variant="primary">Discuss a project <span aria-hidden="true">↗</span></Button>
   </section>
 </Base>
