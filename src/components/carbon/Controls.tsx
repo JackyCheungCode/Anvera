@@ -148,3 +148,38 @@ export function DropdownControl({
     </div>
   );
 }
+
+
+export type CarbonVehicleOption = { value: string; label: string; raw: unknown };
+type DynamicComboBoxControlProps = {
+  id: string;
+  label: string;
+  placeholder: string;
+  items: CarbonVehicleOption[];
+  selectedItem: CarbonVehicleOption | null;
+  disabled?: boolean;
+  onChange: (item: CarbonVehicleOption | null) => void;
+};
+
+export function DynamicComboBoxControl({
+  id, label, placeholder, items, selectedItem, disabled = false, onChange
+}: DynamicComboBoxControlProps) {
+  const itemToString = (item: CarbonVehicleOption | null) => item?.label ?? "";
+  return (
+    <ComboBox
+      id={id}
+      titleText={label}
+      placeholder={placeholder}
+      items={items}
+      selectedItem={selectedItem}
+      itemToString={itemToString}
+      disabled={disabled}
+      size="lg"
+      onChange={({ selectedItem: next }) => onChange(next ?? null)}
+      shouldFilterItem={({ item, inputValue, itemToString: toString }) => {
+        const label = toString?.(item) ?? "";
+        return label.toLocaleLowerCase().includes((inputValue ?? "").toLocaleLowerCase());
+      }}
+    />
+  );
+}
