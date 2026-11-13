@@ -55,16 +55,18 @@ type TextInputControlProps = {
   autocomplete?: string;
   helpText?: string;
   className?: string;
+  readOnly?: boolean;
 };
 
 export function TextInputControl({
-  id, name, label, type = "text", value, placeholder, required = false, autocomplete, helpText, className
+  id, name, label, type = "text", value, placeholder, required = false, autocomplete, helpText, className, readOnly
 }: TextInputControlProps) {
   return (
     <CarbonTextInput
       id={id}
       name={name}
       className={className}
+      readOnly={readOnly}
       labelText={label}
       type={type}
       value={value}
