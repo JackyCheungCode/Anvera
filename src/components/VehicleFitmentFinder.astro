@@ -29,12 +29,12 @@ const safeProducts = products.map((product) => ({
     </div>}
     <form class="vehicle-finder-form" id="vehicle-finder-form">
       <div class="vehicle-finder-grid" id="vf-vehicle-fields">
-        <div class="vehicle-finder-field"><span>Market region</span><div data-dropdown="region" data-placeholder="Southeast Asia"></div></div>
-        <div class="vehicle-finder-field"><span>Make</span><div data-dropdown="make" data-placeholder="Select manufacturer"></div></div>
-        <div class="vehicle-finder-field"><span>Model</span><div data-dropdown="model" data-placeholder="Select model"></div></div>
-        <div class="vehicle-finder-field"><span>Year</span><div data-dropdown="year" data-placeholder="Select year"></div></div>
-        <div class="vehicle-finder-field"><span>Generation</span><div data-dropdown="generation" data-placeholder="Any generation"></div></div>
-        <div class="vehicle-finder-field"><span>Modification / trim</span><div data-dropdown="modification" data-placeholder="All available trims"></div></div>
+        <div class="vehicle-finder-field"><div data-dropdown="region" data-placeholder="Southeast Asia"></div></div>
+        <div class="vehicle-finder-field"><div data-dropdown="make" data-placeholder="Select manufacturer"></div></div>
+        <div class="vehicle-finder-field"><div data-dropdown="model" data-placeholder="Select model"></div></div>
+        <div class="vehicle-finder-field"><div data-dropdown="year" data-placeholder="Select year"></div></div>
+        <div class="vehicle-finder-field"><div data-dropdown="generation" data-placeholder="Any generation"></div></div>
+        <div class="vehicle-finder-field"><div data-dropdown="modification" data-placeholder="All available trims"></div></div>
       </div>
       <div class="vehicle-finder-actions"><p id="vf-status" role="status" aria-live="polite">Loading vehicle catalogue…</p><button class="cds-btn cds-btn--primary" type="submit" id="vf-submit" disabled>Find fitment <span aria-hidden="true">↗</span></button></div>
     </form>
@@ -630,4 +630,13 @@ const safeProducts = products.map((product) => ({
 .vehicle-finder-section--compact .vf-fitment-table td a,
 .vehicle-finder-section--compact .vf-fitment-table td button{background:#343b45!important;color:#fff!important}
 .vehicle-finder-section--compact .vf-products{display:none!important}
+
+/* Dynamic vehicle selectors are rendered by IBM Carbon ComboBox. */
+.vehicle-finder-field>.anvera-carbon-field{min-width:0;width:100%}
+.vehicle-finder-field .cds--combo-box,.vehicle-finder-field .cds--list-box{width:100%}
+.vehicle-finder-field .cds--label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.vehicle-finder-section--compact .anvera-carbon-field .cds--label{color:#a7adb4}
+.vehicle-finder-section--compact .anvera-carbon-field .cds--text-input,
+.vehicle-finder-section--compact .anvera-carbon-field .cds--list-box__field{background:#202328}
+.vehicle-finder-section--compact .anvera-carbon-field .cds--list-box__field{border-bottom-color:#69717a}
 </style>
