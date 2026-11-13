@@ -72,7 +72,7 @@ export function TextInputControl({
       readOnly={readOnly}
       labelText={label}
       type={type}
-      value={value}
+      defaultValue={value}
       placeholder={placeholder}
       required={required}
       autoComplete={autocomplete}
@@ -230,7 +230,7 @@ export function TextAreaControl({
       name={name}
       className={className}
       labelText={label}
-      value={value}
+      defaultValue={value}
       placeholder={placeholder}
       rows={rows}
       required={required}
