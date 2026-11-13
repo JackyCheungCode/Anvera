@@ -1,4 +1,5 @@
 ---
+import Button from "./ui/Button.astro";
 interface Props { products?: Array<Record<string, unknown>>; compact?: boolean; resultsTarget?: string }
 const { products = [], compact = false, resultsTarget = "" } = Astro.props;
 const regions = [
@@ -36,7 +37,7 @@ const safeProducts = products.map((product) => ({
         <div class="vehicle-finder-field"><div data-dropdown="generation" data-label="Generation" data-placeholder="Any generation"></div></div>
         <div class="vehicle-finder-field"><div data-dropdown="modification" data-label="Modification / trim" data-placeholder="All available trims"></div></div>
       </div>
-      <div class="vehicle-finder-actions"><p id="vf-status" role="status" aria-live="polite">Loading vehicle catalogue…</p><button class="cds-btn cds-btn--primary" type="submit" id="vf-submit" disabled>Find fitment <span aria-hidden="true">↗</span></button></div>
+      <div class="vehicle-finder-actions"><p id="vf-status" role="status" aria-live="polite">Loading vehicle catalogue…</p><Button id="vf-submit" type="submit" disabled>Find fitment <span aria-hidden="true">↗</span></Button></div>
     </form>
     <div class="vehicle-finder-results" id="vf-results" hidden aria-live="polite"></div>
     {!compact && <p class="vehicle-finder-disclaimer">Fitment information is supplied by Wheel-Size as a reference. ANVERA will verify load rating, brake clearance, hub fit, offsets and vehicle-specific requirements before confirming any production specification.</p>}
