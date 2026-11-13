@@ -32,5 +32,31 @@
     "sass": "^1.93.2",
     "wrangler": "^4.125.0"
   },
-  "packageManager": "pnpm@11.9.0"
+  "packageManager": "pnpm@11.9.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@carbon/colors",
+      "@carbon/feature-flags",
+      "@carbon/grid",
+      "@carbon/icon-helpers",
+      "@carbon/icons-react",
+      "@carbon/layout",
+      "@carbon/motion",
+      "@carbon/react",
+      "@carbon/styles",
+      "@carbon/themes",
+      "@carbon/type",
+      "@carbon/utilities",
+      "@ibm/plex-mono",
+      "@ibm/plex-sans-arabic",
+      "@ibm/plex-sans-devanagari",
+      "@ibm/plex-sans-hebrew",
+      "@ibm/plex-sans-thai-looped",
+      "@ibm/plex-sans-thai",
+      "@ibm/plex-sans",
+      "@ibm/plex-serif",
+      "@ibm/plex",
+      "@parcel/watcher"
+    ]
+  }
 }
