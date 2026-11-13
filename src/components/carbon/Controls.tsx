@@ -186,21 +186,25 @@ export function DynamicComboBoxControl({
 }: DynamicComboBoxControlProps) {
   const itemToString = (item: CarbonVehicleOption | null) => item?.label ?? "";
   return (
-    <ComboBox
-      id={id}
-      titleText={label}
-      placeholder={placeholder}
-      items={items}
-      selectedItem={selectedItem}
-      itemToString={itemToString}
-      disabled={disabled}
-      size="lg"
-      onChange={({ selectedItem: next }) => onChange(next ?? null)}
-      shouldFilterItem={({ item, inputValue, itemToString: toString }) => {
-        const label = toString?.(item) ?? "";
-        return label.toLocaleLowerCase().includes((inputValue ?? "").toLocaleLowerCase());
-      }}
-    />
+    <div className="anvera-carbon-vehicle-combo">
+      {selectedItem?.logo ? <span className="anvera-carbon-selected-logo"><img src={selectedItem.logo} alt="" /></span> : null}
+      <ComboBox
+        id={id}
+        titleText={label}
+        placeholder={placeholder}
+        items={items}
+        selectedItem={selectedItem}
+        itemToString={itemToString}
+        itemToElement={(item) => item ? <span className="anvera-carbon-combo-item">{item.logo ? <img src={item.logo} alt="" loading="lazy" /> : null}<span>{item.label}</span></span> : null}
+        disabled={disabled}
+        size="lg"
+        onChange={({ selectedItem: next }) => onChange(next ?? null)}
+        shouldFilterItem={({ item, inputValue, itemToString: toString }) => {
+          const label = toString?.(item) ?? "";
+          return label.toLocaleLowerCase().includes((inputValue ?? "").toLocaleLowerCase());
+        }}
+      />
+    </div>
   );
 }
 
