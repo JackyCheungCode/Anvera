@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Button as CarbonButton } from "@carbon/react";
+import { Button as CarbonButton, TextArea as CarbonTextArea } from "@carbon/react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 
 type ConstructionType = "Monoblock" | "Two-piece" | "Three-piece";
@@ -25,9 +25,9 @@ const blankForm = (constructionType: ConstructionType = "Monoblock"): FormState 
 function Field({ label, value, onChange, placeholder }: {
   label: string; value: string; onChange: (value: string) => void; placeholder?: string;
 }) {
-  return <label className="api-library-field api-library-field--wide"><span>{label}</span>
-    <textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={3} />
-  </label>;
+  return <div className="api-library-field api-library-field--wide">
+    <CarbonTextArea id={`construction-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`} labelText={label} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={3} />
+  </div>;
 }
 
 export function ConstructionCapabilityMatrix({ onCatalogChange }: {
