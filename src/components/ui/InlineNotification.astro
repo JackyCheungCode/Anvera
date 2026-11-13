@@ -1,11 +1,11 @@
 ---
+import { NotificationControl } from "../carbon/Controls";
 interface Props {
   kind?: "info" | "success" | "warning" | "error";
   title: string;
 }
 const { kind = "info", title } = Astro.props;
 ---
-<div class:list={["cds-notification", `cds-notification--${kind}`]} role={kind === "error" ? "alert" : "status"} aria-live={kind === "error" ? "assertive" : "polite"}>
-  <strong class="cds-notification-title">{title}</strong>
-  <div class="cds-notification-content"><slot /></div>
-</div>
+<NotificationControl kind={kind} title={title}>
+  <slot />
+</NotificationControl>
