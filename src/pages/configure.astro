@@ -622,7 +622,7 @@ const products = wheelEntries.length ? wheelEntries.map((entry: any) => ({
     const key=node.dataset.constructionCount;
     const normalized=key==="all"?"all":key.replaceAll("_","-");
     const count=normalized==="all"?productRows.length:(constructionCounts[normalized]||0);
-    node.textContent=normalized==="all"?"ALL DESIGNS":String(count).padStart(2,"0")+" DESIGNS";
+    node.textContent=String(count).padStart(2,"0")+" DESIGNS";
   });
   root.querySelectorAll("[data-construction-choice]").forEach(button=>button.addEventListener("click",()=>{
     selectedConstruction=button.dataset.constructionChoice==="all"?"":button.dataset.constructionChoice.replaceAll("_","-");
