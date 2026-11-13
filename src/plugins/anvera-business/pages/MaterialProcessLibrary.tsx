@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { Button as CarbonButton } from "@carbon/react";
 import { apiFetch, parseApiResponse } from "emdash/plugin-utils";
 
 type MaterialProfile = {
@@ -45,8 +46,8 @@ function LibraryField({ label, value, onChange, placeholder, multiline = false }
 
 function StatusControl({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   return <div className="api-library-status-control" role="group" aria-label="Record status">
-    <button type="button" className={value === "draft" ? "is-active" : ""} onClick={() => onChange("draft")}>Draft</button>
-    <button type="button" className={value === "pending_review" ? "is-active" : ""} onClick={() => onChange("pending_review")}>Submit for review</button>
+    <CarbonButton kind="ghost" type="button" className={value === "draft" ? "is-active" : ""} onClick={() => onChange("draft")}>Draft</CarbonButton>
+    <CarbonButton kind="ghost" type="button" className={value === "pending_review" ? "is-active" : ""} onClick={() => onChange("pending_review")}>Submit for review</CarbonButton>
   </div>;
 }
 
@@ -153,13 +154,13 @@ export function MaterialProcessLibrary({ onCatalogChange }: {
   return <section className="api-library">
     <div className="api-library-heading">
       <div><p className="anvera-eyebrow">CONTROLLED REFERENCE DATA</p><h3>Material & Forging Libraries</h3><p>Maintain reusable factory records here. Product selections are populated from these controlled lists; approval remains an engineering responsibility.</p></div>
-      <button type="button" className="anvera-refresh anvera-refresh--light" onClick={() => void load()} disabled={loading}>Refresh libraries</button>
+      <CarbonButton kind="ghost" type="button" className="anvera-refresh anvera-refresh--light" onClick={() => void load()} disabled={loading}>Refresh libraries</CarbonButton>
     </div>
     {error ? <p className="anvera-inline-message" role="alert">{error}</p> : null}
     {notice ? <p className="api-success-message" role="status">{notice}</p> : null}
     <div className="api-library-grid">
       <section className="api-library-card">
-        <header><div><span className="anvera-eyebrow">01 / MATERIAL MASTER</span><h4>Material Profiles</h4><p>{materials.length} records</p></div><button type="button" className="api-add-product" onClick={() => { setMaterialForm(blankMaterial()); setMaterialEditorOpen(!materialEditorOpen); }}>＋ Add material</button></header>
+        <header><div><span className="anvera-eyebrow">01 / MATERIAL MASTER</span><h4>Material Profiles</h4><p>{materials.length} records</p></div><CarbonButton kind="ghost" type="button" className="api-add-product" onClick={() => { setMaterialForm(blankMaterial()); setMaterialEditorOpen(!materialEditorOpen); }}>＋ Add material</CarbonButton></header>
         {materialEditorOpen ? <div className="api-library-editor">
           <div className="api-library-form-grid">
             <LibraryField label="Material code" value={materialForm.code} onChange={(value) => setMaterialForm((current) => ({ ...current, code: value }))} placeholder="MAT-6061-T6" />
@@ -172,17 +173,17 @@ export function MaterialProcessLibrary({ onCatalogChange }: {
             <LibraryField label="Evidence notes" value={materialForm.evidenceNote} onChange={(value) => setMaterialForm((current) => ({ ...current, evidenceNote: value }))} placeholder="Evidence scope, test basis and limitations" multiline />
           </div>
           <StatusControl value={materialForm.status} onChange={(status) => setMaterialForm((current) => ({ ...current, status }))} />
-          <div className="api-library-actions"><button type="button" className="anvera-action-button anvera-action-button--quiet" onClick={() => setMaterialEditorOpen(false)}>Cancel</button><button type="button" className="anvera-action-button anvera-action-button--quiet" disabled={saving} onClick={() => void saveMaterial("draft")}>Save draft</button><button type="button" className="anvera-action-button" disabled={saving} onClick={() => void saveMaterial("pending_review")}>Submit for review</button></div>
+          <div className="api-library-actions"><CarbonButton kind="ghost" type="button" className="anvera-action-button anvera-action-button--quiet" onClick={() => setMaterialEditorOpen(false)}>Cancel</CarbonButton><CarbonButton kind="ghost" type="button" className="anvera-action-button anvera-action-button--quiet" disabled={saving} onClick={() => void saveMaterial("draft")}>Save draft</CarbonButton><CarbonButton kind="ghost" type="button" className="anvera-action-button" disabled={saving} onClick={() => void saveMaterial("pending_review")}>Submit for review</CarbonButton></div>
         </div> : null}
         <div className="api-library-list">
           {loading ? <p className="anvera-muted">Loading material records…</p> : materials.length ? materials.map((item) => <article key={item.id}>
             <div><strong>{item.code} · {item.name}</strong><span>{item.grade}{item.standard ? ` · ${item.standard}` : ""}</span><small>{item.family}{item.supplier ? ` · ${item.supplier}` : ""}</small></div>
-            <div className="api-library-row-actions"><em className={`api-library-status api-library-status--${item.status}`}>{item.status.replaceAll("_", " ")}</em><button type="button" onClick={() => editMaterial(item)} disabled={!["draft", "pending_review"].includes(item.status)}>Edit</button></div>
+            <div className="api-library-row-actions"><em className={`api-library-status api-library-status--${item.status}`}>{item.status.replaceAll("_", " ")}</em><CarbonButton kind="ghost" type="button" onClick={() => editMaterial(item)} disabled={!["draft", "pending_review"].includes(item.status)}>Edit</CarbonButton></div>
           </article>) : <p className="anvera-muted">No material profiles recorded yet.</p>}
         </div>
       </section>
       <section className="api-library-card">
-        <header><div><span className="anvera-eyebrow">02 / PROCESS MASTER</span><h4>Forging Processes</h4><p>{processes.length} records</p></div><button type="button" className="api-add-product" onClick={() => { setForgingForm(blankForging()); setForgingEditorOpen(!forgingEditorOpen); }}>＋ Add process</button></header>
+        <header><div><span className="anvera-eyebrow">02 / PROCESS MASTER</span><h4>Forging Processes</h4><p>{processes.length} records</p></div><CarbonButton kind="ghost" type="button" className="api-add-product" onClick={() => { setForgingForm(blankForging()); setForgingEditorOpen(!forgingEditorOpen); }}>＋ Add process</CarbonButton></header>
         {forgingEditorOpen ? <div className="api-library-editor">
           <div className="api-library-form-grid">
             <LibraryField label="Process code" value={forgingForm.code} onChange={(value) => setForgingForm((current) => ({ ...current, code: value }))} placeholder="FRG-CLOSED-DIE" />
@@ -195,12 +196,12 @@ export function MaterialProcessLibrary({ onCatalogChange }: {
             <LibraryField label="Evidence reference" value={forgingForm.evidenceRef} onChange={(value) => setForgingForm((current) => ({ ...current, evidenceRef: value }))} placeholder="Equipment record / process document ID" />
           </div>
           <StatusControl value={forgingForm.status} onChange={(status) => setForgingForm((current) => ({ ...current, status }))} />
-          <div className="api-library-actions"><button type="button" className="anvera-action-button anvera-action-button--quiet" onClick={() => setForgingEditorOpen(false)}>Cancel</button><button type="button" className="anvera-action-button anvera-action-button--quiet" disabled={saving} onClick={() => void saveForging("draft")}>Save draft</button><button type="button" className="anvera-action-button" disabled={saving} onClick={() => void saveForging("pending_review")}>Submit for review</button></div>
+          <div className="api-library-actions"><CarbonButton kind="ghost" type="button" className="anvera-action-button anvera-action-button--quiet" onClick={() => setForgingEditorOpen(false)}>Cancel</CarbonButton><CarbonButton kind="ghost" type="button" className="anvera-action-button anvera-action-button--quiet" disabled={saving} onClick={() => void saveForging("draft")}>Save draft</CarbonButton><CarbonButton kind="ghost" type="button" className="anvera-action-button" disabled={saving} onClick={() => void saveForging("pending_review")}>Submit for review</CarbonButton></div>
         </div> : null}
         <div className="api-library-list">
           {loading ? <p className="anvera-muted">Loading process records…</p> : processes.length ? processes.map((item) => <article key={item.id}>
             <div><strong>{item.code} · {item.name}</strong><span>{item.process_type}{item.equipment ? ` · ${item.equipment}` : ""}</span><small>{item.capacity_notes || item.heat_treatment || "Process scope not yet documented"}</small></div>
-            <div className="api-library-row-actions"><em className={`api-library-status api-library-status--${item.status}`}>{item.status.replaceAll("_", " ")}</em><button type="button" onClick={() => editForging(item)} disabled={!["draft", "pending_review"].includes(item.status)}>Edit</button></div>
+            <div className="api-library-row-actions"><em className={`api-library-status api-library-status--${item.status}`}>{item.status.replaceAll("_", " ")}</em><CarbonButton kind="ghost" type="button" onClick={() => editForging(item)} disabled={!["draft", "pending_review"].includes(item.status)}>Edit</CarbonButton></div>
           </article>) : <p className="anvera-muted">No forging processes recorded yet.</p>}
         </div>
       </section>
