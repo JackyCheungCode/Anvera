@@ -4,6 +4,7 @@ import { EmDashHead, EmDashBodyStart, EmDashBodyEnd } from "emdash/ui";
 import { createPublicPageContext } from "emdash/page";
 import { resolveStarterSiteIdentity } from "../utils/site-identity";
 import BrandLogo from "../components/BrandLogo.astro";
+import "../styles/carbon.scss";
 import "../styles/global.css";
 
 interface Props {
@@ -54,6 +55,7 @@ const navigation = [
   <EmDashHead page={pageCtx} />
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
   <EmDashBodyStart page={pageCtx} />
   <header class="site-header">
     <div class="header-inner">
@@ -65,7 +67,11 @@ const navigation = [
         <span aria-hidden="true">＋</span>
       </button>
       <nav class="primary-nav" id="primary-nav" aria-label="Main navigation">
-        {navigation.map((item) => <a href={item.href}>{item.label}</a>)}
+        {navigation.map((item) => <a href={item.href} aria-current={Astro.url.pathname === item.href || (item.href !== "/" && Astro.url.pathname.startsWith(`${item.href}/`)) ? "page" : undefined}>{item.label}</a>)}
+        <div class="mobile-nav-actions">
+          <a href="/dealers">Dealer Network</a>
+          <a href="/custom-inquiry">Get a Quote ↗</a>
+        </div>
       </nav>
       <div class="header-actions">
         <a class="header-utility" href="/dealers">Dealer Network</a>
@@ -73,7 +79,7 @@ const navigation = [
       </div>
     </div>
   </header>
-  <main><slot /></main>
+  <main id="main-content" tabindex="-1"><slot /></main>
   <footer class="site-footer">
     <div class="footer-inner">
       <a class="brand-mark" href="/" aria-label="ANVERA home">
@@ -97,6 +103,7 @@ const navigation = [
     toggle?.addEventListener("click", () => {
       const expanded = toggle.getAttribute("aria-expanded") === "true";
       toggle.setAttribute("aria-expanded", String(!expanded));
+      toggle.setAttribute("aria-label", expanded ? "Open navigation" : "Close navigation");
       nav?.classList.toggle("is-open", !expanded);
     });
     if (nav) {
@@ -104,9 +111,18 @@ const navigation = [
         link.addEventListener("click", () => {
           toggle?.setAttribute("aria-expanded", "false");
           nav.classList.remove("is-open");
+          toggle?.setAttribute("aria-label", "Open navigation");
         });
       });
     }
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && nav?.classList.contains("is-open")) {
+        nav.classList.remove("is-open");
+        toggle?.setAttribute("aria-expanded", "false");
+        toggle?.setAttribute("aria-label", "Open navigation");
+        toggle?.focus();
+      }
+    });
   </script>
 </body>
 </html>
