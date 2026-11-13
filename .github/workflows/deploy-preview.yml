@@ -21,6 +21,7 @@ on:
       - feature/wheel-design-gallery
       - fix/carbon-dropdown-click-selection
       - design/global-bmw-light-refresh
+      - fix/sitewide-light-page-migration
     paths-ignore:
       - "docs/**"
       - "*.md"
