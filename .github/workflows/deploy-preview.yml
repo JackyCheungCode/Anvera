@@ -17,6 +17,7 @@ on:
       - feat/configurator-selection-delivery-polish
       - fix/manufacturer-logo-fallback
       - fix/sitewide-carbon-native-controls
+      - redesign/bmw-m-control-system
     paths-ignore:
       - "docs/**"
       - "*.md"
